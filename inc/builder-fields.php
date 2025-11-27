@@ -3,37 +3,7 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-//Menu mobile
-add_action('carbon_fields_register_fields', 'relive_register_menu_fields');
-function relive_register_menu_fields()
-{
-    Container::make('nav_menu_item', __('Cấu hình Mega Menu', 'relive'))
-        ->add_fields(array(
-            // Icon cấp 1
-            Field::make('image', 'menu_icon_img', 'Icon Menu (Ảnh)')->set_value_type('url')->set_width(50),
-            Field::make('text', 'menu_icon_class', 'Icon FontAwesome')->set_width(50),
 
-            // --- 1. THƯƠNG HIỆU (Lấy từ Taxonomy có sẵn) ---
-            Field::make('association', 'mm_selected_brands', '1. Chọn Thương hiệu (Cột Trái)')
-                ->set_types(array(
-                    // LƯU Ý: Thay chữ 'brand' bên dưới bằng slug thực tế của bạn nếu nó khác
-                    // Ví dụ: 'product_brand', 'pwb-brand', 'yith_product_brand'...
-                    array('type' => 'term', 'taxonomy' => 'brand'),
-                )),
-
-            // --- 2. DANH MỤC (Manual) ---
-            Field::make('association', 'mm_cats', '2. Dòng HOT (Cột Trái - Dưới)')
-                ->set_types(array(
-                    array('type' => 'term', 'taxonomy' => 'product_cat'),
-                )),
-
-            // --- 3. SẢN PHẨM (Manual) ---
-            Field::make('association', 'mm_products', '3. Sản phẩm Giá sốc (Cột Phải)')
-                ->set_types(array(
-                    array('type' => 'post', 'post_type' => 'product'),
-                )),
-        ));
-}
 
 //builder page
 add_action('carbon_fields_register_fields', 'relive_register_builder');
