@@ -1,0 +1,71 @@
+/*
+Theme Name: Relive
+Theme URI: https://yourdomain.com
+Author: Relive Team
+Description: A lightweight, high-performance WooCommerce theme.
+Version: 1.0.0
+Text Domain: relive
+Tags: e-commerce, woocommerce, grid-layout, fast
+*/
+
+/* --- 1. CSS Variables (Cấu hình màu sắc toàn web) --- */
+:root {
+    /* Màu sắc chủ đạo (Giống Flatsome Blue mặc định) */
+    --primary-color: #446084; 
+    --secondary-color: #d26e4b;
+    
+    /* Màu chữ & Nền */
+    --text-color: #333333;
+    --heading-color: #111111;
+    --bg-color: #ffffff;
+    --light-gray: #f1f1f1;
+    
+    /* Cấu hình Grid Container */
+    --container-width: 1200px;
+    --container-padding: 15px;
+}
+
+/* --- 2. Reset cơ bản (Bắt buộc) --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--primary-color);
+}
+
+/* --- 3. Utility Classes (Các class dùng chung) --- */
+.re-container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.d-flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.items-center { align-items: center; }
