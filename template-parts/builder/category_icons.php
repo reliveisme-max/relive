@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Block: Danh mục (Simple Grid Swiper + Pagination)
+ * Block: Danh mục (Free Scroll Mode)
  */
 
 if (empty($args['data'])) return;
@@ -71,6 +71,14 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
                 slidesPerView: <?php echo $col_mob; ?>,
                 spaceBetween: 10,
 
+                // --- KÍCH HOẠT FREE SCROLL (Lướt tự do) ---
+                freeMode: {
+                    enabled: true,
+                    sticky: false, // false = lướt đến đâu dừng đó, true = dính vào slide gần nhất
+                    momentumRatio: 0.5, // Quán tính (số càng cao lướt càng trôi xa)
+                },
+                speed: 500, // Tốc độ mượt mà hơn
+
                 <?php if ($rows > 1): ?>
                     grid: {
                         rows: 2,
@@ -78,14 +86,13 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
                     },
                 <?php endif; ?>
 
-                // BẬT Pagination
                 pagination: {
                     el: '#<?php echo $rand_id; ?> .cat-pagination',
                     clickable: true,
                 },
 
                 navigation: {
-                    nextEl: '#<?php echo $rand_id; ?> + .cat-next', // Fix selector
+                    nextEl: '#<?php echo $rand_id; ?> + .cat-next',
                     prevEl: '#<?php echo $rand_id; ?> ~ .cat-prev',
                 },
 
@@ -93,6 +100,7 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
                     768: {
                         slidesPerView: <?php echo $col_tab; ?>,
                         spaceBetween: 15,
+                        freeMode: false, // Trên Tablet/PC nên tắt Free Mode để bấm nút Next/Prev chuẩn xác hơn
                         <?php if ($rows > 1): ?>grid: {
                             rows: 2,
                             fill: 'row'
@@ -102,6 +110,7 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
                     1024: {
                         slidesPerView: <?php echo $col_desk; ?>,
                         spaceBetween: 20,
+                        freeMode: false, // PC tắt Free Mode
                         <?php if ($rows > 1): ?>grid: {
                             rows: 2,
                             fill: 'row'
