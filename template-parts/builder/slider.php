@@ -84,6 +84,8 @@ $thumb_id = $rand_id . '-thumbs';
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Swiper !== 'undefined') {
+
+        // 1. Init Thumbs (Giữ nguyên logic Fit Content)
         var thumbsSwiper = null;
         <?php if ( $pagi_style == 'thumbs_text' ) : ?>
         thumbsSwiper = new Swiper('#<?php echo $thumb_id; ?>', {
@@ -95,11 +97,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         <?php endif; ?>
 
+        // 2. Cấu hình hiệu ứng Creative (Nếu được chọn)
+        var effectConfig = {};
+        <?php if($effect == 'creative'): ?>
+        effectConfig = {
+            limitProgress: 2, // Giới hạn số slide chịu ảnh hưởng
+            prev: {
+                shadow: true,
+                translate: ['-20%', 0, -1], // Ảnh cũ lùi lại và dịch sang trái ít hơn
+                opacity: 0.8, // Mờ đi chút
+            },
+            next: {
+                translate: ['100%', 0, 0], // Ảnh mới trượt vào từ phải
+            },
+        };
+        <?php endif; ?>
+
+        // 3. Init Main Slider
         new Swiper('#<?php echo $rand_id; ?>', {
             loop: true,
-            speed: 800,
+            speed: 800, // Tốc độ trượt
+
+            // --- QUAN TRỌNG: Cấu hình Effect ---
             effect: '<?php echo esc_js($effect); ?>',
-            autoplay: <?php echo $autoplay ? '{delay: 4000}' : 'false'; ?>,
+            creativeEffect: effectConfig, // Nạp cấu hình vừa tạo ở trên
+            fadeEffect: {
+                crossFade: true
+            }, // Nếu chọn Fade thì dùng cái này
+
+            // Bắt buộc phải có dòng này thì Creative/Fade mới mượt
+            watchSlidesProgress: true,
+
+            autoplay: <?php echo $autoplay ? '{delay: 4000, disableOnInteraction: false}' : 'false'; ?>,
+
             pagination: {
                 el: '#<?php echo $rand_id; ?> .swiper-pagination',
                 clickable: true
@@ -108,7 +138,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 nextEl: '#<?php echo $rand_id; ?> .swiper-button-next',
                 prevEl: '#<?php echo $rand_id; ?> .swiper-button-prev'
             },
-            <?php if ( $pagi_style == 'thumbs_text' ) : ?>thumbs: {
+
+            <?php if ( $pagi_style == 'thumbs_text' ) : ?>
+            thumbs: {
                 swiper: thumbsSwiper
             }
             <?php endif; ?>
