@@ -245,6 +245,32 @@ ul { list-style: none; padding: 0; margin: 0; }
 .swiper-button-next, .swiper-button-prev {
     z-index: 100; /* Đảm bảo mũi tên nổi lên trên */
 }
+/* --- FIX SLIDER STYLE --- */
+.main-slider .swiper-button-next, 
+.main-slider .swiper-button-prev {
+    color: #fff; /* Đổi mũi tên sang màu trắng */
+    width: 35px;
+    height: 35px;
+    background: rgba(0,0,0,0.3); /* Nền đen mờ */
+    border-radius: 50%;
+    z-index: 10;
+}
+
+.main-slider .swiper-button-next:after, 
+.main-slider .swiper-button-prev:after {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.main-slider .swiper-button-next:hover, 
+.main-slider .swiper-button-prev:hover {
+    background: var(--primary); /* Hover ra màu đỏ */
+}
+
+/* Fix ảnh full width trong mọi trường hợp */
+.slide-bg {
+    width: 100% !important;
+}
 
 /* =========================================
    5. RESPONSIVE
