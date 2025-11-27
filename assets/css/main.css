@@ -40,11 +40,16 @@ ul { list-style: none; padding: 0; margin: 0; }
 .container {
     max-width: var(--container-width);
     margin: 0 auto;
+    /* FIX: Thêm padding để nội dung không bao giờ dính sát mép màn hình */
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
-/* Container Full Width */
+/* Container Full Width cũng cần đệm để không dính sát */
 .container-fluid { 
     width: 100%; 
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 /* Grid System */
@@ -69,8 +74,6 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 .col { 
-    padding-left: calc(var(--grid-gutter) * 0.5); 
-    padding-right: calc(var(--grid-gutter) * 0.5);
     box-sizing: border-box; 
 }
 
@@ -81,6 +84,20 @@ ul { list-style: none; padding: 0; margin: 0; }
 .col-4  { width: 33.333333%; }
 .col-3  { width: 25%; }
 
+/* --- NGOẠI LỆ: Slider muốn tràn viền trên Mobile thì phải khử padding của container đi --- */
+@media (max-width: 768px) {
+    /* Chỉ áp dụng cho khối slider khi chọn chế độ "Full Width" */
+    .slider-block .container-fluid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Nếu slider nằm trong .container thường mà vẫn muốn tràn viền thì dùng class này */
+    .slider-block.full-mobile .container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
 /* =========================================
    2. HEADER (ĐẦU TRANG)
    ========================================= */
