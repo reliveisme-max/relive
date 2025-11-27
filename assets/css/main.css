@@ -614,45 +614,142 @@ ul { list-style: none; padding: 0; margin: 0; }
 .v-menu .sub-menu .sub-menu li a:hover { color: var(--primary); }
 
 /* =========================================
-   RESPONSIVE MOBILE
+   MENU MOBILE KIỂU DI ĐỘNG VIỆT (SPLIT VIEW)
    ========================================= */
+
 @media (max-width: 768px) {
-    /* Ẩn chữ "Danh mục", chỉ hiện icon */
-    .cat-text { display: none; }
-    .btn-cat-menu { padding: 0; width: 40px; justify-content: center; background: #f1f1f1; }
-    .cat-icon span { background: #333; }
     
-    /* Menu Mobile dạng Full hoặc Dropdown */
+    /* 1. KHUNG MENU CHÍNH (Full màn hình) */
     .vertical-nav {
-        width: 300px; /* Rộng hơn chút */
-        position: fixed;
-        top: 60px; /* Dưới header */
-        left: -320px; /* Ẩn sang trái */
-        height: calc(100vh - 60px);
-        margin: 0;
-        overflow-y: auto;
-        border-radius: 0;
-        transition: 0.3s;
+        position: fixed !important;
+        top: 0 !important;
+        left: -100% !important; /* Ẩn sang trái */
+        width: 100% !important;
+        height: 100vh !important;
+        background: #f3f3f3 !important;
+        z-index: 9999 !important;
+        transition: 0.3s ease !important;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
     }
-    
-    /* Khi active thì trượt ra */
+
+    /* Khi Active thì trượt ra */
     .vertical-menu-wrap.active .vertical-nav {
-        left: 0;
+        left: 0 !important;
+    }
+
+    /* Lớp phủ đen mờ */
+    .vertical-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 9990;
+        display: none;
+    }
+    .vertical-menu-wrap.active .vertical-overlay { display: block; }
+
+    /* 2. HEADER CỦA MENU (Màu Đỏ) */
+    .mobile-menu-header {
+        background: var(--primary);
+        color: #fff;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0; /* Không bị co lại */
+    }
+    .mobile-menu-title { font-weight: 700; text-transform: uppercase; }
+    .mobile-menu-close { font-size: 30px; line-height: 20px; cursor: pointer; }
+
+    /* 3. BODY MENU (Vùng chứa 2 cột) */
+    .mobile-menu-body {
+        flex: 1;
+        display: flex; /* Chia đôi màn hình */
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* --- CỘT TRÁI (Danh mục cha) --- */
+    ul.v-menu {
+        width: 35% !important; /* Chiếm 35% bề ngang */
+        background: #fff !important;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-right: 1px solid #eee;
+    }
+
+    ul.v-menu > li {
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    ul.v-menu > li > a {
+        display: flex;
+        flex-direction: column; /* Icon trên, chữ dưới (nếu có icon) */
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 15px 5px !important;
+        font-size: 12px !important;
+        color: #333;
+        background: #fff;
+        height: 100%;
     }
     
-    /* Tắt hover, chuyển thành click */
+    /* Active Tab Trái: Nền xám, vạch đỏ bên trái */
+    ul.v-menu > li.active > a {
+        background: #f3f3f3;
+        color: var(--primary);
+        font-weight: 700;
+        position: relative;
+    }
+    ul.v-menu > li.active > a:before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 3px; background: var(--primary);
+    }
+    /* Ẩn mũi tên menu cha ở mobile */
+    .v-menu > li.menu-item-has-children > a:after { display: none !important; }
+
+    /* --- CỘT PHẢI (Nội dung con) --- */
+    /* Mặc định ẩn hết, chỉ hiện cái active */
     .v-menu > li > .sub-menu {
-        position: static; /* Hết bay lơ lửng */
-        width: 100%;
-        box-shadow: none;
-        display: none; /* Ẩn đi, click mới hiện */
-        padding: 10px 20px;
-        background: #f5f5f5;
-        grid-template-columns: 1fr; /* 1 cột */
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        width: 65% !important; /* Chiếm 65% còn lại */
+        height: 100% !important;
+        background: #f3f3f3 !important;
+        overflow-y: auto !important;
+        display: none; /* Ẩn */
+        padding: 10px !important;
+        left: auto !important; /* Bỏ left cũ */
+        box-shadow: none !important;
+        grid-template-columns: 1fr !important; /* 1 cột */
+        margin: 0 !important;
     }
-    
+
+    /* Hiện Sub-menu của tab đang chọn */
     .v-menu > li.active > .sub-menu {
-        display: block;
+        display: block !important;
+    }
+
+    /* Style nội dung bên phải */
+    .v-menu .sub-menu > li {
+        background: #fff;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        padding: 10px;
+        list-style: none;
+    }
+    .v-menu .sub-menu > li > a {
+        font-weight: 700; color: #000; font-size: 13px;
+        border-bottom: 1px solid #eee;
+        display: block; padding-bottom: 5px; margin-bottom: 5px;
+    }
+    .v-menu .sub-menu .sub-menu li a {
+        padding: 5px 0; font-size: 13px; color: #555;
     }
 }
 
