@@ -51,7 +51,7 @@ $rand_id = 'slider-' . rand(1000, 9999);
                 ?>
                     <div class="swiper-slide" style="height: <?php echo esc_attr($height); ?>px;">
                         <?php if ( ! empty( $slide['link'] ) ) : ?>
-                            <a href="<?php echo esc_url( $slide['link'] ); ?>" class="d-block h-100">
+                            <a href="<?php echo esc_url( $slide['link'] ); ?>" style="display: block; height: 100%;">
                         <?php endif; ?>
                             
                             <div class="slide-bg" style="background-image: url('<?php echo esc_url( $img_url ); ?>'); width: 100%; height: 100%; background-size: cover; background-position: center;"></div>
