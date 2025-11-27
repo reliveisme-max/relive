@@ -430,6 +430,7 @@ ul { list-style: none; padding: 0; margin: 0; }
         top: 0; left: 0;
         width: 100%; height: 100%;
         background-size: cover !important; /* Hoặc dùng 'contain' nếu muốn thấy 100% ảnh không mất góc nào */
+        border-radius: 10px;
     }
 
     /* 4. Ẩn Tab đi như cũ */
@@ -483,8 +484,6 @@ ul { list-style: none; padding: 0; margin: 0; }
         padding-right: 15px !important;
     }
 
-    .slide-img-mobile { display: block !important; width: 100%; height: auto; border-radius: 8px !important; }
-    .container-thumbs-absolute { display: none !important; }
 }
 /* =========================================
    5. RESPONSIVE
