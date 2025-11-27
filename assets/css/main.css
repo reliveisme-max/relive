@@ -360,48 +360,54 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 /* =========================================
-   RESPONSIVE MOBILE (ẨN TAB - HIỆN GẠCH NGANG)
+   FIX MOBILE SLIDER (CSS ONLY - ASPECT RATIO)
    ========================================= */
-@media (max-width: 768px) {
-    
-    /* 1. ẨN TAB RELIVE ĐI */
-    .container-thumbs-absolute {
-        display: none !important;
-    }
 
-    /* 2. HIỆN PAGINATION (GẠCH NGANG) */
-    .slider-style-thumbs_text .swiper-pagination {
-        display: block !important;
-        bottom: 15px !important;
-        width: 100% !important;
-        text-align: center;
-        z-index: 100;
-    }
-
-    /* 3. STYLE GẠCH NGANG (DASHED) */
-    .swiper-pagination-bullet {
-        width: 20px !important;       /* Độ dài gạch */
-        height: 4px !important;       /* Độ dày */
-        border-radius: 2px !important;
-        background: rgba(255,255,255,0.4) !important; /* Màu trắng mờ */
-        opacity: 1 !important;
-        margin: 0 4px !important;
-        transition: all 0.3s ease;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.3); /* Bóng đổ cho rõ trên nền trắng */
-    }
-
-    /* Active: Gạch dài ra và trắng sáng */
-    .swiper-pagination-bullet-active {
-        width: 30px !important;
-        background: #fff !important; 
-    }
+.slide-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
+.slide-link-wrap { display: block; width: 100%; height: 100%; }
 
-/* --- TRÊN PC: Ẩn pagination đi vì đã có Tab rồi --- */
-@media (min-width: 769px) {
-    .slider-style-thumbs_text .swiper-pagination {
-        display: none !important;
+@media (max-width: 768px) {
+    /* 1. Reset chiều cao cố định của slider */
+    .swiper-slide {
+        height: auto !important; 
     }
+
+    /* 2. Dùng padding để tạo chiều cao theo tỷ lệ ảnh */
+    /* Nếu ảnh của bạn là 1200x400 (Tỷ lệ 3:1) -> 400/1200 = 33.33% */
+    /* Nếu ảnh mobile bị ngắn quá, hãy tăng số % này lên (ví dụ 50% hoặc 60%) */
+    .slide-link-wrap {
+        width: 100%;
+        height: 0 !important;
+        padding-bottom: 45% !important; /* <--- CHỈNH SỐ NÀY ĐỂ ĐỔI CHIỀU CAO MOBILE */
+        position: relative;
+    }
+
+    /* 3. Ép ảnh nền hiển thị trọn vẹn */
+    .slide-bg {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-size: cover !important; /* Hoặc dùng 'contain' nếu muốn thấy 100% ảnh không mất góc nào */
+    }
+
+    /* 4. Ẩn Tab đi như cũ */
+    .container-thumbs-absolute { display: none !important; }
+    
+    /* 5. Hiện Dash */
+    .slider-style-thumbs_text .swiper-pagination {
+        display: block !important; bottom: 10px; width: 100%; text-align: center;
+    }
+    .swiper-pagination-bullet {
+        width: 20px !important; height: 4px !important; border-radius: 2px !important;
+        background: rgba(255,255,255,0.5) !important; margin: 0 3px !important;
+    }
+    .swiper-pagination-bullet-active { width: 30px !important; background: #fff !important; }
 }
 /* =========================================
    5. RESPONSIVE
