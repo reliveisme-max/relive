@@ -40,4 +40,25 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // 4. VERTICAL MENU TOGGLE (Mobile & PC Click)
+    $('.btn-cat-menu').on('click', function(e) {
+        e.preventDefault();
+        $(this).parent('.vertical-menu-wrap').toggleClass('active');
+    });
+
+    // Mobile: Click vào mũi tên để mở Sub-menu
+    $('.v-menu > li.menu-item-has-children > a').on('click', function(e) {
+        if ($(window).width() < 769) {
+            e.preventDefault();
+            $(this).parent('li').toggleClass('active');
+        }
+    });
+
+    // Click ra ngoài thì đóng menu
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.vertical-menu-wrap').length) {
+            $('.vertical-menu-wrap').removeClass('active');
+        }
+    });
+
 });

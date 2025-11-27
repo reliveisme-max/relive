@@ -482,7 +482,179 @@ ul { list-style: none; padding: 0; margin: 0; }
     }
 }
 
+/* =========================================
+   VERTICAL MEGA MENU (DIDONGVIET STYLE)
+   ========================================= */
 
+/* 1. Nút Danh Mục */
+.vertical-menu-wrap {
+    position: relative;
+    z-index: 1000;
+}
+
+.btn-cat-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(203, 28, 34, 0.1); /* Màu đỏ nhạt nền */
+    color: var(--primary); /* Chữ đỏ */
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    transition: 0.3s;
+    height: 40px;
+}
+.btn-cat-menu:hover {
+    background: var(--primary);
+    color: #fff;
+}
+.btn-cat-menu:hover .cat-icon span { background: #fff; }
+
+/* Icon 4 ô vuông */
+.cat-icon {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    width: 14px; height: 14px;
+}
+.cat-icon span {
+    background: var(--primary);
+    border-radius: 1px;
+}
+
+/* 2. Khung Menu Dọc (Ẩn mặc định, hiện khi hover hoặc click) */
+.vertical-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 250px;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    margin-top: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    padding: 10px 0;
+}
+
+/* Logic hiện menu: Hover vào nút hoặc class active */
+.vertical-menu-wrap:hover .vertical-nav,
+.vertical-menu-wrap.active .vertical-nav {
+    opacity: 1; visibility: visible; transform: translateY(0);
+}
+
+/* 3. Các cấp Menu */
+.v-menu > li {
+    position: relative;
+}
+.v-menu > li > a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+.v-menu > li:hover > a {
+    color: var(--primary);
+    background: #f9f9f9;
+}
+
+/* Mũi tên cho menu cha */
+.v-menu > li.menu-item-has-children > a:after {
+    content: '›';
+    font-size: 18px;
+    line-height: 1;
+    color: #999;
+}
+
+/* 4. MEGA SUB-MENU (Bảng to bên phải) */
+.v-menu > li > .sub-menu {
+    position: absolute;
+    left: 100%; /* Nằm bên phải */
+    top: -10px; /* Căn bằng đầu */
+    width: 800px; /* Độ rộng bảng Mega */
+    min-height: 100%;
+    background: #fff;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 20px;
+    
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Chia 4 cột */
+    gap: 20px;
+    
+    opacity: 0; visibility: hidden;
+    margin-left: 15px;
+}
+
+/* Tam giác nối */
+.v-menu > li > .sub-menu:before {
+    content: ''; position: absolute; left: -20px; top: 0; width: 20px; height: 100%; background: transparent;
+}
+
+/* Hiện sub-menu khi hover cha */
+.v-menu > li:hover > .sub-menu {
+    opacity: 1; visibility: visible; margin-left: 0;
+}
+
+/* Style cho item con trong Mega */
+.v-menu .sub-menu li { list-style: none; }
+.v-menu .sub-menu > li > a {
+    font-weight: 700; color: #000; display: block; margin-bottom: 10px; text-transform: uppercase; font-size: 12px;
+}
+.v-menu .sub-menu .sub-menu li a {
+    font-weight: 400; color: #555; text-transform: none; font-size: 13px; padding: 3px 0;
+}
+.v-menu .sub-menu .sub-menu li a:hover { color: var(--primary); }
+
+/* =========================================
+   RESPONSIVE MOBILE
+   ========================================= */
+@media (max-width: 768px) {
+    /* Ẩn chữ "Danh mục", chỉ hiện icon */
+    .cat-text { display: none; }
+    .btn-cat-menu { padding: 0; width: 40px; justify-content: center; background: #f1f1f1; }
+    .cat-icon span { background: #333; }
+    
+    /* Menu Mobile dạng Full hoặc Dropdown */
+    .vertical-nav {
+        width: 300px; /* Rộng hơn chút */
+        position: fixed;
+        top: 60px; /* Dưới header */
+        left: -320px; /* Ẩn sang trái */
+        height: calc(100vh - 60px);
+        margin: 0;
+        overflow-y: auto;
+        border-radius: 0;
+        transition: 0.3s;
+    }
+    
+    /* Khi active thì trượt ra */
+    .vertical-menu-wrap.active .vertical-nav {
+        left: 0;
+    }
+    
+    /* Tắt hover, chuyển thành click */
+    .v-menu > li > .sub-menu {
+        position: static; /* Hết bay lơ lửng */
+        width: 100%;
+        box-shadow: none;
+        display: none; /* Ẩn đi, click mới hiện */
+        padding: 10px 20px;
+        background: #f5f5f5;
+        grid-template-columns: 1fr; /* 1 cột */
+    }
+    
+    .v-menu > li.active > .sub-menu {
+        display: block;
+    }
+}
 
 
 
