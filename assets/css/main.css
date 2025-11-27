@@ -484,6 +484,18 @@ ul { list-style: none; padding: 0; margin: 0; }
         padding-right: 15px !important;
     }
 
+    section.section.slider-block .container {
+        margin-bottom: -30px;
+    }
+
+    /* --- TÙY CHỌN: ẨN MŨI TÊN TRÊN MOBILE --- */
+@media (max-width: 768px) {
+    .hide-arrows-mobile .swiper-button-next,
+    .hide-arrows-mobile .swiper-button-prev {
+        display: none !important;
+    }
+}
+
 }
 /* =========================================
    5. RESPONSIVE

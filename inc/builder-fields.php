@@ -41,6 +41,8 @@ function relive_register_builder() {
                         ->set_width(50),
 
                     Field::make( 'checkbox', 'arrows', 'Hiện mũi tên?' )->set_default_value( true )->set_width(33),
+                    // --- MỚI THÊM: Tùy chọn ẩn mũi tên trên Mobile ---
+                    Field::make( 'checkbox', 'arrows_hide_mobile', 'Ẩn mũi tên trên Mobile?' )->set_default_value( true )->set_width(33),
                     Field::make( 'checkbox', 'dots', 'Hiện phân trang?' )->set_default_value( true )->set_width(33),
                     Field::make( 'checkbox', 'autoplay', 'Tự động chạy?' )->set_default_value( true )->set_width(33),
 
