@@ -444,6 +444,34 @@ ul { list-style: none; padding: 0; margin: 0; }
         background: rgba(255,255,255,0.5) !important; margin: 0 3px !important;
     }
     .swiper-pagination-bullet-active { width: 30px !important; background: #fff !important; }
+    /* 1. Đẩy Pagination xuống sát đáy */
+    .slider-style-thumbs_text .swiper-pagination {
+        display: block !important;
+        bottom: 8px !important; /* Hạ thấp xuống (Cũ là 15px) */
+        width: 100% !important;
+        text-align: center;
+        z-index: 100;
+    }
+
+    /* 2. Làm các dấu gạch BÉ LẠI và MỎNG ĐI */
+    .swiper-pagination-bullet {
+        width: 12px !important;       /* Ngắn lại (Cũ 20px) */
+        height: 2px !important;       /* Mỏng như sợi chỉ (Cũ 4px) */
+        border-radius: 0 !important;  /* Vuông vức cho sang */
+        background: rgba(255,255,255,0.4) !important; /* Trắng mờ */
+        opacity: 1 !important;
+        margin: 0 3px !important;     /* Khoảng cách giữa các gạch */
+        transition: all 0.3s ease;
+    }
+
+    /* 3. Active: Dài hơn chút và Sáng lên (Hoặc màu Đỏ) */
+    .swiper-pagination-bullet-active {
+        width: 20px !important;       /* Active dài hơn chút */
+        background: #fff !important;  /* Màu trắng sáng nổi bật trên nền tối */
+        
+        /* Nếu muốn màu ĐỎ giống hệt ảnh mẫu Samsung thì dùng dòng dưới: */
+        /* background: #cb1c22 !important; */
+    }
 }
 /* =========================================
    5. RESPONSIVE
