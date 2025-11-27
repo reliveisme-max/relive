@@ -451,7 +451,36 @@ ul { list-style: none; padding: 0; margin: 0; }
     .cat-next, .cat-prev { display: none !important; }
 }
 
+/* =========================================
+   CATEGORY PAGINATION STYLE (MOBILE)
+   ========================================= */
 
+/* Mặc định Desktop: Ẩn pagination của danh mục */
+.cat-pagination {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Mobile: Hiện pagination dạng gạch ngang */
+    .cat-pagination {
+        display: block !important;
+        position: relative !important; /* Nằm dưới icon, không đè lên */
+        margin-top: 15px !important;
+        bottom: auto !important;
+        width: 100% !important;
+        text-align: center;
+        line-height: 0;
+    }
+
+    /* Tận dụng style gạch ngang đã khai báo ở Slider (bullet) */
+    /* .swiper-pagination-bullet đã được style ở phần Slider Mobile trước đó */
+    /* Nếu cần chỉnh riêng cho danh mục thì thêm vào đây, nhưng dùng chung là đẹp nhất */
+    
+    /* Ẩn mũi tên danh mục trên mobile luôn cho gọn */
+    .cat-next, .cat-prev {
+        display: none !important;
+    }
+}
 
 
 
