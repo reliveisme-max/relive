@@ -94,19 +94,15 @@ $thumb_id = $rand_id . '-thumbs';
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Swiper !== 'undefined') {
-        // Init Thumbs trước (Nếu có)
+        // Init Thumbs (Cấu hình Fit Content)
         var thumbsSwiper = null;
         <?php if ( $pagi_style == 'thumbs_text' ) : ?>
         thumbsSwiper = new Swiper('#<?php echo $thumb_id; ?>', {
-            spaceBetween: 10,
-            slidesPerView: 2, // Mobile hiện 2 tab
+            spaceBetween: 5, // Khoảng cách giữa các tab
+            slidesPerView: 'auto', // QUAN TRỌNG: Tự động tính chiều rộng theo nội dung
             watchSlidesProgress: true,
-            breakpoints: {
-                768: {
-                    slidesPerView: 3,
-                    spaceBetween: 15
-                } // PC hiện 3 tab
-            }
+            slideToClickedSlide: true,
+            freeMode: true, // Cho phép kéo tự do nếu tab quá dài
         });
         <?php endif; ?>
 
