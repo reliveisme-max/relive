@@ -57,7 +57,7 @@ $thumb_id = $rand_id . '-thumbs';
                     <?php endforeach; ?>
                 </div>
 
-                <?php if ( $show_dots && $pagi_style != 'thumbs_text' ) : ?>
+                <?php if ( $show_dots ) : ?>
                 <div class="swiper-pagination"></div>
                 <?php endif; ?>
 
