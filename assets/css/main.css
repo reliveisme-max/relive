@@ -272,116 +272,167 @@ ul { list-style: none; padding: 0; margin: 0; }
     width: 100% !important;
 }
 
-/* --- RELIVE SLIDER THUMBS STYLE (UPDATED REQUEST) --- */
+//* =========================================
+   RELIVE SLIDER THUMBS (FULL RESPONSIVE)
+   ========================================= */
 
-/* 1. Khung chứa: Cách đáy 20px như yêu cầu */
+/* --- 1. KHUNG CHỨA TAB (DESKTOP) --- */
 .container-thumbs-absolute {
     position: absolute !important;
-    bottom: 20px !important;   /* YÊU CẦU MỚI */
+    bottom: 40px !important;   /* Cách đáy 40px tạo cảm giác lơ lửng */
     right: 0 !important;
     z-index: 50 !important;
     width: auto !important;
-    max-width: 90% !important;
+    max-width: 85% !important;
+    
     display: flex !important;
-    justify-content: flex-end !important;
-    padding-right: 20px !important; /* Cách lề phải một chút cho đẹp */
-    pointer-events: none;
+    justify-content: flex-end !important; /* Căn phải */
+    padding-right: 30px !important;
+    pointer-events: none; /* Click xuyên qua vùng trống */
 }
 
-/* 2. Swiper */
+/* --- 2. CẤU HÌNH SWIPER THUMBS --- */
 .thumbs-slider {
     margin: 0 !important;
     width: auto !important;
     background: transparent !important;
-    pointer-events: auto; 
+    pointer-events: auto; /* Bật lại click cho các tab */
 }
 
 .thumbs-slider .swiper-wrapper {
-    justify-content: flex-end !important; 
-    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important; /* Căn đáy các tab */
 }
 
-/* 3. Giao diện Tab */
+/* --- 3. GIAO DIỆN TAB (FIT CONTENT) --- */
 .thumb-item {
-    width: auto !important; /* Tự động co giãn theo chữ */
+    width: auto !important; /* Tự động co giãn theo độ dài chữ */
     max-width: 250px;
     height: auto !important;
     cursor: pointer;
     vertical-align: bottom !important;
-    margin-left: 5px !important; 
+    margin-left: 6px !important; /* Khoảng cách giữa các tab */
 }
 
 .thumb-inner {
-    /* YÊU CẦU MỚI: Height 60px, Padding 15px */
-    height: 60px !important; 
-    padding: 0 15px !important;
-    
+    /* Chiều cao & Màu sắc */
+    height: 70px !important; 
     background: rgba(0, 0, 0, 0.75) !important; 
     color: #fff !important;
     
-    /* Bo tròn 2 góc trên */
-    border-radius: 5px !important; 
+    /* Padding 2 bên để chữ không sát lề */
+    padding: 0 20px !important; 
     
+    /* Bo góc nhẹ nhàng */
+    border-radius: 8px !important; 
+    
+    /* Căn chỉnh nội dung */
     text-align: left;
     display: flex;
     flex-direction: column;
     justify-content: center;
     
     transition: all 0.2s ease !important;
+    border: 1px solid rgba(255,255,255,0.15);
     backdrop-filter: blur(5px);
     
-    min-width: 120px; /* Đảm bảo tab không quá bé */
+    min-width: 130px; /* Đảm bảo tab không quá bé */
 }
 
+/* Typography */
 .t-title {
     display: block;
     font-weight: 700 !important;
     text-transform: uppercase;
-    font-size: 12px !important; /* Giảm size chữ chút cho vừa height 60 */
-    margin-bottom: 2px !important;
+    font-size: 13px !important;
+    margin-bottom: 3px !important;
     white-space: nowrap; 
 }
 
 .t-desc {
     display: block;
-    font-size: 11px !important;
+    font-size: 12px !important;
     opacity: 0.9;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* 4. Active State */
+/* --- 4. TRẠNG THÁI ACTIVE (ĐANG CHỌN) --- */
 .swiper-slide-thumb-active .thumb-inner {
     background: #fff !important;
     color: #000 !important;
+    border-color: #fff !important;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    border-color: #fff;
+    
+    /* Không dùng transform nhảy lên nữa để tránh lệch hàng */
 }
 
-/* 5. Mobile */
+/* =========================================
+   RESPONSIVE MOBILE (MÀN HÌNH NHỎ)
+   ========================================= */
 @media (max-width: 768px) {
+    
+    /* 1. Main Slider: Tự động chỉnh chiều cao cho đỡ bị dài ngoằng */
+    .swiper-slide {
+        height: auto !important; 
+        aspect-ratio: 16/10 !important; /* Giữ tỷ lệ khung hình đẹp */
+    }
+    .slide-bg {
+        position: absolute; top: 0; left: 0; height: 100% !important;
+    }
+
+    /* 2. Khung chứa Tab: Dính xuống đáy, trượt ngang */
     .container-thumbs-absolute {
         bottom: 10px !important;
         right: 0 !important;
         left: 0 !important;
         width: 100% !important;
+        max-width: 100% !important;
+        
         padding: 0 10px !important;
-        justify-content: flex-start !important;
-        overflow-x: auto;
+        justify-content: flex-start !important; /* Mobile lướt từ trái qua */
+        overflow-x: auto; /* Cho phép cuộn ngang nếu nhiều tab */
+        
+        /* Ẩn thanh cuộn cho gọn */
+        -ms-overflow-style: none; scrollbar-width: none;
     }
+    .container-thumbs-absolute::-webkit-scrollbar { display: none; }
+
     .thumbs-slider .swiper-wrapper {
         justify-content: flex-start !important;
     }
+
+    /* 3. Tab Item: Thu gọn thành dạng "Thẻ Chip" */
     .thumb-item {
-        margin-right: 10px !important;
+        margin-right: 8px !important;
         margin-left: 0 !important;
+        flex-shrink: 0; /* Không bị co méo */
     }
+
     .thumb-inner {
-        height: 50px !important;
-        padding: 0 12px !important;
+        height: 40px !important; /* Thấp hơn nhiều */
+        padding: 0 15px !important;
+        border-radius: 20px !important; /* Bo tròn 2 đầu */
+        min-width: auto !important;
+        background: rgba(0,0,0,0.6) !important;
+        border: none !important;
+        align-items: center; /* Căn giữa dọc */
     }
-    .t-desc { display: none !important; }
+    
+    /* Active trên Mobile: Nền trắng, chữ đen */
+    .swiper-slide-thumb-active .thumb-inner {
+        background: #fff !important;
+    }
+
+    /* 4. Nội dung Text: Ẩn mô tả, chỉ hiện tiêu đề */
+    .t-title {
+        font-size: 11px !important;
+        margin-bottom: 0 !important;
+    }
+    .t-desc {
+        display: none !important; /* Ẩn mô tả cho gọn màn hình */
+    }
 }
 /* =========================================
    5. RESPONSIVE
