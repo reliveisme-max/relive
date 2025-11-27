@@ -28,7 +28,8 @@ function relive_scripts() {
     // Style gốc
     wp_enqueue_style( 'relive-style', get_stylesheet_uri() );
     // Main CSS
-    wp_enqueue_style( 'relive-main', RELIVE_URI . '/assets/css/main.css', array(), RELIVE_VERSION );
+    // SỬA: Thay RELIVE_VERSION bằng time() để ép trình duyệt tải lại CSS mới mỗi lần F5
+    wp_enqueue_style( 'relive-main', RELIVE_URI . '/assets/css/main.css', array(), time() );
     // Swiper CSS (Slider)
     wp_enqueue_style( 'swiper-css', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.css', array(), '11.0.0' );
     
