@@ -390,7 +390,7 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 /* =========================================
-   CATEGORY GRID SWIPER
+   CATEGORY GRID SWIPER STYLE
    ========================================= */
 
 /* 1. Item Danh mục */
@@ -403,7 +403,7 @@ ul { list-style: none; padding: 0; margin: 0; }
     padding: 10px 5px;
     transition: 0.3s;
     border-radius: 8px;
-    height: 100%; /* Để căn giữa trong slide */
+    height: 100%;
 }
 .cat-item-box:hover {
     background-color: #f9f9f9;
@@ -422,59 +422,34 @@ ul { list-style: none; padding: 0; margin: 0; }
     justify-content: center;
 }
 .cat-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: 0.3s;
+    width: 100%; height: 100%; object-fit: cover; transition: 0.3s;
 }
-/* Hover thì zoom ảnh nhẹ */
-.cat-item-box:hover .cat-img-wrap img {
-    transform: scale(1.1);
-}
+.cat-item-box:hover .cat-img-wrap img { transform: scale(1.1); }
 
 .cat-name {
-    font-size: 13px;
-    font-weight: 500;
-    color: #333;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* Giới hạn 2 dòng tên */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 13px; font-weight: 500; color: #333; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 /* 2. Fix Chiều cao Swiper khi dùng Grid */
-.cat-slider {
-    padding-bottom: 5px;
-}
-/* Nếu dùng 2 hàng, cần set chiều cao cụ thể cho slide để grid tính toán đúng */
-.cat-slider .swiper-slide {
-    height: auto;
-    /* height: calc((100% - 30px) / 2) !important;  <- Dùng cái này nếu JS không tự chia đều */
-}
+.cat-slider { padding-bottom: 5px; }
+.cat-slider .swiper-slide { height: auto; }
 
 /* 3. Nút điều hướng nhỏ gọn */
 .cat-next, .cat-prev {
-    width: 30px !important;
-    height: 30px !important;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    color: #333 !important;
+    width: 30px !important; height: 30px !important;
+    background: #fff; border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #333 !important;
+    margin-top: -15px !important; /* Căn giữa dọc chuẩn */
 }
-.cat-next:after, .cat-prev:after {
-    font-size: 12px !important;
-    font-weight: bold;
-}
+.cat-next:after, .cat-prev:after { font-size: 12px !important; font-weight: bold; }
 .cat-next { right: -10px !important; }
 .cat-prev { left: -10px !important; }
 
-/* Ẩn nút trên mobile cho gọn */
+/* Ẩn nút trên mobile */
 @media (max-width: 768px) {
     .cat-next, .cat-prev { display: none !important; }
 }
-
-
 
 
 

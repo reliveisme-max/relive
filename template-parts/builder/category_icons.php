@@ -1,6 +1,6 @@
 <?php
 /**
- * Block: Danh mục (Grid Swiper)
+ * Block: Danh mục (Creative Effect Update)
  */
 
 if ( empty( $args['data'] ) ) return;
@@ -9,13 +9,17 @@ $cats = isset($data['selected_cats']) ? $data['selected_cats'] : array();
 
 if ( empty($cats) ) return;
 
-// Lấy thông số
-$title = !empty($data['title']) ? $data['title'] : '';
-$rows  = !empty($data['cat_rows']) ? intval($data['cat_rows']) : 1;
-$mt    = isset($data['mt']) ? $data['mt'] : '0';
-$mb    = isset($data['mb']) ? $data['mb'] : '30';
+$title    = !empty($data['title']) ? $data['title'] : '';
+$rows     = !empty($data['cat_rows']) ? intval($data['cat_rows']) : 1;
+$effect   = !empty($data['cat_effect']) ? $data['cat_effect'] : 'slide';
 
-// ID Random
+$col_desk = !empty($data['col_desk']) ? intval($data['col_desk']) : 8;
+$col_tab  = !empty($data['col_tab']) ? intval($data['col_tab']) : 6;
+$col_mob  = !empty($data['col_mob']) ? intval($data['col_mob']) : 4;
+
+$mt       = isset($data['mt']) ? $data['mt'] : '0';
+$mb       = isset($data['mb']) ? $data['mb'] : '30';
+
 $rand_id = 'cat-swiper-' . rand(1000, 9999);
 ?>
 
@@ -34,7 +38,6 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
                         <?php foreach($cats as $c): 
                             $term = get_term($c['id']);
                             if( ! $term || is_wp_error($term) ) continue;
-                            
                             $thumb_id = get_term_meta($c['id'], 'thumbnail_id', true);
                             $img = wp_get_attachment_image_url($thumb_id, 'thumbnail');
                             if(!$img) $img = 'https://placehold.co/100x100/f1f1f1/999?text=Icon';
@@ -63,38 +66,52 @@ $rand_id = 'cat-swiper-' . rand(1000, 9999);
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Swiper !== 'undefined') {
         new Swiper('#<?php echo $rand_id; ?>', {
-            slidesPerView: 4, // Mặc định mobile 4 cột
+            effect: '<?php echo esc_js($effect); ?>',
+            slidesPerView: <?php echo $col_mob; ?>,
             spaceBetween: 10,
 
-            // Cấu hình Grid (Nếu chọn 2 hàng)
             <?php if( $rows > 1 ): ?>
             grid: {
                 rows: 2,
-                fill: 'row',
+                fill: 'row'
             },
             <?php endif; ?>
 
+            // SỬA: Cấu hình Creative Effect cho Danh mục
+            <?php if( $effect == 'creative' ): ?>
+            creativeEffect: {
+                limitProgress: 2,
+                prev: {
+                    shadow: true,
+                    translate: ['-10%', 0, -1],
+                    opacity: 0.8
+                },
+                next: {
+                    translate: ['100%', 0, 0]
+                },
+            },
+            watchSlidesProgress: true, // Bắt buộc
+            <?php endif; ?>
+
             navigation: {
-                nextEl: '#<?php echo $rand_id; ?> + .cat-next', // Chọn nút next ngay sau slider
+                nextEl: '#<?php echo $rand_id; ?> + .cat-next',
                 prevEl: '#<?php echo $rand_id; ?> ~ .cat-prev',
             },
 
             breakpoints: {
                 768: {
-                    slidesPerView: 6, // Tablet 6 cột
+                    slidesPerView: <?php echo $col_tab; ?>,
                     spaceBetween: 15,
-                    <?php if( $rows > 1 ): ?>
-                    grid: {
+                    <?php if( $rows > 1 ): ?>grid: {
                         rows: 2,
                         fill: 'row'
                     },
                     <?php endif; ?>
                 },
                 1024: {
-                    slidesPerView: 8, // Desktop 8 cột
+                    slidesPerView: <?php echo $col_desk; ?>,
                     spaceBetween: 20,
-                    <?php if( $rows > 1 ): ?>
-                    grid: {
+                    <?php if( $rows > 1 ): ?>grid: {
                         rows: 2,
                         fill: 'row'
                     },

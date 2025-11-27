@@ -62,26 +62,35 @@ function relive_register_builder()
                     Field::make('text', 'mb', 'Margin Bottom')->set_width(50),
                 ))->set_header_template('<div class="cf-preview-block"><div class="cf-icon-wrap"><span class="dashicons dashicons-images-alt2"></span></div><div class="cf-info"><strong>SLIDER</strong></div></div>')
 
-                // 2. DANH MỤC (Update Grid Swiper)
-                ->add_fields('category_icons', __('Danh mục (Swiper)', 'relive'), array(
-                    Field::make('text', 'title', 'Tiêu đề')->set_default_value('Danh mục nổi bật'),
+                // 2. DANH MỤC (Update: Option Creative)
+->add_fields( 'category_icons', __( 'Danh mục (Swiper)', 'relive' ), array(
+    Field::make( 'text', 'title', 'Tiêu đề' )->set_default_value('Danh mục nổi bật'),
+    
+    Field::make( 'association', 'selected_cats', 'Chọn danh mục' )
+        ->set_types( array( array( 'type' => 'term', 'taxonomy' => 'product_cat' ) ) ),
 
-                    // --- MỚI THÊM: Chọn danh mục ---
-                    Field::make('association', 'selected_cats', 'Chọn danh mục')
-                        ->set_types(array(array('type' => 'term', 'taxonomy' => 'product_cat'))),
+    // SỬA: Đổi Coverflow thành Creative
+    Field::make( 'select', 'cat_effect', 'Hiệu ứng trượt' )
+        ->set_options( array(
+            'slide'    => 'Trượt bình thường (Slide)',
+            'creative' => 'Creative (3D Chiều sâu)',
+        ) )
+        ->set_default_value( 'slide' )
+        ->set_width(50),
 
-                    // --- MỚI THÊM: Cấu hình Slider ---
-                    Field::make('select', 'cat_rows', 'Số hàng hiển thị')
-                        ->set_options(array(
-                            '1' => '1 Hàng (Mặc định)',
-                            '2' => '2 Hàng (Dạng lưới Shopee)',
-                        ))
-                        ->set_default_value('1')
-                        ->set_width(50),
+    Field::make( 'select', 'cat_rows', 'Số hàng hiển thị' )
+        ->set_options( array( '1' => '1 Hàng', '2' => '2 Hàng (Grid)' ) )
+        ->set_default_value( '1' )
+        ->set_width(50),
 
-                    Field::make('text', 'mt', 'Margin Top')->set_default_value(0)->set_width(25),
-                    Field::make('text', 'mb', 'Margin Bottom')->set_default_value(30)->set_width(25),
-                ))->set_header_template('<div class="cf-preview-block"><div class="cf-icon-wrap"><span class="dashicons dashicons-category"></span></div><div class="cf-info"><strong>DANH MỤC</strong></div></div>')
+    // Các cột responsive
+    Field::make( 'text', 'col_desk', 'Số cột Desktop' )->set_default_value(8)->set_width(33)->set_attribute('type', 'number'),
+    Field::make( 'text', 'col_tab', 'Số cột Tablet' )->set_default_value(6)->set_width(33)->set_attribute('type', 'number'),
+    Field::make( 'text', 'col_mob', 'Số cột Mobile' )->set_default_value(4)->set_width(33)->set_attribute('type', 'number'),
+
+    Field::make( 'text', 'mt', 'Margin Top' )->set_default_value(0)->set_width(50),
+    Field::make( 'text', 'mb', 'Margin Bottom' )->set_default_value(30)->set_width(50),
+) )->set_header_template('<div class="cf-preview-block"><div class="cf-icon-wrap"><span class="dashicons dashicons-category"></span></div><div class="cf-info"><strong>DANH MỤC</strong></div></div>')
 
                 // 3. BANNER
                 ->add_fields('banner', __('Banner', 'relive'), array(
