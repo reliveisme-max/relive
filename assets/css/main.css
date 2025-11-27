@@ -272,19 +272,19 @@ ul { list-style: none; padding: 0; margin: 0; }
     width: 100% !important;
 }
 
-/* --- RELIVE SLIDER THUMBS STYLE (FIT CONTENT + NO JUMP) --- */
+/* --- RELIVE SLIDER THUMBS STYLE (UPDATED REQUEST) --- */
 
-/* 1. Khung chứa: Đẩy lên cao (Floating) */
+/* 1. Khung chứa: Cách đáy 20px như yêu cầu */
 .container-thumbs-absolute {
     position: absolute !important;
-    bottom: 40px !important;   /* Cách đáy 40px */
+    bottom: 20px !important;   /* YÊU CẦU MỚI */
     right: 0 !important;
     z-index: 50 !important;
     width: auto !important;
     max-width: 90% !important;
     display: flex !important;
     justify-content: flex-end !important;
-    padding-right: 20px !important;
+    padding-right: 20px !important; /* Cách lề phải một chút cho đẹp */
     pointer-events: none;
 }
 
@@ -298,12 +298,12 @@ ul { list-style: none; padding: 0; margin: 0; }
 
 .thumbs-slider .swiper-wrapper {
     justify-content: flex-end !important; 
-    align-items: flex-end !important; /* Căn đáy để thẳng hàng */
+    align-items: flex-end !important;
 }
 
-/* 3. Giao diện Tab (FIT CONTENT) */
+/* 3. Giao diện Tab */
 .thumb-item {
-    width: auto !important; /* Chiều rộng tự động theo chữ */
+    width: auto !important; /* Tự động co giãn theo chữ */
     max-width: 250px;
     height: auto !important;
     cursor: pointer;
@@ -312,15 +312,15 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 .thumb-inner {
-    /* Chiều cao cố định */
-    height: 75px !important; 
+    /* YÊU CẦU MỚI: Height 60px, Padding 15px */
+    height: 60px !important; 
+    padding: 0 15px !important;
     
-    /* Màu nền & Bo góc */
     background: rgba(0, 0, 0, 0.75) !important; 
     color: #fff !important;
-    border-radius: 8px !important; 
     
-    padding: 0 25px !important; 
+    /* Bo tròn 2 góc trên */
+    border-radius: 5px !important; 
     
     text-align: left;
     display: flex;
@@ -328,38 +328,35 @@ ul { list-style: none; padding: 0; margin: 0; }
     justify-content: center;
     
     transition: all 0.2s ease !important;
-    border: 1px solid rgba(255,255,255,0.1);
     backdrop-filter: blur(5px);
     
-    min-width: 140px; 
+    min-width: 120px; /* Đảm bảo tab không quá bé */
 }
 
 .t-title {
     display: block;
     font-weight: 700 !important;
     text-transform: uppercase;
-    font-size: 13px !important;
-    margin-bottom: 4px !important;
+    font-size: 12px !important; /* Giảm size chữ chút cho vừa height 60 */
+    margin-bottom: 2px !important;
     white-space: nowrap; 
 }
 
 .t-desc {
     display: block;
-    font-size: 12px !important;
+    font-size: 11px !important;
     opacity: 0.9;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* 4. Active State (Đã bỏ nhảy lên) */
+/* 4. Active State */
 .swiper-slide-thumb-active .thumb-inner {
     background: #fff !important;
     color: #000 !important;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     border-color: #fff;
-    
-    /* Đã xóa dòng transform: translateY(-5px); */
 }
 
 /* 5. Mobile */
@@ -382,8 +379,7 @@ ul { list-style: none; padding: 0; margin: 0; }
     }
     .thumb-inner {
         height: 50px !important;
-        padding: 0 15px !important;
-        min-width: auto !important;
+        padding: 0 12px !important;
     }
     .t-desc { display: none !important; }
 }
