@@ -30,3 +30,9 @@
     position: relative;
     z-index: unset !important;
 }
+
+@media screen and (max-width: 600px) {
+    #wpadminbar {
+        position: fixed;
+    }
+}

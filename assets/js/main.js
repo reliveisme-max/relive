@@ -46,40 +46,38 @@ jQuery(document).ready(function($) {
         $(this).parent('.vertical-menu-wrap').toggleClass('active');
     });
 
-    // --- XỬ LÝ MENU MOBILE (SPLIT VIEW) ---
+    // --- XỬ LÝ MENU MOBILE (SPLIT VIEW - AUTO ACTIVE) ---
     
     // 1. Mở Menu
     $('.btn-cat-menu').on('click', function(e) {
         e.preventDefault();
         $('.vertical-menu-wrap').addClass('active');
-        $('body').addClass('mobile-menu-open');
+        $('body').addClass('mobile-menu-open'); // Khóa cuộn body
         
-        // Mặc định kích hoạt tab đầu tiên nếu chưa có cái nào active
+        // Mặc định kích hoạt tab đầu tiên (nếu chưa có)
         if ( $(window).width() < 769 ) {
+            var $firstItem = $('.v-menu > li').first();
             if ( !$('.v-menu > li.active').length ) {
-                $('.v-menu > li:first-child').addClass('active');
+                $firstItem.addClass('active');
             }
         }
     });
 
-    // 2. Đóng Menu (Nút X hoặc Bấm ra ngoài)
+    // 2. Đóng Menu
     $('.mobile-menu-close, .vertical-overlay').on('click', function() {
         $('.vertical-menu-wrap').removeClass('active');
         $('body').removeClass('mobile-menu-open');
     });
 
-    // 3. Chuyển Tab (Khi bấm vào cột trái)
+    // 3. Chuyển Tab (Click cột trái)
     $('.v-menu > li > a').on('click', function(e) {
-        // Chỉ chạy logic này trên Mobile
         if ($(window).width() < 769) {
-            // Nếu item này có menu con thì mới chặn chuyển trang để mở tab
-            if ( $(this).parent().hasClass('menu-item-has-children') ) {
-                e.preventDefault();
-                
-                // Xóa active cũ, thêm active mới
-                $('.v-menu > li').removeClass('active');
-                $(this).parent('li').addClass('active');
-            }
+            // Luôn chặn chuyển trang để mở tab bên phải (kể cả không có con)
+            e.preventDefault();
+            
+            // Đổi active
+            $('.v-menu > li').removeClass('active');
+            $(this).parent('li').addClass('active');
         }
     });
 

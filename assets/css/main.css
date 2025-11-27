@@ -614,8 +614,174 @@ ul { list-style: none; padding: 0; margin: 0; }
 .v-menu .sub-menu .sub-menu li a:hover { color: var(--primary); }
 
 /* =========================================
-   MENU MOBILE KIỂU DI ĐỘNG VIỆT (SPLIT VIEW)
+   MENU MOBILE SPLIT VIEW (CHUẨN DIDONGVIET)
    ========================================= */
+
+/* --- 1. ICON MENU (Dùng chung PC/Mobile) --- */
+.menu-icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 25px; 
+    margin-right: 10px;
+}
+.menu-icon-img {
+    width: 20px; height: 20px; object-fit: contain;
+}
+.menu-icon-fa {
+    font-size: 16px; color: #555; width: 20px; text-align: center;
+}
+
+/* --- 2. MOBILE CSS --- */
+@media (max-width: 768px) {
+    
+    /* Khung bao trùm màn hình */
+    .vertical-nav {
+        position: fixed !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100vh !important;
+        background: #fff !important;
+        z-index: 9999 !important;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex;
+        flex-direction: column;
+        margin: 0 !important;
+        opacity: 1 !important; visibility: visible !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Active: Trượt vào */
+    .vertical-menu-wrap.active .vertical-nav {
+        left: 0 !important;
+    }
+
+    /* HEADER CỦA MENU */
+    .mobile-menu-header {
+        background: var(--primary);
+        color: #fff;
+        padding: 15px;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-shrink: 0;
+    }
+    .mobile-menu-title { font-weight: 700; text-transform: uppercase; font-size: 14px; }
+    .mobile-menu-close { font-size: 24px; cursor: pointer; opacity: 0.8; }
+
+    /* BODY CHIA ĐÔI */
+    .mobile-menu-body {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        background: #f8f8f8;
+        position: relative;
+    }
+
+    /* --- CỘT TRÁI (Danh mục cha) --- */
+    ul.v-menu {
+        width: 35% !important;
+        min-width: 110px;
+        background: #fff !important;
+        overflow-y: auto;
+        list-style: none;
+        padding: 0 !important; margin: 0 !important;
+        border-right: 1px solid #e5e5e5;
+    }
+
+    ul.v-menu > li {
+        border-bottom: 1px solid #f5f5f5;
+        width: 100%;
+    }
+
+    ul.v-menu > li > a {
+        display: flex !important;
+        flex-direction: column; /* Icon trên, Chữ dưới */
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 15px 5px !important;
+        height: auto;
+        font-size: 11px !important;
+        color: #333;
+        line-height: 1.3;
+    }
+    
+    /* Icon trong cột trái */
+    ul.v-menu > li > a .menu-icon-wrap {
+        margin-right: 0; margin-bottom: 5px; width: 30px; height: 30px;
+    }
+    ul.v-menu > li > a .menu-icon-img { width: 24px; height: 24px; }
+    ul.v-menu > li > a .menu-icon-fa { font-size: 20px; }
+
+    /* Active Tab Trái */
+    ul.v-menu > li.active {
+        background: #f8f8f8; /* Trùng màu nền cột phải */
+        position: relative;
+    }
+    ul.v-menu > li.active > a {
+        color: var(--primary);
+        font-weight: 700;
+    }
+    /* Vạch đỏ đánh dấu */
+    ul.v-menu > li.active:before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: var(--primary);
+    }
+
+    /* --- CỘT PHẢI (Nội dung con) --- */
+    .v-menu > li > .sub-menu {
+        position: absolute !important;
+        top: 0; right: 0; bottom: 0;
+        width: 65% !important; /* Chiếm phần còn lại */
+        background: #f8f8f8 !important;
+        overflow-y: auto;
+        display: none; /* Ẩn mặc định */
+        padding: 10px !important;
+        left: auto !important; margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        grid-template-columns: 1fr !important; /* 1 cột */
+    }
+
+    /* Hiện Sub-menu của tab đang chọn */
+    .v-menu > li.active > .sub-menu {
+        display: block !important;
+    }
+
+    /* Style Item con */
+    .v-menu .sub-menu > li {
+        background: #fff;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        padding: 0 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .v-menu .sub-menu > li > a {
+        font-weight: 700; color: #333; font-size: 13px;
+        padding: 10px 15px !important;
+        background: #fff;
+        display: block;
+        border-bottom: 1px solid #eee;
+    }
+    
+    /* Cấp con nữa (cấp 3) */
+    .v-menu .sub-menu .sub-menu {
+        padding: 5px 15px 10px !important;
+        display: block !important; /* Luôn hiện */
+        position: static !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        background: transparent !important;
+    }
+    .v-menu .sub-menu .sub-menu li {
+        background: transparent; margin: 0; border: none; padding: 2px 0 !important; box-shadow: none;
+    }
+    .v-menu .sub-menu .sub-menu li a {
+        font-weight: 400; font-size: 13px; color: #666; padding: 3px 0 !important; border: none;
+    }
+}  
 
 @media (max-width: 768px) {
     
@@ -774,3 +940,9 @@ ul { list-style: none; padding: 0; margin: 0; }
     font-size: 14px; margin-top: 40px;
 }
 .footer h3 { font-size: 16px; color: #000; margin-bottom: 20px; text-transform: uppercase; }
+
+@media screen and (max-width: 600px) {
+    #wpadminbar {
+        position: fixed;
+    }
+}
