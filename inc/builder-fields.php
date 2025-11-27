@@ -17,6 +17,13 @@ function relive_register_builder() {
                     Field::make( 'complex', 'slides', 'Danh sách Slide' )
                         ->set_layout( 'tabbed-horizontal' )
                         ->add_fields( array( Field::make( 'image', 'image', 'Ảnh' ), Field::make( 'text', 'link', 'Link' ) ) ),
+                    Field::make( 'select', 'width_mode', 'Kiểu hiển thị' )
+                        ->set_options( array(
+                            'container' => 'Có lề (Container - 1200px)',
+                            'full'      => 'Tràn viền (Full Width - 100%)',
+                        ) )
+                        ->set_default_value( 'container' ) // Mặc định là có lề cho an toàn
+                        ->set_width(100),    
                     
                     Field::make( 'text', 'height', 'Chiều cao' )->set_default_value(400)->set_width(50),
                     Field::make( 'select', 'effect', 'Hiệu ứng' )->set_options( array( 'slide'=>'Trượt ngang', 'fade'=>'Mờ dần', 'creative'=>'Creative' ) )->set_width(50),
