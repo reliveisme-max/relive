@@ -57,7 +57,7 @@ $rand_id = 'slider-' . rand(1000, 9999);
                             <div class="slide-bg" style="background-image: url('<?php echo esc_url( $img_url ); ?>'); width: 100%; height: 100%; background-size: cover; background-position: center;"></div>
                         
                         <?php if ( ! empty( $slide['link'] ) ) : ?>
-                            </a>
+                            <a href="<?php echo esc_url( $slide['link'] ); ?>" style="display: block; height: 100%;">
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -78,21 +78,26 @@ $rand_id = 'slider-' . rand(1000, 9999);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Kiểm tra xem Swiper đã tải chưa
+    // Kiểm tra kỹ xem thư viện Swiper đã tải chưa
     if (typeof Swiper !== 'undefined') {
-        new Swiper('#<?php echo $rand_id; ?>', {
-            loop: true,
-            speed: 800,
-            effect: '<?php echo esc_js($effect); ?>',
-            <?php if($effect == 'creative'): ?>
-            creativeEffect: { prev: { shadow: true, translate: [0, 0, -400] }, next: { translate: ['100%', 0, 0] } },
-            <?php endif; ?>
-            autoplay: <?php echo $autoplay ? '{delay: 4000, disableOnInteraction: false}' : 'false'; ?>,
-            pagination: { el: '#<?php echo $rand_id; ?> .swiper-pagination', clickable: true },
-            navigation: { nextEl: '#<?php echo $rand_id; ?> .swiper-button-next', prevEl: '#<?php echo $rand_id; ?> .swiper-button-prev' },
-        });
+        var swiperId = '#<?php echo $rand_id; ?>';
+        var swiperContainer = document.querySelector(swiperId);
+        
+        if(swiperContainer) {
+            new Swiper(swiperId, {
+                loop: true,
+                speed: 800,
+                effect: '<?php echo esc_js($effect); ?>',
+                <?php if($effect == 'creative'): ?>
+                creativeEffect: { prev: { shadow: true, translate: [0, 0, -400] }, next: { translate: ['100%', 0, 0] } },
+                <?php endif; ?>
+                autoplay: <?php echo $autoplay ? '{delay: 4000, disableOnInteraction: false}' : 'false'; ?>,
+                pagination: { el: swiperId + ' .swiper-pagination', clickable: true },
+                navigation: { nextEl: swiperId + ' .swiper-button-next', prevEl: swiperId + ' .swiper-button-prev' },
+            });
+        }
     } else {
-        console.error('Swiper JS chưa được tải!');
+        console.error('Lỗi: Thư viện Swiper JS chưa được tải hoặc đường dẫn sai.');
     }
 });
 </script>
