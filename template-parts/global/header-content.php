@@ -38,35 +38,6 @@ if ($h_sticky) $header_classes .= ' sticky';
                 <?php endif; ?>
             </div>
 
-            <div class="vertical-menu-wrap">
-                <div class="btn-cat-menu">
-                    <span class="cat-icon">
-                        <span></span><span></span><span></span><span></span>
-                    </span>
-                    <span class="cat-text">Danh mục</span>
-                </div>
-
-                <div class="vertical-overlay"></div>
-                <nav class="vertical-nav">
-
-                    <div class="mobile-menu-header">
-                        <span class="mobile-menu-title">DANH MỤC SẢN PHẨM</span>
-                        <div class="mobile-menu-close">&times;</div>
-                    </div>
-
-                    <div class="mobile-menu-body">
-                        <?php
-                        wp_nav_menu(array(
-                            'theme_location' => 'vertical',
-                            'container'      => false,
-                            'menu_class'     => 'v-menu',
-                            'fallback_cb'    => false,
-                        ));
-                        ?>
-                    </div>
-                </nav>
-            </div>
-
             <div class="header-search" style="flex: 1; margin: 0 20px; position: relative;">
                 <form role="search" method="get" class="search-form" action="<?php echo esc_url(home_url('/')); ?>"
                     style="display: flex;">

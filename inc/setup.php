@@ -16,7 +16,6 @@ if (! function_exists('relive_setup')) {
         // Đăng ký Menu
         register_nav_menus(array(
             'primary'  => __('Menu Chính (Ngang)', 'relive'),
-            'vertical' => __('Menu Dọc (Danh mục)', 'relive'), // <--- MỚI THÊM
             'mobile'   => __('Menu Mobile', 'relive'),
         ));
     }

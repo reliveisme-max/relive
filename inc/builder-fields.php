@@ -3,16 +3,6 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-add_action('carbon_fields_register_fields', 'relive_register_menu_fields');
-function relive_register_menu_fields()
-{
-    Container::make('nav_menu_item', __('Cấu hình Menu', 'relive'))
-        ->add_fields(array(
-            Field::make('text', 'menu_icon_class', 'Icon FontAwesome (VD: fa fa-mobile)'),
-            Field::make('image', 'menu_icon_img', 'Hoặc Icon Ảnh (Ưu tiên)')->set_value_type('url'),
-        ));
-}
-
 add_action('carbon_fields_register_fields', 'relive_register_builder');
 
 function relive_register_builder()
