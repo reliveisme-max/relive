@@ -272,70 +272,95 @@ ul { list-style: none; padding: 0; margin: 0; }
     width: 100% !important;
 }
 
-/* --- RELIVE SLIDER THUMBS STYLE --- */
+/* --- RELIVE SLIDER THUMBS STYLE (FINAL) --- */
 
-/* Vị trí khung chứa Tabs */
+/* 1. Khung chứa Tabs: Nằm sát góc dưới bên PHẢI */
 .container-thumbs-absolute {
     position: absolute;
-    bottom: 20px;
-    right: 20px; /* Căn phải như hình mẫu */
-    width: 600px; /* Giới hạn chiều rộng */
-    max-width: 90%;
-    z-index: 10;
+    bottom: 0;
+    right: 0;          /* Sát lề phải tuyệt đối */
+    z-index: 20;
+    width: auto;       /* Để tự co giãn theo nội dung */
+    max-width: 70%;    /* Không cho phép quá dài */
+    display: flex;
+    justify-content: flex-end; /* Đẩy toàn bộ nội dung sang phải */
+    padding-right: 0;  /* Không để khoảng cách thừa */
 }
 
-/* Giao diện từng ô Tab */
+/* 2. Thiết lập cho Swiper Thumbs */
+.thumbs-slider {
+    margin: 0 !important; /* Xóa margin mặc định của Swiper */
+    background: transparent !important;
+}
+
+/* 3. Giao diện từng ô Tab (Mặc định) */
 .thumb-item {
     cursor: pointer;
+    vertical-align: bottom; /* Căn đáy để khi active nó trồi lên đẹp */
+    width: 180px !important; /* Cố định chiều rộng mỗi tab */
 }
 
 .thumb-inner {
-    background: rgba(0, 0, 0, 0.6); /* Nền đen mờ */
+    background: rgba(0, 0, 0, 0.75); /* Nền đen đậm */
     color: #fff;
-    padding: 10px 15px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
+    padding: 12px 15px;
+    
+    /* BO TRÒN 2 GÓC TRÊN (Top-Left & Top-Right) */
+    border-radius: 8px 8px 0 0; 
+    
+    transition: all 0.2s ease;
     text-align: left;
     height: 100%;
-    border: 1px solid rgba(255,255,255,0.1);
+    margin-right: 1px; /* Khe hở nhỏ xíu giữa các tab */
+    
+    /* Làm thấp xuống 1 chút so với Active */
+    position: relative;
+    top: 5px; 
+    padding-bottom: 10px;
 }
 
 .t-title {
     display: block;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 13px;
-    margin-bottom: 2px;
+    font-size: 12px;
+    margin-bottom: 4px;
 }
 
 .t-desc {
     display: block;
     font-size: 11px;
-    opacity: 0.8;
+    opacity: 0.9;
+    white-space: nowrap; /* 1 dòng duy nhất */
+    overflow: hidden;
+    text-overflow: ellipsis; /* ... nếu dài quá */
 }
 
-/* Trạng thái khi ô đó đang được chọn */
+/* 4. Trạng thái ĐANG CHỌN (Active) */
 .swiper-slide-thumb-active .thumb-inner {
-    background: #fff; /* Đổi sang nền trắng */
-    color: #000; /* Chữ đen */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    transform: translateY(-3px);
-    border-color: #fff;
+    background: #fff; /* Nền trắng */
+    color: #000;      /* Chữ đen */
+    
+    /* BO TRÒN 2 GÓC TRÊN (Quan trọng) */
+    border-radius: 8px 8px 0 0;
+    
+    /* Hiệu ứng nổi lên */
+    top: 0; /* Trồi lên vị trí chuẩn */
+    padding-bottom: 17px; /* Bù lại phần chiều cao bị trồi lên */
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.15); /* Bóng đổ nhẹ phía trên */
 }
 
-/* Responsive cho Mobile */
+/* 5. Mobile */
 @media (max-width: 768px) {
     .container-thumbs-absolute {
-        bottom: 10px;
-        right: 10px;
-        left: 10px; /* Trên mobile thì căn giữa full màn hình */
-        width: auto;
+        width: 100%; max-width: 100%;
+        right: 0; left: 0;
     }
-    .thumb-inner { padding: 8px 10px; }
-    .t-title { font-size: 11px; }
-    .t-desc { font-size: 10px; display: none; /* Ẩn mô tả trên mobile cho gọn */ }
+    .thumb-item { width: auto !important; }
+    .thumb-inner { border-radius: 0; top: 0; padding-bottom: 12px; }
+    .swiper-slide-thumb-active .thumb-inner { border-radius: 0; padding-bottom: 12px; }
+    .t-desc { display: none; }
 }
-
 /* =========================================
    5. RESPONSIVE
    ========================================= */
