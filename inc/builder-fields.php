@@ -12,35 +12,47 @@ function relive_register_builder() {
                 ->set_layout( 'tabbed-vertical' )
                 ->set_collapsed( true )
                 
-                // 1. SLIDER ẢNH
+                // 1. SLIDER ẢNH (Đã update full options)
                 ->add_fields( 'slider', __( 'Slider Ảnh', 'relive' ), array(
+                    
                     Field::make( 'complex', 'slides', 'Danh sách Slide' )
                         ->set_layout( 'tabbed-horizontal' )
-                        ->add_fields( array( Field::make( 'image', 'image', 'Ảnh' ), Field::make( 'text', 'link', 'Link' ) ) ),
-                    Field::make( 'select', 'width_mode', 'Kiểu hiển thị' )
-                        ->set_options( array(
-                            'container' => 'Có lề (Container - 1200px)',
-                            'full'      => 'Tràn viền (Full Width - 100%)',
-                        ) )
-                        ->set_default_value( 'container' ) // Mặc định là có lề cho an toàn
-                        ->set_width(100),    
+                        ->add_fields( array( 
+                            Field::make( 'image', 'image', 'Ảnh' ), 
+                            Field::make( 'text', 'link', 'Link' ),
+                            // MỚI: Ô nhập cho kiểu Relive Style
+                            Field::make( 'text', 'thumb_title', 'Tiêu đề tab (VD: Tủ lạnh)' )->set_width(50),
+                            Field::make( 'text', 'thumb_desc', 'Mô tả tab (VD: Giảm 20%)' )->set_width(50),
+                        ) ),
                     
-                    Field::make( 'text', 'height', 'Chiều cao' )->set_default_value(400)->set_width(50),
-                    Field::make( 'select', 'effect', 'Hiệu ứng' )->set_options( array( 'slide'=>'Trượt ngang', 'fade'=>'Mờ dần', 'creative'=>'Creative' ) )->set_width(50),
+                    // Tùy chọn độ rộng
+                    Field::make( 'select', 'width_mode', 'Kiểu hiển thị' )
+                        ->set_options( array( 
+                            'container' => 'Có lề (Container)', 
+                            'full' => 'Tràn viền (Full Width)' 
+                        ) )
+                        ->set_default_value( 'container' )
+                        ->set_width(50),
+
+                    Field::make( 'text', 'height', 'Chiều cao (px)' )->set_default_value(400)->set_width(50),
+                    
+                    Field::make( 'select', 'effect', 'Hiệu ứng' )
+                        ->set_options( array( 'slide'=>'Trượt ngang', 'fade'=>'Mờ dần', 'creative'=>'Creative' ) )
+                        ->set_width(50),
 
                     Field::make( 'checkbox', 'arrows', 'Hiện mũi tên?' )->set_default_value( true )->set_width(33),
                     Field::make( 'checkbox', 'dots', 'Hiện phân trang?' )->set_default_value( true )->set_width(33),
                     Field::make( 'checkbox', 'autoplay', 'Tự động chạy?' )->set_default_value( true )->set_width(33),
 
-                    // --- MỚI THÊM: KIỂU PHÂN TRANG ---
+                    // MỚI: Tùy chọn kiểu phân trang thumbs_text
                     Field::make( 'select', 'pagi_style', 'Kiểu phân trang' )
                         ->set_options( array(
-                            'dots'   => 'Dấu chấm tròn (Default)',
-                            'dashes' => 'Gạch ngang (FPT Style)',
-                            // 'fraction' => 'Số đếm (1/5)', // Nếu thích có thể mở thêm cái này
+                            'dots'        => 'Dấu chấm tròn (Default)',
+                            'dashes'      => 'Gạch ngang (FPT Style)',
+                            'thumbs_text' => 'Tab nội dung (Relive Style)', 
                         ) )
                         ->set_default_value( 'dots' )
-                        ->set_width(100), // Full dòng cho dễ nhìn
+                        ->set_width(100),
 
                     Field::make( 'text', 'mt', 'Margin Top' )->set_width(50),
                     Field::make( 'text', 'mb', 'Margin Bottom' )->set_width(50),

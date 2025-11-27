@@ -272,6 +272,70 @@ ul { list-style: none; padding: 0; margin: 0; }
     width: 100% !important;
 }
 
+/* --- RELIVE SLIDER THUMBS STYLE --- */
+
+/* Vị trí khung chứa Tabs */
+.container-thumbs-absolute {
+    position: absolute;
+    bottom: 20px;
+    right: 20px; /* Căn phải như hình mẫu */
+    width: 600px; /* Giới hạn chiều rộng */
+    max-width: 90%;
+    z-index: 10;
+}
+
+/* Giao diện từng ô Tab */
+.thumb-item {
+    cursor: pointer;
+}
+
+.thumb-inner {
+    background: rgba(0, 0, 0, 0.6); /* Nền đen mờ */
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-align: left;
+    height: 100%;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.t-title {
+    display: block;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.t-desc {
+    display: block;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* Trạng thái khi ô đó đang được chọn */
+.swiper-slide-thumb-active .thumb-inner {
+    background: #fff; /* Đổi sang nền trắng */
+    color: #000; /* Chữ đen */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transform: translateY(-3px);
+    border-color: #fff;
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
+    .container-thumbs-absolute {
+        bottom: 10px;
+        right: 10px;
+        left: 10px; /* Trên mobile thì căn giữa full màn hình */
+        width: auto;
+    }
+    .thumb-inner { padding: 8px 10px; }
+    .t-title { font-size: 11px; }
+    .t-desc { font-size: 10px; display: none; /* Ẩn mô tả trên mobile cho gọn */ }
+}
+
 /* =========================================
    5. RESPONSIVE
    ========================================= */
