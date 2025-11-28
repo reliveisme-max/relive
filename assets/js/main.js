@@ -134,94 +134,124 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       5. AUTO SWATCHES (LOGIC GẠCH CHÉO + LÀM MỜ NÚT)
+       5. AUTO SWATCHES & PRICE UPDATE (LOGIC CHÍNH)
        ========================================================================== */
     if ($('.variations_form').length > 0) {
         var $form = $('.variations_form');
 
-        // 1. Tạo giao diện nút bấm
+        // A. TẠO NÚT BẤM TỪ SELECT
         $form.find('.variations tr').each(function() {
-            var $row = $(this);
-            var $select = $row.find('select');
+            var $select = $(this).find('select');
             if ($select.length === 0) return;
-
             var attributeName = $select.attr('id'); 
             var $swatchWrap = $('<div class="relive-swatches-wrap" data-attribute="'+attributeName+'"></div>');
 
             $select.find('option').each(function() {
-                var val = $(this).val();
-                if (!val) return; 
+                var val = $(this).val(); if (!val) return; 
                 var text = $(this).text();
-                
                 var $btn = $('<div class="swatch-item" data-value="' + val + '"></div>');
                 
-                // Logic chèn ảnh/màu từ JSON
                 var hasImage = false;
                 if (typeof relive_swatches_json !== 'undefined' && relive_swatches_json[val]) {
                     var meta = relive_swatches_json[val];
                     if (meta.image) {
                         $btn.addClass('has-image');
-                        $btn.append('<span class="swatch-img"><img src="'+meta.image+'" alt="'+text+'" /></span>');
-                        $btn.append('<span class="swatch-text">'+text+'</span>');
+                        $btn.append('<span class="swatch-img"><img src="'+meta.image+'" alt="'+text+'" /></span><span class="swatch-text">'+text+'</span>');
                         hasImage = true;
                     } else if (meta.color) {
                         $btn.addClass('has-color');
-                        $btn.append('<span class="swatch-dot" style="background:'+meta.color+'"></span>');
-                        $btn.append('<span class="swatch-text">'+text+'</span>');
+                        $btn.append('<span class="swatch-dot" style="background:'+meta.color+'"></span><span class="swatch-text">'+text+'</span>');
                         hasImage = true;
                     }
                 }
                 if (!hasImage) $btn.text(text);
-
                 $swatchWrap.append($btn);
             });
-
             $select.after($swatchWrap).hide();
 
-            // Sự kiện click nút
+            // Click nút
             $swatchWrap.on('click', '.swatch-item', function() {
-                if ($(this).hasClass('disabled')) return; // Không cho click nút ẩn
-                
-                var value = $(this).data('value');
-                
-                // Nếu click lại nút đang chọn -> Bỏ chọn (Reset)
+                if ($(this).hasClass('disabled')) return;
                 if ($(this).hasClass('selected')) {
-                    $(this).removeClass('selected');
-                    $select.val('').trigger('change');
+                    $(this).removeClass('selected'); $select.val('').trigger('change');
                 } else {
-                    $(this).addClass('selected').siblings().removeClass('selected');
-                    $select.val(value).trigger('change');
+                    $(this).addClass('selected').siblings().removeClass('selected'); $select.val($(this).data('value')).trigger('change');
                 }
             });
         });
 
-        // 2. LOGIC GẠCH CHÉO & DISABLE DỰA TRÊN DATA CỦA WOOCOMMERCE
+        // B. LOGIC GẠCH CHÉO KHI HẾT HÀNG
         $form.on('woocommerce_update_variation_values', function() {
             $form.find('.variations select').each(function() {
                 var $select = $(this);
                 var $swatchWrap = $select.next('.relive-swatches-wrap');
-                
-                // Duyệt qua từng nút bấm
                 $swatchWrap.find('.swatch-item').each(function() {
                     var val = $(this).data('value');
-                    
-                    // Kiểm tra xem giá trị này có tồn tại trong select không
-                    // Woo sẽ tự lọc lại các option trong select, nếu option biến mất hoặc bị disable -> Ẩn nút
                     var $option = $select.find('option[value="' + val + '"]');
-                    
                     if ($option.length === 0 || $option.is(':disabled')) {
-                        $(this).addClass('disabled');   // Thêm class để gạch chéo
-                        $(this).removeClass('selected'); // Bỏ chọn
+                        $(this).addClass('disabled').removeClass('selected');
                     } else {
-                        $(this).removeClass('disabled'); // Hiện lại bình thường
+                        $(this).removeClass('disabled');
                     }
                 });
             });
         });
-        
-        // Reset
-        $('.reset_variations').on('click', function(){
-            $('.swatch-item').removeClass('selected disabled');
+
+        // C. LOGIC CẬP NHẬT GIÁ TIỀN FPT
+        var $priceBlock = $('#fpt-price-dynamic');
+        function formatMoney(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + '₫'; }
+
+        $form.on('found_variation', function(event, variation) {
+            var price = variation.display_price;        
+            var regular = variation.display_regular_price; 
+            
+            $priceBlock.find('.current-price').html(formatMoney(price));
+            if (regular > price) {
+                var percent = Math.round(((regular - price) / regular) * 100);
+                $priceBlock.find('.regular-price').html(formatMoney(regular));
+                $priceBlock.find('.percent-tag').text('-' + percent + '%');
+                $priceBlock.find('.old-price-wrap').removeClass('d-none');
+            } else {
+                $priceBlock.find('.old-price-wrap').addClass('d-none');
+            }
+            
+            var points = Math.floor(price / 10000);
+            $priceBlock.find('.points-val').text(points.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+            var installVal = Math.floor(price / 12);
+            $priceBlock.find('.installment-price').text(formatMoney(installVal));
         });
+        
+        // Reset nút xóa
+        $('.reset_variations').on('click', function(){ $('.swatch-item').removeClass('selected disabled'); });
     }
+    /* ==========================================================================
+       9. XỬ LÝ NÚT MUA HÀNG FPT
+       ========================================================================== */
+    $(document).on('click', '.action-trigger', function(e) {
+        e.preventDefault();
+        var type = $(this).data('type');
+        var $form = $('.variations_form');
+        
+        // Kiểm tra xem đã chọn biến thể chưa (nếu là sp biến thể)
+        if ($form.length > 0) {
+            var variationID = $form.find('input[name="variation_id"]').val();
+            if (!variationID || variationID == 0) {
+                alert('Vui lòng chọn đầy đủ Màu sắc và Dung lượng!');
+                return;
+            }
+        }
+
+        // Tìm nút Submit thật của Woo (đang bị ẩn)
+        var $realBtn = $('.single_add_to_cart_button');
+        
+        if (type === 'buy-now') {
+            // Nếu muốn mua ngay (Redirect checkout), có thể thêm input hidden
+            // Ở đây ta cứ trigger click trước, Woo sẽ xử lý thêm vào giỏ
+            $realBtn.trigger('click');
+            // Nếu muốn chuyển trang luôn: setTimeout(function(){ window.location.href = '/thanh-toan'; }, 1000);
+        } else {
+            // Thêm vào giỏ (Ajax hoặc reload tùy theme)
+            $realBtn.trigger('click');
+        }
+    });
 });
