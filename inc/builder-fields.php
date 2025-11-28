@@ -32,48 +32,59 @@ function relive_product_fields()
                 ))
                 ->set_header_template('<%- spec_label %>: <%- spec_value %>'),
 
-            // TAB 3: KHUYẾN MÃI (PHẦN MỚI THÊM)
-            Field::make('separator', 'sep_promo', '3. Ưu đãi thêm (Hiển thị dưới giá)'),
-            Field::make('complex', 'product_promotions', 'Danh sách Khuyến mãi')
-                ->set_layout('tabbed-horizontal')
+            // TAB 3: KHUYẾN MÃI (UPDATE MỚI)
+            Field::make('separator', 'sep_promo', '3. Khuyến mãi (FPT Style)'),
+            Field::make('complex', 'fpt_promotions', 'Các nhóm khuyến mãi')
+                ->set_layout('tabbed-vertical')
                 ->add_fields(array(
-                    Field::make('text', 'promo_text', 'Nội dung ưu đãi')->set_width(70),
-                    Field::make('text', 'promo_link', 'Link chi tiết (Nếu có)')->set_width(30),
+                    Field::make('text', 'promo_title', 'Tiêu đề nhóm (VD: Khuyến mãi 1)'),
+                    Field::make('complex', 'promo_items', 'Danh sách ưu đãi')
+                        ->set_layout('tabbed-horizontal')
+                        ->add_fields(array(
+                            Field::make('text', 'content', 'Nội dung'),
+                            Field::make('text', 'link', 'Link chi tiết (Nếu có)'),
+                        ))
                 ))
-                ->set_header_template('<%- promo_text %>'),
+                ->set_header_template('<%- promo_title %>'),
         ));
 }
-
 /* -------------------------------------------------------------------------
- * 2. CẤU HÌNH THUỘC TÍNH (ĐỂ CHỌN MÀU/ẢNH CHO BIẾN THỂ) [ĐÃ SỬA LỖI]
+ * 2. CẤU HÌNH THUỘC TÍNH (ĐÃ SỬA: LƯU ID THAY VÌ URL)
  * ------------------------------------------------------------------------- */
 add_action('carbon_fields_register_fields', 'relive_term_fields');
 function relive_term_fields()
 {
-    // Lấy danh sách các thuộc tính sản phẩm từ Database WooCommerce
-    $attribute_taxonomies = function_exists('wc_get_attribute_taxonomies') ? wc_get_attribute_taxonomies() : array();
+    if (! function_exists('wc_get_attribute_taxonomies')) return;
+
+    $attributes = wc_get_attribute_taxonomies();
     $slugs = array();
 
-    if (! empty($attribute_taxonomies)) {
-        foreach ($attribute_taxonomies as $attribute) {
-            // Tạo tên taxonomy chuẩn (ví dụ: pa_mau-sac)
-            $slugs[] = 'pa_' . $attribute->attribute_name;
+    if ($attributes) {
+        foreach ($attributes as $tax) {
+            $slugs[] = wc_attribute_taxonomy_name($tax->attribute_name);
         }
     }
 
-    // Chỉ tạo field nếu tìm thấy ít nhất 1 thuộc tính
     if (! empty($slugs)) {
-        Container::make('term_meta', 'Cấu hình Biến thể (Swatches)')
-            ->where('term_taxonomy', 'IN', $slugs) // SỬA: Dùng IN thay vì LIKE
-            ->add_fields(array(
-                Field::make('color', 'attribute_color', 'Màu sắc (Nếu là biến thể màu)'),
-                Field::make('image', 'attribute_image', 'Ảnh đại diện (Thay thế màu)')->set_value_type('url'),
-            ));
+        $container = Container::make('term_meta', 'Cấu hình Biến thể (Swatches)');
+
+        foreach ($slugs as $index => $slug) {
+            if ($index === 0) {
+                $container->where('term_taxonomy', '=', $slug);
+            } else {
+                $container->or_where('term_taxonomy', '=', $slug);
+            }
+        }
+
+        $container->add_fields(array(
+            Field::make('color', 'attribute_color', 'Màu sắc (Nếu là biến thể màu)'),
+            // QUAN TRỌNG: Đã xóa set_value_type('url') để lưu ID
+            Field::make('image', 'attribute_image', 'Ảnh đại diện (Thay thế màu)'),
+        ));
     }
 }
-
 /* -------------------------------------------------------------------------
- * 3. BANNER DANH MỤC (CATEGORY)
+ * 3. CÁC BLOCK KHÁC (GIỮ NGUYÊN)
  * ------------------------------------------------------------------------- */
 add_action('carbon_fields_register_fields', 'relive_cat_banner_fields');
 function relive_cat_banner_fields()
@@ -83,16 +94,10 @@ function relive_cat_banner_fields()
         ->add_fields(array(
             Field::make('complex', 'cat_banner_slider', 'Danh sách Banner')
                 ->set_layout('tabbed-horizontal')
-                ->add_fields(array(
-                    Field::make('image', 'img_pc', 'Ảnh Banner')->set_value_type('url'),
-                    Field::make('text', 'link', 'Link liên kết')
-                ))
+                ->add_fields(array(Field::make('image', 'img_pc', 'Ảnh Banner')->set_value_type('url'), Field::make('text', 'link', 'Link liên kết')))
         ));
 }
 
-/* -------------------------------------------------------------------------
- * 4. PAGE BUILDER (TRANG CHỦ)
- * ------------------------------------------------------------------------- */
 add_action('carbon_fields_register_fields', 'relive_register_builder');
 function relive_register_builder()
 {
@@ -102,15 +107,8 @@ function relive_register_builder()
             Field::make('complex', 'builder_blocks', __('Nội dung trang', 'relive'))
                 ->set_layout('tabbed-vertical')
                 ->set_collapsed(true)
-
-                // --- BLOCK 1: SLIDER ---
                 ->add_fields('slider', __('Slider Ảnh'), array(
-                    Field::make('complex', 'slides', 'Slides')->add_fields(array(
-                        Field::make('image', 'image', 'Ảnh'),
-                        Field::make('text', 'link', 'Link'),
-                        Field::make('text', 'thumb_title', 'Tab Tiêu đề'),
-                        Field::make('text', 'thumb_desc', 'Tab Mô tả')
-                    )),
+                    Field::make('complex', 'slides', 'Slides')->add_fields(array(Field::make('image', 'image', 'Ảnh'), Field::make('text', 'link', 'Link'), Field::make('text', 'thumb_title', 'Tab Tiêu đề'), Field::make('text', 'thumb_desc', 'Tab Mô tả'))),
                     Field::make('select', 'width_mode', 'Độ rộng')->set_options(array('container' => 'Container', 'full' => 'Full Width')),
                     Field::make('text', 'height', 'Chiều cao')->set_default_value(400),
                     Field::make('select', 'pagi_style', 'Kiểu phân trang')->set_options(array('dots' => 'Chấm', 'thumbs_text' => 'Tab nội dung')),
@@ -118,8 +116,6 @@ function relive_register_builder()
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 2: DANH MỤC ---
                 ->add_fields('category_icons', __('Danh mục'), array(
                     Field::make('text', 'title', 'Tiêu đề'),
                     Field::make('association', 'selected_cats', 'Chọn danh mục')->set_types(array(array('type' => 'term', 'taxonomy' => 'product_cat'))),
@@ -129,8 +125,6 @@ function relive_register_builder()
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 3: SẢN PHẨM ---
                 ->add_fields('product_grid', __('Sản phẩm'), array(
                     Field::make('text', 'title', 'Tiêu đề'),
                     Field::make('text', 'limit', 'Số lượng')->set_default_value(8),
@@ -142,8 +136,6 @@ function relive_register_builder()
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 4: BANNER ĐƠN ---
                 ->add_fields('banner', __('Banner Đơn'), array(
                     Field::make('image', 'bg_image', 'Ảnh'),
                     Field::make('text', 'link', 'Link'),
@@ -151,30 +143,23 @@ function relive_register_builder()
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 5: TEXT/HTML ---
                 ->add_fields('text_block', __('Văn bản / HTML'), array(
                     Field::make('rich_text', 'content', 'Nội dung'),
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 6: VIDEO ---
                 ->add_fields('video', __('Video Youtube'), array(
                     Field::make('text', 'video_url', 'Link Youtube'),
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
                 ))
-
-                // --- BLOCK 7: ROW/COLUMN ---
                 ->add_fields('row', __('Hàng / Cột'), array(
                     Field::make('color', 'bg_color', 'Màu nền'),
                     Field::make('image', 'bg_image', 'Ảnh nền'),
                     Field::make('checkbox', 'container', 'Container?')->set_default_value(true),
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
-                    Field::make('complex', 'columns', 'Các Cột')
-                        ->set_layout('tabbed-horizontal')
+                    Field::make('complex', 'columns', 'Các Cột')->set_layout('tabbed-horizontal')
                         ->add_fields(array(
                             Field::make('select', 'width', 'Độ rộng')->set_options(array('12' => '100%', '6' => '50%', '4' => '33%', '3' => '25%'))->set_default_value('6'),
                             Field::make('complex', 'col_content', 'Nội dung')->set_collapsed(true)

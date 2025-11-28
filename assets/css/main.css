@@ -2123,94 +2123,130 @@ a.zoom-trigger {
   }
 }
 /* =========================================
-   STYLE KHUNG GIÁ & KHUYẾN MÃI (FPT STYLE)
+   STYLE BIẾN THỂ FPT (SWATCHES IMAGE & TEXT)
    ========================================= */
-.prod-price-box { margin-bottom: 15px; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-.prod-price-box .price-show { font-size: 28px !important; font-weight: 700 !important; color: #cb1c22 !important; line-height: 1; }
-.prod-price-box .price-show del { color: #999 !important; font-size: 16px !important; font-weight: 400 !important; margin-left: 5px; }
-.installment-label { font-size: 11px; background: #f1f1f1; padding: 3px 8px; border-radius: 4px; margin-bottom: 5px; }
-.prod-variations-box .price { display: none !important; } /* Ẩn giá lặp */
-
-/* Khung Khuyến Mãi */
-.fpt-promo-box { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-top: 20px; background: #fff; }
-.promo-header { background: #fee; color: #d70018; padding: 10px 15px; font-weight: 700; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #fcebeb; display: flex; gap: 8px; align-items: center; }
-.promo-content { padding: 15px; }
-.promo-content ul li { font-size: 13px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 8px; color: #333; }
-.promo-content ul li i { color: #4caf50; margin-top: 3px; flex-shrink: 0; }
-
-/* =========================================
-   STYLE BIẾN THỂ CÓ ẢNH (SWATCHES IMAGE)
-   ========================================= */
+.variations tr { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
+.variations td.label { display: block; padding: 0; width: 100px; flex-shrink: 0; text-align: left; }
+.variations td.label label { weight: 600; font-size: 14px; color: #333; }
+.variations td.value { display: block; flex: 1; }
+.relive-swatches-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* Nút chung */
 .swatch-item {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px 10px; /* Thu gọn padding để vừa ảnh */
-    cursor: pointer;
-    font-size: 13px;
-    color: #333;
-    background: #fff;
-    transition: all 0.2s;
-    text-align: center;
-    min-width: 80px;
-    display: flex;       /* Xếp ngang ảnh và chữ */
-    align-items: center;
-    justify-content: center;
-    gap: 8px;            /* Khoảng cách giữa ảnh và chữ */
-    position: relative;
-    min-height: 40px;
+    border: 1px solid #e0e0e0; border-radius: 4px; padding: 6px 12px;
+    cursor: pointer; font-size: 13px; color: #333; background: #fff;
+    transition: all 0.2s; text-align: center; min-width: 80px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    position: relative; min-height: 38px;
 }
+.swatch-item.has-image { padding: 4px 10px 4px 4px; justify-content: flex-start; width: auto; }
+.swatch-item .swatch-img { width: 30px; height: 30px; flex-shrink: 0; }
+.swatch-item .swatch-img img { width: 100%; height: 100%; object-fit: contain; }
+.swatch-text { font-weight: 500; }
+.swatch-item:hover { border-color: #cb1c22; }
 
-/* Phần chứa ảnh nhỏ */
-.swatch-item .swatch-img {
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
+/* Active */
+.swatch-item.selected { border: 1px solid #cb1c22; background-color: #fff; color: #333; position: relative; }
+.swatch-item.selected::before {
+    content: ''; position: absolute; top: 0; right: 0; width: 0; height: 0;
+    border-style: solid; border-width: 0 20px 20px 0;
+    border-color: transparent #cb1c22 transparent transparent;
+    z-index: 1; border-top-right-radius: 3px;
 }
-.swatch-item .swatch-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* Giữ nguyên tỉ lệ ảnh */
-}
-
-/* Phần chấm màu (nếu dùng màu thay vì ảnh) */
-.swatch-item .swatch-dot {
-    width: 20px; 
-    height: 20px; 
-    border-radius: 50%;
-    border: 1px solid #eee;
-    display: block;
-}
-
-/* Chữ trong nút */
-.swatch-text {
-    font-weight: 500;
-}
-
-/* Hover */
-.swatch-item:hover { border-color: #cb1c22; color: #cb1c22; }
-
-/* Active (Được chọn) */
-.swatch-item.selected {
-    border-color: #cb1c22; 
-    background-color: #fff; /* FPT thường để nền trắng, viền đỏ */
-    color: #cb1c22;
-}
-
-/* Dấu tích đỏ góc trên bên phải */
 .swatch-item.selected::after {
-    content: '\2713';
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #cb1c22;
-    color: #fff;
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom-left-radius: 6px; /* Bo góc nhẹ cho đẹp */
+    content: '\2713'; position: absolute; top: -1px; right: 1px;
+    color: #fff; font-size: 9px; font-weight: 900; z-index: 2;
 }
+
+/* [MỚI] Style nút DISABLE (Gạch chéo + Mờ) */
+.swatch-item.disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    background-color: #fcfcfc !important;
+    color: #bbb !important;
+    border-color: #eee !important;
+    position: relative;
+    overflow: hidden;
+}
+.swatch-item.disabled::before {
+    content: ''; position: absolute; top: 50%; left: -10%;
+    width: 120%; height: 1px; background-color: #999;
+    transform: rotate(-20deg); z-index: 10;
+    border-radius: 0; border: none; /* Reset lại style của selected */
+}
+.swatch-item.disabled .swatch-img { filter: grayscale(100%); opacity: 0.5; }
+
+/* Nút Mua Ngay */
+.single_add_to_cart_button {
+    background: linear-gradient(180deg, #cb1c22 0%, #b40f14 100%) !important;
+    color: #fff !important; width: 100%; padding: 12px 0 !important;
+    font-size: 16px !important; text-transform: uppercase; font-weight: 700 !important;
+    border-radius: 8px !important; border: none !important; margin-top: 15px;
+}
+.quantity { display: none !important; }
+
+/* =========================================
+   STYLE GIÁ & KHUYẾN MÃI (FPT YELLOW STYLE)
+   ========================================= */
+
+/* 1. Khung Giá (To, Đậm) */
+.prod-price-box-fpt {
+    margin-bottom: 15px;
+}
+.prod-price-box-fpt .price,
+.prod-price-box-fpt .amount {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: #cb1c22 !important;
+    line-height: 1.2;
+    display: inline-block;
+}
+.prod-price-box-fpt del,
+.prod-price-box-fpt del .amount {
+    font-size: 16px !important;
+    color: #999 !important;
+    font-weight: 400 !important;
+    margin-left: 10px;
+}
+
+/* 2. Khung Khuyến Mãi (Nền Vàng Nhạt) */
+.fpt-promo-yellow-box {
+    border: 1px solid #fee2b3;
+    border-radius: 8px;
+    background-color: #fffbf0; /* Vàng nhạt */
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.promo-header-yellow {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.promo-group-item {
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.promo-group-item:last-child { margin-bottom: 0; }
+
+.promo-group-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.promo-list-ul li {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #333;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.5;
+}
+.promo-list-ul li:last-child { margin-bottom: 0; }

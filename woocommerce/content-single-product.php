@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Template: Nội dung chi tiết sản phẩm (Fixed Fancybox Double Open)
+ * Template: Nội dung chi tiết sản phẩm (Final FPT Style - Price & Promo)
  */
 defined('ABSPATH') || exit;
 global $product;
@@ -10,6 +10,9 @@ global $product;
 $custom_featured_img = carbon_get_the_post_meta('prod_featured_image');
 $video_url           = carbon_get_the_post_meta('prod_video');
 $specs_manual        = carbon_get_the_post_meta('product_specs_table');
+// [MỚI] Lấy dữ liệu khuyến mãi mới
+$fpt_promos          = carbon_get_the_post_meta('fpt_promotions');
+
 $box_images_ids      = carbon_get_the_post_meta('box_images');
 $real_images_ids     = carbon_get_the_post_meta('real_images');
 $attachment_ids      = $product->get_gallery_image_ids();
@@ -60,9 +63,7 @@ if (empty($highlight_specs)) {
                                 <img src="<?php echo esc_url($img_src); ?>" alt="Nổi bật">
                             </a>
                         </div>
-                        <?php
-                        $has_video = !empty($video_url);
-                        if ($has_video):
+                        <?php if (!empty($video_url)):
                             preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
                             $yt_id = isset($match[1]) ? $match[1] : '';
                         ?>
@@ -82,46 +83,21 @@ if (empty($highlight_specs)) {
                         </div>
                         <?php }
                         endif; ?>
-                        <?php
-                        $box_start_index = 0;
-                        if ($box_images_ids) :
-                            $box_start_index = 1 + ($has_video ? 1 : 0) + count($attachment_ids);
-                            foreach ($box_images_ids as $box_id) {
-                                $box_full = wp_get_attachment_image_url($box_id, 'full'); ?>
-                        <div class="swiper-slide" data-type="box">
-                            <a href="<?php echo esc_url($box_full); ?>" data-relive-gallery="product-gallery"
-                                class="zoom-trigger"><?php echo wp_get_attachment_image($box_id, 'full'); ?></a>
-                        </div>
-                        <?php }
-                        endif; ?>
-                        <?php
-                        $real_start_index = 0;
-                        if ($real_images_ids) :
-                            $real_start_index = $box_start_index + count($box_images_ids ?: []);
-                            foreach ($real_images_ids as $real_id) {
-                                $real_full = wp_get_attachment_image_url($real_id, 'full'); ?>
-                        <div class="swiper-slide" data-type="real">
-                            <a href="<?php echo esc_url($real_full); ?>" data-relive-gallery="product-gallery"
-                                class="zoom-trigger"><?php echo wp_get_attachment_image($real_id, 'full'); ?></a>
-                        </div>
-                        <?php }
-                        endif; ?>
                     </div>
                     <div class="swiper-button-next p-next"></div>
                     <div class="swiper-button-prev p-prev"></div>
                 </div>
+
                 <div class="gallery-thumbs-nav-fpt">
                     <div class="g-item active" data-slide-index="0">
                         <div class="g-icon"><i class="fas fa-star"></i></div><span>Nổi bật</span>
                     </div>
-                    <?php if ($has_video): ?>
-                    <div class="g-item g-item-video" data-slide-index="1">
+                    <?php if (!empty($video_url)): ?><div class="g-item g-item-video" data-slide-index="1">
                         <div class="g-icon"><i class="fas fa-play-circle"></i></div><span>Video</span>
-                    </div>
-                    <?php endif; ?>
+                    </div><?php endif; ?>
                     <?php
                     if ($attachment_ids) {
-                        $video_offset = $has_video ? 1 : 0;
+                        $video_offset = !empty($video_url) ? 1 : 0;
                         $max_thumb = 5;
                         $count = 0;
                         $total_imgs = count($attachment_ids);
@@ -137,20 +113,10 @@ if (empty($highlight_specs)) {
                     </div>
                     <?php $count++;
                         }
-                    }
-                    ?>
-                    <?php if (!empty($box_images_ids)): ?>
-                    <div class="g-item" data-slide-index="<?php echo $box_start_index; ?>">
-                        <div class="g-icon"><i class="fas fa-box-open"></i></div><span>Mở hộp</span>
-                    </div>
-                    <?php endif; ?>
-                    <?php if (!empty($real_images_ids)): ?>
-                    <div class="g-item" data-slide-index="<?php echo $real_start_index; ?>">
-                        <div class="g-icon"><i class="fas fa-camera"></i></div><span>Thực tế</span>
-                    </div>
-                    <?php endif; ?>
+                    } ?>
                 </div>
             </div>
+
             <?php if (! empty($highlight_specs)) : ?>
             <div class="prod-specs-highlight">
                 <h3 class="highlight-title">Thông số nổi bật</h3>
@@ -158,61 +124,91 @@ if (empty($highlight_specs)) {
                     <?php foreach ($highlight_specs as $spec) : ?>
                     <li><i class="<?php echo esc_attr($spec['icon']); ?>" style="color: #4caf50;"></i> <span
                             class="s-label"><?php echo esc_html($spec['label']); ?>:</span>
-                        <strong><?php echo esc_html($spec['val']); ?></strong>
-                    </li>
+                        <strong><?php echo esc_html($spec['val']); ?></strong></li>
                     <?php endforeach; ?>
                 </ul>
                 <a href="javascript:;" class="view-all-specs" id="btn-open-specs">Xem chi tiết cấu hình <i
                         class="fas fa-caret-down"></i></a>
             </div>
             <?php endif; ?>
-            <div class="prod-policy-box">
-                <div class="policy-row">
-                    <div class="p-icon"><i class="fas fa-shield-alt"></i></div>
-                    <div class="p-text">Hư gì đổi nấy <b>12 tháng</b> tại 3000 siêu thị toàn quốc</div>
-                </div>
-                <div class="policy-row">
-                    <div class="p-icon"><i class="fas fa-shipping-fast"></i></div>
-                    <div class="p-text">Giao hàng nhanh toàn quốc, miễn phí vận chuyển</div>
-                </div>
-            </div>
         </div>
+
         <div class="col col-5 col-md-12">
-            <div class="prod-price-box">
-                <div class="price-show"><?php echo $product->get_price_html(); ?></div>
-                <div class="installment-label">Trả góp 0%</div>
+
+            <h1 class="product_title entry-title" style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">
+                <?php the_title(); ?></h1>
+            <div style="color: #777; font-size: 13px; margin-bottom: 15px;">
+                Mã SP: <?php echo $product->get_sku() ? $product->get_sku() : 'N/A'; ?>
+                <span style="margin: 0 5px;">|</span>
+                <?php
+                $review_count = $product->get_review_count();
+                $average      = $product->get_average_rating();
+                if ($review_count > 0) : ?>
+                Đánh giá: <i class="fas fa-star" style="color: #f5a623;"></i>
+                <b><?php echo number_format($average, 1); ?></b> <span style="color:#999;">(<?php echo $review_count; ?>
+                    đánh giá)</span>
+                <?php else : ?>
+                Chưa có đánh giá
+                <?php endif; ?>
             </div>
-            <div class="prod-variations-box fpt-style-variations">
-                <?php do_action('woocommerce_single_product_summary'); ?></div>
-            <div class="fpt-promo-box">
-                <div class="promo-header"><i class="fas fa-gift"></i> ƯU ĐÃI THÊM</div>
-                <div class="promo-content">
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Giảm thêm 5% khi mua cùng Apple Watch</li>
-                        <li><i class="fas fa-check-circle"></i> Thu cũ đổi mới trợ giá đến 2 triệu</li>
+
+            <div class="prod-variations-box fpt-style-variations" style="margin-bottom: 15px; border-top: none;">
+                <?php do_action('woocommerce_single_product_summary'); ?>
+            </div>
+
+            <div class="prod-price-box-fpt">
+                <?php
+                $regular_price = $product->get_regular_price();
+                $sale_price = $product->get_price(); // Lấy giá đang bán (đã sale)
+
+                // Nếu là biến thể thì giá sẽ tự đổi bằng JS của Woo, ta chỉ cần tạo khung HTML chuẩn
+                ?>
+                <div class="price-main-fpt"><?php echo $product->get_price_html(); ?></div>
+            </div>
+
+            <?php if (! empty($fpt_promos)) : ?>
+            <div class="fpt-promo-yellow-box">
+                <div class="promo-header-yellow">Chọn 1 trong các khuyến mãi sau:</div>
+                <?php foreach ($fpt_promos as $group) : ?>
+                <div class="promo-group-item">
+                    <h4 class="promo-group-title"><?php echo esc_html($group['promo_title']); ?></h4>
+                    <ul class="promo-list-ul">
+                        <?php if (!empty($group['promo_items'])):
+                                    foreach ($group['promo_items'] as $item): ?>
+                        <li>
+                            <i class="fas fa-circle"
+                                style="font-size: 6px; margin-right: 8px; margin-top: 8px; color: #555;"></i>
+                            <div>
+                                <?php echo esc_html($item['content']); ?>
+                                <?php if (!empty($item['link'])): ?><a href="<?php echo esc_url($item['link']); ?>"
+                                    target="_blank" style="color:#288ad6;">Xem chi tiết</a><?php endif; ?>
+                            </div>
+                        </li>
+                        <?php endforeach;
+                                endif; ?>
                     </ul>
                 </div>
+                <?php endforeach; ?>
             </div>
+            <?php endif; ?>
+
         </div>
     </div>
+
     <div class="row" style="margin-top: 30px;">
         <div class="col col-8 col-md-12">
             <div class="white-box prod-content-box"><?php the_content(); ?></div>
         </div>
         <div class="col col-4 col-md-12">
-            <?php $table_data = !empty($specs_manual) ? $specs_manual : $highlight_specs;
-            if (!empty($table_data)): ?>
+            <?php if (!empty($specs_manual)): ?>
             <div class="white-box full-specs-box">
                 <h3 class="section-title">Thông số kỹ thuật</h3>
                 <table class="table-specs-sidebar">
-                    <?php $preview_data = array_slice($table_data, 0, 8);
-                        foreach ($preview_data as $row):
-                            $lbl = isset($row['spec_label']) ? $row['spec_label'] : (isset($row['label']) ? $row['label'] : '');
-                            $val = isset($row['spec_value']) ? $row['spec_value'] : (isset($row['val']) ? $row['val'] : '');
-                            if (!$lbl) continue; ?>
+                    <?php $preview_data = array_slice($specs_manual, 0, 8);
+                        foreach ($preview_data as $row): ?>
                     <tr>
-                        <td><?php echo esc_html($lbl); ?></td>
-                        <td><?php echo esc_html($val); ?></td>
+                        <td><?php echo esc_html($row['spec_label']); ?></td>
+                        <td><?php echo esc_html($row['spec_value']); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </table>
@@ -224,7 +220,7 @@ if (empty($highlight_specs)) {
     </div>
 </div>
 
-<?php if (!empty($table_data)): ?>
+<?php if (!empty($specs_manual)): ?>
 <div class="specs-popup-overlay" id="specs-popup">
     <div class="specs-popup-content">
         <div class="sp-header">
@@ -232,13 +228,10 @@ if (empty($highlight_specs)) {
         </div>
         <div class="sp-body">
             <table class="table-specs-full">
-                <?php foreach ($table_data as $row):
-                        $lbl = isset($row['spec_label']) ? $row['spec_label'] : (isset($row['label']) ? $row['label'] : '');
-                        $val = isset($row['spec_value']) ? $row['spec_value'] : (isset($row['val']) ? $row['val'] : '');
-                        if (!$lbl) continue; ?>
+                <?php foreach ($specs_manual as $row): ?>
                 <tr>
-                    <th><?php echo esc_html($lbl); ?></th>
-                    <td><?php echo esc_html($val); ?></td>
+                    <th><?php echo esc_html($row['spec_label']); ?></th>
+                    <td><?php echo esc_html($row['spec_value']); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </table>

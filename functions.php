@@ -38,44 +38,63 @@ function relive_boot_carbon_fields()
 }
 
 /**
- * --- XUẤT DỮ LIỆU ẢNH/MÀU RA FRONTEND ---
- * Hàm này in một biến JS chứa map: slug -> ảnh/màu để file main.js dùng
+ * --- XUẤT DỮ LIỆU ẢNH/MÀU RA FRONTEND (FINAL FIX) ---
  */
-add_action('wp_footer', 'relive_render_swatch_data_json');
+add_action('wp_footer', 'relive_render_swatch_data_json', 99);
 function relive_render_swatch_data_json()
 {
     if (! is_product()) return;
 
-    global $product;
-    $attributes = $product->get_variation_attributes();
+    $product_id = get_queried_object_id();
+    $product = wc_get_product($product_id);
+
+    if (! $product) return;
+
     $data = array();
+    $attributes = $product->get_attributes();
 
-    // Duyệt qua các thuộc tính của sản phẩm hiện tại
-    foreach ($attributes as $attribute_name => $options) {
-        // attribute_name ví dụ: pa_mau-sac
-        $terms = get_terms(array(
-            'taxonomy' => $attribute_name,
-            'hide_empty' => false,
-        ));
+    if (! empty($attributes)) {
+        foreach ($attributes as $attribute) {
+            if ($attribute->is_taxonomy()) {
+                $taxonomy = $attribute->get_name();
+                $terms = get_terms(array('taxonomy' => $taxonomy, 'hide_empty' => false));
 
-        if (! is_wp_error($terms) && ! empty($terms)) {
-            foreach ($terms as $term) {
-                // Lấy dữ liệu từ Carbon Fields
-                $img_id = carbon_get_term_meta($term->term_id, 'attribute_image');
-                $color  = carbon_get_term_meta($term->term_id, 'attribute_color');
+                if (! is_wp_error($terms) && ! empty($terms)) {
+                    foreach ($terms as $term) {
+                        // Lấy dữ liệu từ Carbon Fields
+                        $val    = carbon_get_term_meta($term->term_id, 'attribute_image');
+                        $color  = carbon_get_term_meta($term->term_id, 'attribute_color');
 
-                // Lấy URL ảnh thumbnail (nhỏ nhẹ)
-                $img_url = $img_id ? wp_get_attachment_image_url($img_id, 'thumbnail') : '';
+                        $img_url = '';
 
-                // Lưu vào mảng với key là slug (ví dụ: titan-sa-mac)
-                $data[$term->slug] = array(
-                    'image' => $img_url,
-                    'color' => $color
-                );
+                        // Logic thông minh: Tự check xem dữ liệu là ID (số) hay URL (chuỗi)
+                        if (is_numeric($val) && $val > 0) {
+                            // Nếu là ID -> Lấy ảnh thumbnail (nhẹ)
+                            $img_url = wp_get_attachment_image_url($val, 'thumbnail');
+                        } elseif (is_string($val) && !empty($val)) {
+                            // Nếu lỡ là URL -> Dùng luôn
+                            $img_url = $val;
+                        }
+
+                        $data[$term->slug] = array(
+                            'image' => $img_url,
+                            'color' => $color,
+                            'name'  => $term->name
+                        );
+                    }
+                }
             }
         }
     }
 
-    // In ra HTML
-    echo '<script>var relive_swatches_json = ' . json_encode($data) . ';</script>';
+    echo '<script>';
+    echo 'var relive_swatches_json = ' . json_encode($data) . ';';
+    // echo 'console.log("Swatches Loaded:", relive_swatches_json);'; // Bỏ comment nếu muốn debug
+    echo '</script>';
 }
+
+/**
+ * --- XÓA HẲN NÚT "RESET" (XÓA) CỦA BIẾN THỂ ---
+ * Chặn không cho WooCommerce in mã HTML của nút này ra
+ */
+add_filter('woocommerce_reset_variations_link', '__return_empty_string');

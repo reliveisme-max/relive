@@ -134,66 +134,94 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       5. AUTO SWATCHES (CÓ HÌNH ẢNH)
+       5. AUTO SWATCHES (LOGIC GẠCH CHÉO + LÀM MỜ NÚT)
        ========================================================================== */
     if ($('.variations_form').length > 0) {
-        $('.variations tr').each(function() {
+        var $form = $('.variations_form');
+
+        // 1. Tạo giao diện nút bấm
+        $form.find('.variations tr').each(function() {
             var $row = $(this);
             var $select = $row.find('select');
             if ($select.length === 0) return;
 
             var attributeName = $select.attr('id'); 
-            var $swatchWrap = $('<div class="relive-swatches-wrap"></div>');
+            var $swatchWrap = $('<div class="relive-swatches-wrap" data-attribute="'+attributeName+'"></div>');
 
             $select.find('option').each(function() {
                 var val = $(this).val();
                 if (!val) return; 
                 var text = $(this).text();
                 
-                // Tạo nút cơ bản
                 var $btn = $('<div class="swatch-item" data-value="' + val + '"></div>');
                 
-                // --- LOGIC MỚI: KIỂM TRA ẢNH TỪ BIẾN JSON PHP TRUYỀN SANG ---
+                // Logic chèn ảnh/màu từ JSON
                 var hasImage = false;
                 if (typeof relive_swatches_json !== 'undefined' && relive_swatches_json[val]) {
                     var meta = relive_swatches_json[val];
-                    
-                    // Nếu có ảnh -> Chèn ảnh + Text
                     if (meta.image) {
                         $btn.addClass('has-image');
                         $btn.append('<span class="swatch-img"><img src="'+meta.image+'" alt="'+text+'" /></span>');
                         $btn.append('<span class="swatch-text">'+text+'</span>');
                         hasImage = true;
-                    } 
-                    // Nếu có màu -> Tô màu nền (dự phòng)
-                    else if (meta.color) {
+                    } else if (meta.color) {
                         $btn.addClass('has-color');
                         $btn.append('<span class="swatch-dot" style="background:'+meta.color+'"></span>');
                         $btn.append('<span class="swatch-text">'+text+'</span>');
                         hasImage = true;
                     }
                 }
-
-                // Nếu không có ảnh/màu gì cả thì chỉ hiện Text
-                if (!hasImage) {
-                    $btn.text(text);
-                }
+                if (!hasImage) $btn.text(text);
 
                 $swatchWrap.append($btn);
             });
 
             $select.after($swatchWrap).hide();
 
+            // Sự kiện click nút
             $swatchWrap.on('click', '.swatch-item', function() {
+                if ($(this).hasClass('disabled')) return; // Không cho click nút ẩn
+                
                 var value = $(this).data('value');
-                $(this).addClass('selected').siblings().removeClass('selected');
-                $select.val(value).trigger('change');
-            });
-            
-            $select.on('change', function() {
-                if(!$(this).val()) $swatchWrap.find('.swatch-item').removeClass('selected');
+                
+                // Nếu click lại nút đang chọn -> Bỏ chọn (Reset)
+                if ($(this).hasClass('selected')) {
+                    $(this).removeClass('selected');
+                    $select.val('').trigger('change');
+                } else {
+                    $(this).addClass('selected').siblings().removeClass('selected');
+                    $select.val(value).trigger('change');
+                }
             });
         });
-    }
 
+        // 2. LOGIC GẠCH CHÉO & DISABLE DỰA TRÊN DATA CỦA WOOCOMMERCE
+        $form.on('woocommerce_update_variation_values', function() {
+            $form.find('.variations select').each(function() {
+                var $select = $(this);
+                var $swatchWrap = $select.next('.relive-swatches-wrap');
+                
+                // Duyệt qua từng nút bấm
+                $swatchWrap.find('.swatch-item').each(function() {
+                    var val = $(this).data('value');
+                    
+                    // Kiểm tra xem giá trị này có tồn tại trong select không
+                    // Woo sẽ tự lọc lại các option trong select, nếu option biến mất hoặc bị disable -> Ẩn nút
+                    var $option = $select.find('option[value="' + val + '"]');
+                    
+                    if ($option.length === 0 || $option.is(':disabled')) {
+                        $(this).addClass('disabled');   // Thêm class để gạch chéo
+                        $(this).removeClass('selected'); // Bỏ chọn
+                    } else {
+                        $(this).removeClass('disabled'); // Hiện lại bình thường
+                    }
+                });
+            });
+        });
+        
+        // Reset
+        $('.reset_variations').on('click', function(){
+            $('.swatch-item').removeClass('selected disabled');
+        });
+    }
 });
