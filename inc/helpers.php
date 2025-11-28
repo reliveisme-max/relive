@@ -14,7 +14,7 @@ function relive_breadcrumbs()
     // Không hiện ở trang chủ
     if (is_front_page()) return;
 
-    echo '<nav class="breadcrumbs" style="font-size: 13px; color: #777; margin-bottom: 20px;">';
+    echo '<nav class="breadcrumbs" style="font-size: 13px; color: #777; ">';
 
     // Link trang chủ
     echo '<a href="' . home_url() . '" style="color: #333;">Trang chủ</a>';

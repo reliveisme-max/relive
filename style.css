@@ -69,3 +69,8 @@ a:hover {
 .d-flex { display: flex; }
 .justify-between { justify-content: space-between; }
 .items-center { align-items: center; }
+
+
+header#masthead {
+    background: linear-gradient(5deg, #cb1c22 67.61%, #d9503f 95.18%);
+}

@@ -117,6 +117,129 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 /* =========================================
+   FIX GIAO DIỆN THANH TÌM KIẾM PC (BO TRÒN)
+   ========================================= */
+
+/* 1. Bo tròn ô nhập liệu */
+.header-search .search-field {
+    border-radius: 22px !important; /* Bo tròn 22px (dạng viên thuốc) */
+    padding-left: 20px !important;  /* Tăng khoảng cách chữ để không sát viền cong */
+    border: 1px solid #e1e1e1 !important; /* Viền xám nhẹ tinh tế */
+}
+
+/* 2. Căn chỉnh lại nút kính lúp */
+.header-search .search-submit {
+    right: 15px !important; /* Đẩy nút vào trong một chút cho cân đối với viền cong */
+    color: #777 !important; /* Màu xám hoặc bạn có thể đổi thành #cb1c22 nếu thích đỏ */
+}
+
+/* Hiệu ứng khi bấm vào ô tìm kiếm */
+.header-search .search-field:focus {
+    border-color: #cb1c22 !important; /* Đổi màu viền khi nhập liệu */
+    outline: none;
+}
+
+/* =========================================
+   STYLE NÚT TÌM KIẾM (TRÒN + NỀN HỒNG) - ALL DEVICES
+   ========================================= */
+
+/* Áp dụng cho cả khung tìm kiếm PC (.header-search) và Mobile (.header-search-mobile) */
+.header-search .search-submit, 
+.header-search-mobile .search-submit {
+    /* 1. Kích thước & Hình dáng */
+    width: 32px !important;       /* Độ rộng nút */
+    height: 32px !important;      /* Chiều cao nút */
+    border-radius: 50% !important; /* Bo tròn 100% */
+    
+    /* 2. Màu sắc (Giống ảnh mẫu) */
+    background-color: #fcebeb !important; /* Nền hồng nhạt */
+    color: #cb1c22 !important;            /* Icon màu đỏ */
+    border: none !important;              /* Bỏ viền mặc định */
+    
+    /* 3. Căn chỉnh vị trí tuyệt đối */
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important; /* Căn giữa dọc chính xác 100% */
+    right: 5px !important;                  /* Cách lề phải 5px */
+    
+    /* 4. Căn giữa icon bên trong vòng tròn */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10; /* Đè lên trên ô input */
+}
+
+/* Hiệu ứng khi di chuột vào (Đổi sang nền đỏ, icon trắng) */
+.header-search .search-submit:hover,
+.header-search-mobile .search-submit:hover {
+    background-color: #cb1c22 !important;
+    color: #fff !important;
+}
+
+/* Điều chỉnh lại khoảng cách chữ trong ô nhập liệu để không bị nút che mất */
+.header-search .search-field,
+.header-search-mobile .search-field {
+    padding-right: 45px !important; /* Chừa chỗ trống bên phải */
+}
+
+/* =========================================
+   HEADER SHORTCUTS (MENU TIỆN ÍCH PC)
+   ========================================= */
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff !important; /* Mặc định chữ trắng (cho nền đỏ) */
+    font-size: 11px;
+    line-height: 1.2;
+    padding: 5px 8px;
+    border-radius: 5px;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+/* Hover hiệu ứng nhẹ */
+.shortcut-item:hover {
+    background: #ffffff4c !important;
+}
+
+.sc-icon svg {
+    width: 20px; height: 20px;
+    stroke-width: 1.5px;
+    color: #fff;
+}
+
+.sc-text {
+    display: flex;
+    color: #fff;
+    flex-direction: column;
+}
+
+.sc-text span { opacity: 0.9; font-weight: 400; }
+.sc-text strong { font-weight: 700; font-size: 12px; }
+
+/* Ẩn các menu này trên Mobile và Tablet (Vì không đủ chỗ) */
+@media (max-width: 1100px) {
+    .header-shortcuts { display: none !important; }
+}
+
+/* Ẩn bớt mục "Khuyến mãi" nếu màn hình Laptop nhỏ */
+@media (max-width: 1250px) {
+    .hide-on-laptop { display: none !important; }
+}
+
+/* Nếu Header nền TRẮNG -> Đổi chữ thành ĐEN để đọc được */
+.header:not([style*="background-color: #cb1c22"]) .shortcut-item {
+    color: #333 !important;
+}
+.header:not([style*="background-color: #cb1c22"]) .shortcut-item:hover {
+    background: #f1f1f1;
+}
+
+/* =========================================
    3. COMPONENTS & BUILDER
    ========================================= */
 .section { position: relative; }
@@ -264,21 +387,19 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 
 .thumb-inner {
-    height: 60px !important; 
-    padding: 0 15px !important;
+    height: 60px; 
+    padding: 0 15px;
     
     background: rgba(0, 0, 0, 0.75) !important; 
     color: #fff !important;
     
-    /* Bo tròn 2 góc trên */
-    border-radius: 8px 8px 0 0 !important; 
+    border-radius: 8px; 
     
     text-align: left;
     display: flex;
     flex-direction: column;
     justify-content: center;
     transition: all 0.2s ease !important;
-    border: 1px solid rgba(255,255,255,0.1);
     backdrop-filter: blur(5px);
     min-width: 120px;
 }
@@ -362,7 +483,7 @@ ul { list-style: none; padding: 0; margin: 0; }
 
     /* Style Gạch ngang: Mảnh, Xám */
     .swiper-pagination-bullet {
-        width: 14px !important; height: 3px !important;
+        width: 14px !important; height: 2px !important;
         border-radius: 0 !important;
         background: #d6d6d6 !important; opacity: 1 !important;
         margin: 0 3px !important; box-shadow: none !important;
@@ -404,10 +525,6 @@ ul { list-style: none; padding: 0; margin: 0; }
     transition: 0.3s;
     border-radius: 8px;
     height: 100%;
-}
-.cat-item-box:hover {
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .cat-img-wrap {
@@ -471,10 +588,6 @@ ul { list-style: none; padding: 0; margin: 0; }
         text-align: center;
         line-height: 0;
     }
-
-    /* Tận dụng style gạch ngang đã khai báo ở Slider (bullet) */
-    /* .swiper-pagination-bullet đã được style ở phần Slider Mobile trước đó */
-    /* Nếu cần chỉnh riêng cho danh mục thì thêm vào đây, nhưng dùng chung là đẹp nhất */
     
     /* Ẩn mũi tên danh mục trên mobile luôn cho gọn */
     .cat-next, .cat-prev {
@@ -491,17 +604,239 @@ ul { list-style: none; padding: 0; margin: 0; }
 
 
 
+/* =========================================
+   MEGA MENU STYLE - BẢN FIX FULL (QUAN TRỌNG)
+   ========================================= */
+
+/* --- 1. NÚT MỞ MENU --- */
+.header-cat-btn {
+    position: relative; cursor: pointer; margin-right: 15px;
+    display: flex; align-items: stretch; gap: 8px;
+    padding: 7px 8px 0px 8px; background: #ffffff4c; color: #fff; /* Màu đỏ chủ đạo */
+    border-radius: 8px; font-weight: 400; font-size: 13px;
+    transition: 0.2s; user-select: none; height: 40px;
+}
+.header-cat-btn:hover { background: #7E161C; color: #fff; }
+.header-cat-btn .icon { font-size: 18px; }
+
+/* Wrapper ẩn mặc định */
+.mega-menu-wrapper { display: none; }
+body.no-scroll { overflow: hidden; }
+
+/* --- 2. GIAO DIỆN PC (Trên 992px) --- */
+@media (min-width: 992px) {
+    .header-cat-btn:hover .mega-menu-wrapper {
+        display: block; position: absolute;
+        top: 100%; left: 0; width: 980px;
+        background: #fff; border-radius: 10px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        z-index: 9999; margin-top: 12px; border: 1px solid #eee;
+    }
+    .header-cat-btn:hover .mega-menu-wrapper::before { /* Cầu nối */
+        content: ""; position: absolute; top: -15px; left: 0; width: 100%; height: 15px;
+    }
+    .header-cat-btn:hover .mega-menu-wrapper::after { /* Mũi tên */
+        content: ""; position: absolute; top: -6px; left: 30px;
+        width: 12px; height: 12px; background: #fff;
+        transform: rotate(45deg); border-top: 1px solid #eee; border-left: 1px solid #eee;
+    }
+
+    .split-layout { display: flex; height: 480px; }
+
+    /* Cột Trái PC */
+    .cat-list-left {
+        width: 230px; background: #fff; border-right: 1px solid #f1f1f1;
+        padding: 10px 0; overflow-y: auto; border-radius: 10px 0 0 10px;
+    }
+    .cat-item-left a {
+        display: flex; align-items: center; padding: 8px 15px;
+        color: #444; font-size: 13px; font-weight: 500; transition: 0.2s;
+    }
+    .cat-item-left:hover a, .cat-item-left.active a {
+        background: #fcebeb; color: #d70018; font-weight: 700;
+    }
+    .c-icon { width: 24px; margin-right: 10px; text-align: center; }
+    .c-icon img { width: 20px; height: 20px; object-fit: contain; }
+    .c-arrow { margin-left: auto; font-size: 10px; opacity: 0.5; }
+
+    /* Cột Phải PC */
+    .cat-content-right { flex: 1; padding: 20px 25px; overflow-y: auto; background: #fff; border-radius: 0 10px 10px 0; }
+    .mobile-mega-header { display: none !important; } /* Ẩn Header mobile trên PC */
+}
+
+/* --- 3. GIAO DIỆN MOBILE (Dưới 992px) - FIX LỖI MẤT HEADER --- */
+@media (max-width: 991px) {
+    .mega-menu-wrapper {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 99999; display: none;
+    }
+    .mega-menu-wrapper.open { display: block; }
+    .mega-overlay {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(2px);
+    }
+    
+    /* Content Container */
+    .mega-content-container {
+        position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+        background: #fff; border-radius: 16px 16px 0 0;
+        display: flex; flex-direction: column; overflow: hidden;
+        animation: slideUp 0.25s ease-out;
+    }
+
+    /* FIX: Bắt buộc hiện Header Mobile (Màu đỏ) */
+    .mobile-mega-header {
+        display: flex !important; flex-shrink: 0; 
+        align-items: center; justify-content: space-between;
+        padding: 12px 15px; background: #cb1c22; color: #fff;
+        border-bottom: 1px solid #eee;
+    }
+    .m-title { font-weight: 700; font-size: 15px; text-transform: uppercase; }
+    .m-close { 
+        cursor: pointer; width: 30px; height: 30px; color: #fff;
+        display: flex; align-items: center; justify-content: flex-end;
+    }
+    .m-close svg { width: 24px; height: 24px; }
+
+    .split-layout { flex: 1; display: flex; overflow: hidden; background: #fff; }
+    
+    /* Cột Trái Mobile */
+    .cat-list-left {
+        width: 90px; flex-shrink: 0; background: #fdf2f2;
+        overflow-y: auto; border-right: 1px solid #eee; padding-bottom: 50px;
+    }
+    .cat-item-left a {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; padding: 15px 5px; border-bottom: 1px solid #eee;
+        height: 80px; color: #333; transition: 0s;
+    }
+    .c-icon { margin-right: 0; margin-bottom: 6px; height: 24px; display: flex; align-items: center; }
+    .c-icon i { font-size: 20px; color: #555; }
+    
+    /* FIX ẢNH ICON TO */
+    .c-icon img { width: 24px !important; height: 24px !important; object-fit: contain; }
+    
+    .c-name {
+        font-size: 11px; line-height: 1.2; font-weight: 500;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .c-arrow { display: none; }
+
+    /* Active Mobile */
+    .cat-item-left.active { 
+        background: #fff; color: #cb1c22; position: relative;
+        width: 91px; z-index: 10; margin-right: -1px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .cat-item-left.active::before { /* Vạch đỏ */
+        content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: #cb1c22;
+    }
+    .cat-item-left.active .c-icon i { color: #cb1c22; }
+
+    /* Cột Phải Mobile */
+    .cat-content-right { flex: 1; background: #fff; overflow-y: auto; padding: 15px; }
+}
+
+/* --- 4. STYLE CHI TIẾT (FIX ẢNH VỠ) --- */
+.cat-pane { display: none; }
+.cat-pane.active { display: block; animation: fadeIn 0.3s; }
+.pane-section { margin-bottom: 25px; }
+.pane-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: #333; text-transform: uppercase; }
+
+/* Grid Thương hiệu */
+.brand-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+@media (max-width: 991px) { .brand-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.brand-item {
+    border: 1px solid #eee; border-radius: 6px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; overflow: hidden;
+}
+/* FIX LOGO TO */
+.brand-item img { max-height: 25px !important; width: auto !important; max-width: 90% !important; object-fit: contain; }
+
+/* Swiper Danh mục con */
+.sub-cat-swiper-wrap { padding: 0 2px; position: relative; }
+.sub-cat-slider { padding: 5px !important; margin: 0 -5px; }
+.sub-cat-item { display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; }
+
+.sc-img {
+    width: 55px; height: 55px; background: #fff; border: 1px solid #e0e0e0;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; overflow: hidden;
+}
+/* FIX ẢNH DANH MỤC CON TO */
+.sc-img img { width: 100% !important; height: 100% !important; object-fit: cover; padding: 4px; border-radius: 50%; }
+
+.sc-name {
+    font-size: 11px; font-weight: 500; color: #333;
+    line-height: 1.3; height: 28px; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.sub-cat-item:hover .sc-name { color: #d70018; font-weight: 700; }
+.sub-cat-item:hover .sc-img { border-color: #d70018; }
+
+/* Nút Next/Prev Swiper */
+.sub-cat-swiper-wrap .swiper-button-next, .sub-cat-swiper-wrap .swiper-button-prev {
+    width: 24px; height: 24px; background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2); border-radius: 50%;
+    color: #333; margin-top: -12px; z-index: 10;
+}
+.sub-cat-swiper-wrap .swiper-button-next::after, .sub-cat-swiper-wrap .swiper-button-prev::after { font-size: 10px; font-weight: bold; }
+.sub-cat-swiper-wrap .swiper-button-next { right: -5px; }
+.sub-cat-swiper-wrap .swiper-button-prev { left: -5px; }
+
+/* List Sản phẩm */
+.mini-prod-list { display: flex; flex-direction: column; gap: 10px; }
+.mini-prod-item { 
+    display: flex; gap: 12px; align-items: center; 
+    padding: 8px; border: 1px solid #eee; border-radius: 8px; background: #fff;
+}
+.mp-img { width: 50px; height: 50px; flex-shrink: 0; }
+.mp-img img { width: 100% !important; height: 100% !important; object-fit: cover; border-radius: 4px; } /* FIX ẢNH SP */
+.mp-info { flex: 1; }
+.mp-name { 
+    font-size: 12px; font-weight: 500; color: #333; margin-bottom: 4px; 
+    line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.mp-price { color: #d70018; font-weight: 700; font-size: 12px; }
+
+/* Nút Xem tất cả */
+.btn-view-all {
+    display: block; width: 100%; padding: 10px; margin-top: 15px;
+    background: #fff; color: #d70018; border: 1px solid #d70018; 
+    border-radius: 6px; font-weight: 600; font-size: 13px; text-align: center;
+}
+.btn-view-all:hover { background: #d70018; color: #fff; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 
 
 
+/* --- HEADER RESPONSIVE CONTROL --- */
 
+/* Mặc định trên PC: Ẩn Search Mobile, Hiện Search PC */
+.search-mobile { display: none !important; }
+.search-desktop { display: block !important; }
 
-
-
-
-
-
+/* Trên Mobile (Dưới 992px) */
+@media (max-width: 991px) {
+    /* Ẩn Search PC */
+    .search-desktop { display: none !important; }
+    
+    /* Hiện Search Mobile */
+    .search-mobile { display: block !important; }
+    
+    /* Chỉnh lại chiều cao Header để chứa vừa nội dung */
+    .header-inner { height: 60px !important; }
+    
+    /* Canh chỉnh Logo & Nút Menu */
+    .site-branding img { max-height: 40px !important; }
+    .header-cat-btn { margin-right: auto; } /* Đẩy giỏ hàng sang phải */
+}
 
 
 /* =========================================
@@ -518,4 +853,173 @@ ul { list-style: none; padding: 0; margin: 0; }
     #wpadminbar {
         position: fixed;
     }
+}
+
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   PHẦN RIÊNG CHO TRANG DANH MỤC (SHOP PAGE) - BẢN FINAL TỐI ƯU MÀU ĐỎ
+   (Slider FPT + Filter TGDĐ + Grid Sản phẩm)
+   ========================================================================== */
+
+/* --- 1. CATEGORY BANNER SLIDER --- */
+.cat-slider-wrap {
+    position: relative; border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+}
+.banner-responsive {
+    width: 100%; height: auto; display: block; object-fit: cover;
+}
+.cat-banner-swiper .cb-next, .cat-banner-swiper .cb-prev {
+    width: 36px; height: 36px; background: rgba(255,255,255,0.4); backdrop-filter: blur(2px);
+    border-radius: 50%; color: #333; opacity: 0; transition: 0.3s;
+}
+.cat-banner-swiper:hover .cb-next, .cat-banner-swiper:hover .cb-prev { opacity: 1; background: rgba(255,255,255,0.95); }
+.cat-banner-swiper .cb-next:after, .cat-banner-swiper .cb-prev:after { font-size: 14px; font-weight: bold; }
+.cat-banner-swiper .cb-dots { bottom: 10px !important; }
+.cat-banner-swiper .swiper-pagination-bullet { background: #fff; opacity: 0.6; width: 8px; height: 8px; transition: 0.3s; }
+.cat-banner-swiper .swiper-pagination-bullet-active { background: #fff; opacity: 1; width: 24px; border-radius: 4px; }
+
+
+/* --- 2. BỘ LỌC SẢN PHẨM (STYLE TGDĐ - MÀU ĐỎ) --- */
+.shop-filter-bar {
+    background: #fff; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; z-index: 10;
+}
+
+/* Thanh cuộn ngang */
+.filter-scroll-wrap {
+    display: flex; align-items: center; gap: 10px;
+    overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;
+}
+.filter-scroll-wrap::-webkit-scrollbar { display: none; }
+
+/* Nút Lọc Chung */
+.filter-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    padding: 8px 13px; border: 1px solid #e0e0e0; border-radius: 4px;
+    background: #fff; color: #333; font-size: 13px; line-height: 1.3;
+    cursor: pointer; transition: all 0.2s ease; white-space: nowrap; text-decoration: none;
+}
+/* Hover & Active: Chuyển sang màu Đỏ (#cb1c22) */
+.filter-btn:hover, .filter-btn.active { 
+    border-color: #cb1c22; color: #cb1c22; background: #fcebeb; 
+}
+
+/* Nút "Lọc" chính */
+.main-filter-btn { border-color: #cb1c22; color: #cb1c22; font-weight: 600; }
+.main-filter-btn i { font-size: 14px; }
+
+/* Nút lọc nhanh */
+.quick-btn i { font-size: 10px; color: #999; margin-left: 4px; }
+
+/* Dòng Sắp xếp */
+.tgdd-sort-bar { margin-top: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
+.sort-label { font-size: 13px; color: #333; margin-right: 5px; }
+.tgdd-sort-bar a { font-size: 13px; color: #333; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+/* Active Sắp xếp: Màu Đỏ */
+.tgdd-sort-bar a.active { color: #cb1c22; font-weight: 600; }
+.tgdd-sort-bar a:hover { color: #cb1c22; }
+
+
+/* --- 3. POPUP "TẤT CẢ BỘ LỌC" --- */
+.tgdd-filter-popup {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 99999; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+}
+.tgdd-filter-popup.open { opacity: 1; visibility: visible; }
+
+.fp-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+
+.fp-content {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+    width: 800px; max-width: 95%; max-height: 90vh;
+    background: #fff; border-radius: 8px; display: flex; flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2); transition: all 0.3s;
+}
+.tgdd-filter-popup.open .fp-content { transform: translate(-50%, -50%) scale(1); }
+
+.fp-header { padding: 15px 20px; border-bottom: 1px solid #f1f1f1; display: flex; justify-content: space-between; align-items: center; }
+.fp-header h3 { font-size: 16px; font-weight: 700; margin: 0; text-transform: uppercase; }
+.fp-close { cursor: pointer; padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
+.fp-close:hover { border-color: #cb1c22; color: #cb1c22; }
+
+.fp-body { flex: 1; overflow-y: auto; padding: 20px; scrollbar-width: thin; }
+.fp-group { margin-bottom: 25px; }
+.fp-group-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #333; }
+
+/* Checkbox Options */
+.fp-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.fp-option-item { position: relative; cursor: pointer; margin: 0; }
+.fp-option-item input { position: absolute; opacity: 0; width: 0; height: 0; }
+.fp-text {
+    display: block; padding: 8px 15px; border: 1px solid #e0e0e0; border-radius: 4px;
+    background: #fff; color: #333; font-size: 13px; transition: 0.2s; user-select: none;
+}
+/* Trạng thái đã chọn (Màu Đỏ) */
+.fp-option-item input:checked + .fp-text { 
+    border-color: #cb1c22; color: #cb1c22; background: #fcebeb; font-weight: 600; 
+}
+.fp-option-item:hover .fp-text { border-color: #cb1c22; color: #cb1c22; }
+
+/* Footer Action (2 Nút) */
+.fp-footer-action {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 15px; border-top: 1px solid #eee; background: #fff;
+    position: sticky; bottom: 0; z-index: 10; border-radius: 0 0 8px 8px;
+}
+.fp-btn-reset, .fp-submit-btn {
+    flex: 1; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 6px;
+    cursor: pointer; transition: 0.2s; text-align: center;
+}
+/* Nút Bỏ chọn */
+.fp-btn-reset { background: #fff; border: 1px solid #cb1c22; color: #cb1c22; }
+.fp-btn-reset:hover { background: #fff5f5; }
+/* Nút Xem kết quả */
+.fp-submit-btn { background: #cb1c22; border: 1px solid #cb1c22; color: #fff; }
+.fp-submit-btn:hover { background: #a61217; }
+.fp-submit-btn:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
+
+
+/* --- 4. PRODUCT GRID (LƯỚI SẢN PHẨM) --- */
+.shop-products-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.shop-products-grid .product-card-inner {
+    background: #fff; border-radius: 8px; padding: 15px;
+    transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid transparent;
+}
+.shop-products-grid .product-card-inner:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-color: #e0e0e0; z-index: 2; }
+.shop-products-grid .product-image-wrap img { width: 100%; aspect-ratio: 1/1; object-fit: contain; margin-bottom: 10px; }
+.shop-products-grid .woocommerce-loop-product__title {
+    font-size: 14px; font-weight: 600; line-height: 1.4; height: 40px; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 8px;
+}
+.shop-products-grid .price { color: #cb1c22; font-weight: 700; font-size: 15px; display: block; }
+.shop-products-grid .price del { color: #999; font-size: 12px; font-weight: 400; margin-left: 5px; }
+
+
+/* --- 5. RESPONSIVE MOBILE --- */
+@media (max-width: 1200px) { .shop-products-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 992px) { 
+    .shop-products-grid { grid-template-columns: repeat(3, 1fr); } 
+    .shop-filter-bar { padding: 10px; margin-left: -15px; margin-right: -15px; width: calc(100% + 30px); border-radius: 0; }
+}
+@media (max-width: 768px) {
+    .tgdd-filter-popup.open .fp-content { transform: translateY(0); }
+    .fp-content {
+        top: auto; bottom: 0; left: 0; transform: translateY(100%);
+        width: 100%; max-width: 100%; height: 85vh; max-height: 85vh;
+        border-radius: 16px 16px 0 0;
+    }
+    .fp-header { background: #f4f4f4; border-radius: 16px 16px 0 0; }
+    .fp-footer-action { padding: 12px 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+}
+@media (max-width: 600px) { 
+    .shop-products-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; } 
+    .shop-products-grid .product-card-inner { padding: 10px; }
+    .shop-products-grid .woocommerce-loop-product__title { font-size: 13px; height: 36px; }
 }

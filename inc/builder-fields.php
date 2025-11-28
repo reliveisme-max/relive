@@ -3,7 +3,24 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-
+// Đăng ký Slider cho Danh mục sản phẩm (Product Category)
+add_action('carbon_fields_register_fields', 'relive_cat_banner_fields');
+function relive_cat_banner_fields()
+{
+    Container::make('term_meta', 'Banner Quảng Cáo (Slider)')
+        ->where('term_taxonomy', '=', 'product_cat')
+        ->add_fields(array(
+            Field::make('complex', 'cat_banner_slider', 'Danh sách Banner')
+                ->set_layout('tabbed-horizontal')
+                ->add_fields(array(
+                    // Chỉ dùng 1 trường ảnh duy nhất (img_pc) để giữ lại dữ liệu cũ bạn đã up
+                    Field::make('image', 'img_pc', 'Ảnh Banner')
+                        ->set_value_type('url')
+                        ->set_help_text('Upload 1 ảnh, tự động co giãn trên PC và Mobile'),
+                    Field::make('text', 'link', 'Link liên kết'),
+                )),
+        ));
+}
 
 //builder page
 add_action('carbon_fields_register_fields', 'relive_register_builder');

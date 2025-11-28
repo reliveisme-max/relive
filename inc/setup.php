@@ -41,6 +41,15 @@ function relive_scripts()
 
     // Main JS theme
     wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), RELIVE_VERSION, true);
+
+    // Tìm đoạn load script này trong file inc/setup.php
+    wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), RELIVE_VERSION, true);
+
+    // --- THÊM ĐOẠN NÀY VÀO NGAY BÊN DƯỚI ---
+    wp_localize_script('relive-js', 'relive_ajax', array(
+        'url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('relive_filter_nonce') // Bảo mật
+    ));
 }
 
 /**
