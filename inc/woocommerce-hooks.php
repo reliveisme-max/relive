@@ -69,46 +69,6 @@ function relive_header_add_to_cart_fragment($fragments)
 }
 
 /**
- * --- TÙY BIẾN TRANG CHI TIẾT SẢN PHẨM (SINGLE PRODUCT) ---
- */
-
-// 1. Bỏ Sidebar mặc định (Để full width)
-remove_action('woocommerce_sidebar', 'woocommerce_get_sidebar', 10);
-
-// 2. Thêm Wrapper bao quanh ảnh và thông tin (Để chia cột bằng CSS)
-add_action('woocommerce_before_single_product_summary', 'relive_single_wrapper_start', 5);
-function relive_single_wrapper_start()
-{
-    echo '<div class="single-product-grid container">';
-}
-
-add_action('woocommerce_after_single_product_summary', 'relive_single_wrapper_end', 5);
-function relive_single_wrapper_end()
-{
-    echo '</div>'; // Đóng .single-product-grid
-}
-
-// 3. Thêm khung "Ưu đãi" (Giống FPT Shop) trước nút Mua hàng
-add_action('woocommerce_before_add_to_cart_form', 'relive_show_promo_box', 10);
-function relive_show_promo_box()
-{
-    echo '
-    <div class="promo-box">
-        <h4 class="promo-title"><span class="dashicons dashicons-gift"></span> Ưu đãi thêm</h4>
-        <ul>
-            <li>✅ Tặng phiếu mua hàng 100k</li>
-            <li>✅ Giảm thêm 5% khi thanh toán qua VNPAY</li>
-            <li>✅ Bảo hành chính hãng 12 tháng</li>
-        </ul>
-    </div>
-    ';
-}
-
-// 4. Bỏ bớt mấy cái rườm rà (Meta category, SKU) cho giống FPT
-remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40);
-
-
-/**
  * --- XỬ LÝ BỘ LỌC NÂNG CAO (OPTIMIZED FILTER) ---
  * Tự động bắt các tham số ?filter_... trên URL và lọc sản phẩm
  */

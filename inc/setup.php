@@ -31,24 +31,24 @@ function relive_scripts()
     // Style gốc
     wp_enqueue_style('relive-style', get_stylesheet_uri());
     // Main CSS
-    // SỬA: Thay RELIVE_VERSION bằng time() để ép trình duyệt tải lại CSS mới mỗi lần F5
     wp_enqueue_style('relive-main', RELIVE_URI . '/assets/css/main.css', array(), time());
-    // Swiper CSS (Slider)
-    wp_enqueue_style('swiper-css', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.css', array(), '11.0.0');
 
-    // Load JS từ thư mục assets/vendor/swiper
+    // --- SWIPER ---
+    wp_enqueue_style('swiper-css', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.css', array(), '11.0.0');
     wp_enqueue_script('swiper-js', get_template_directory_uri() . '/assets/vendor/swiper/swiper-bundle.min.js', array(), '11.0.0', true);
 
-    // Main JS theme
-    wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), RELIVE_VERSION, true);
+    // --- FANCYBOX (LIGHTBOX) ---
+    // Đảm bảo file nằm đúng trong assets/vendor/fancybox/
+    wp_enqueue_style('fancybox-css', get_template_directory_uri() . '/assets/vendor/fancybox/fancybox.min.css', array(), '3.5.7');
+    wp_enqueue_script('fancybox-js', get_template_directory_uri() . '/assets/vendor/fancybox/fancybox.min.js', array('jquery'), '3.5.7', true);
 
-    // Tìm đoạn load script này trong file inc/setup.php
-    wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), RELIVE_VERSION, true);
+    // Main JS
+    wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), time(), true); // Thêm time() để clear cache JS
 
-    // --- THÊM ĐOẠN NÀY VÀO NGAY BÊN DƯỚI ---
+    // Ajax
     wp_localize_script('relive-js', 'relive_ajax', array(
         'url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('relive_filter_nonce') // Bảo mật
+        'nonce' => wp_create_nonce('relive_filter_nonce')
     ));
 }
 

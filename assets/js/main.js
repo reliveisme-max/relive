@@ -287,46 +287,92 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // --- POPUP CẤU HÌNH ---
-    $('#btn-open-specs, #btn-open-specs-2').on('click', function(e) {
-        e.preventDefault();
-        $('#specs-popup').addClass('open');
-        $('body').addClass('no-scroll');
-    });
+    /* ==========================================================================
+       5. PRODUCT GALLERY SLIDER & FANCYBOX (FIX LỖI POPUP)
+       ========================================================================== */
 
-    $('#btn-close-specs, .specs-popup-overlay').on('click', function(e) {
-        if (e.target === this || $(e.target).closest('.sp-close').length) {
-            $('#specs-popup').removeClass('open');
-            $('body').removeClass('no-scroll');
-        }
-    });
-
-    // --- PRODUCT GALLERY SLIDER ---
     if ($('.product-main-slider').length) {
         var productSwiper = new Swiper('.product-main-slider', {
             loop: false,
+            spaceBetween: 10,
             navigation: { nextEl: '.p-next', prevEl: '.p-prev' },
             on: {
                 slideChange: function () {
                     var index = this.activeIndex;
-                    $('.gallery-thumbs-list .thumb-item').removeClass('active');
-                    // Chỉ highlight những thumb đang hiển thị (trong khoảng 0-5)
-                    var $target = $('.gallery-thumbs-list .thumb-item[data-slide-index="' + index + '"]');
-                    if ($target.length) {
-                        $target.addClass('active');
-                    } else {
-                        // Nếu lướt qua ảnh thứ 7, 8... thì vẫn active cái cuối cùng (+5)
-                        $('.gallery-thumbs-list .thumb-item').last().addClass('active');
+                    var $slides = $(this.slides);
+                    var $currentSlide = $slides.eq(index);
+                    var $iframe = $('#prod-video-iframe');
+
+                    // Cập nhật nút Active
+                    $('.gallery-thumbs-nav-fpt .g-item').removeClass('active');
+                    var $targetBtn = $('.gallery-thumbs-nav-fpt .g-item[data-slide-index="' + index + '"]');
+                    if ($targetBtn.length) $targetBtn.addClass('active');
+                    else $('.gallery-thumbs-nav-fpt .g-item').first().addClass('active');
+
+                    // Auto Pause Video khi lướt qua
+                    if ($iframe.length) {
+                        if (!$currentSlide.hasClass('video-slide')) {
+                            $iframe[0].contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                        }
                     }
                 }
             }
         });
 
-        // Click Thumb -> Chuyển ảnh
-        $('.gallery-thumbs-list .thumb-item').on('click', function() {
-            var index = $(this).data('slide-index');
-            productSwiper.slideTo(index);
+        // Click Thumb
+        $('.gallery-thumbs-nav-fpt .g-item').on('click', function(e) {
+            if ($(this).attr('href')) return;
+            e.preventDefault();
+            var slideIndex = $(this).data('slide-index');
+            if (slideIndex !== undefined) productSwiper.slideTo(slideIndex);
+        });
+
+        // --- KÍCH HOẠT LIGHTBOX (FANCYBOX LAZY INIT) ---
+        // Dùng .on('click') để đảm bảo chạy kể cả khi thư viện load chậm
+        $(document).on('click', '[data-fancybox="product-gallery"]', function(e) {
+            // Kiểm tra xem thư viện đã load chưa
+            if ($.fancybox) {
+                // Nếu chưa init, init ngay
+                if (!$(this).hasClass('fancybox-initialized')) {
+                    e.preventDefault();
+                    var index = $('[data-fancybox="product-gallery"]').index(this);
+                    
+                    $.fancybox.open($('[data-fancybox="product-gallery"]'), {
+                        loop: true,
+                        animationEffect: "zoom-in-out",
+                        transitionEffect: "slide",
+                        buttons: ["zoom", "slideShow", "fullScreen", "thumbs", "close"],
+                        protect: true
+                    }, index);
+                }
+            } else {
+                console.error('Fancybox library not loaded!');
+            }
         });
     }
+
+    // --- POPUP CẤU HÌNH (SLIDE TỪ PHẢI) ---
+    
+    // Mở Popup
+    $(document).on('click', '#btn-open-specs, #btn-open-specs-2, .view-all-specs', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var $popup = $('#specs-popup');
+        if ($popup.length) {
+            $popup.addClass('open'); 
+            $('body').addClass('no-scroll');
+        } else {
+            console.log('Lỗi: Không tìm thấy ID #specs-popup trong HTML');
+        }
+    });
+
+    // Đóng Popup
+    $(document).on('click', '#btn-close-specs, .specs-popup-overlay', function(e) {
+        if (e.target === this || $(e.target).closest('.sp-close').length) {
+            $('#specs-popup').removeClass('open');
+            $('body').removeClass('no-scroll');
+        }
+    });
 
 });

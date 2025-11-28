@@ -4,31 +4,36 @@ use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
 //Thông số kĩ thuật
-add_action('carbon_fields_register_fields', 'relive_product_meta');
-function relive_product_meta()
+add_action('carbon_fields_register_fields', 'relive_product_fields');
+function relive_product_fields()
 {
     Container::make('post_meta', 'Cấu hình Sản phẩm (FPT Style)')
         ->where('post_type', '=', 'product')
         ->add_fields(array(
 
-            // 1. Link Video
+            // 1. Ảnh Nổi Bật
+            Field::make('image', 'prod_featured_image', 'Ảnh Nổi Bật (Slide đầu tiên)')->set_value_type('url'),
+
+            // 2. Link Video
             Field::make('text', 'prod_video', 'Link Video Youtube'),
 
-            // 2. Bảng Thông số kỹ thuật (Nhập tay linh hoạt)
+            // 3. Bảng Thông số kỹ thuật
             Field::make('complex', 'product_specs_table', 'Bảng Thông số kỹ thuật')
                 ->set_layout('tabbed-horizontal')
                 ->add_fields(array(
-                    Field::make('text', 'spec_label', 'Tên thông số (VD: Dung tích)')->set_width(40),
-                    Field::make('text', 'spec_value', 'Giá trị (VD: 200 Lít)')->set_width(60),
-                    Field::make('checkbox', 'is_highlight', 'Hiện ở mục "Thông số nổi bật"?')->set_width(100),
+                    Field::make('text', 'spec_label', 'Tên thông số')->set_width(40),
+                    Field::make('text', 'spec_value', 'Giá trị')->set_width(60),
+                    Field::make('checkbox', 'is_highlight', 'Hiện ở mục nổi bật?')->set_width(100),
                 ))
                 ->set_header_template('<%- spec_label %>: <%- spec_value %>'),
 
-            // 3. Ảnh mở hộp (Gallery riêng nếu cần)
-            Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện'),
+            // 4. Ảnh mở hộp
+            Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện')->set_type(array('image')),
+
+            // [MỚI] 5. Ảnh thực tế
+            Field::make('media_gallery', 'real_images', 'Ảnh thực tế')->set_type(array('image')),
         ));
 }
-
 // Đăng ký Slider cho Danh mục sản phẩm (Product Category)
 add_action('carbon_fields_register_fields', 'relive_cat_banner_fields');
 function relive_cat_banner_fields()
