@@ -19,21 +19,33 @@ function relive_product_fields()
             Field::make('image', 'prod_featured_image', 'Ảnh Nổi Bật (Slide đầu tiên)')->set_value_type('url'),
             Field::make('text', 'prod_video', 'Link Video Youtube'),
 
-            // [QUAN TRỌNG] Đã xóa đoạn set_type(array('image')) gây lỗi hiển thị
+            // QUAN TRỌNG: Để trống set_type để tránh lỗi mất dữ liệu
             Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện'),
             Field::make('media_gallery', 'real_images', 'Ảnh thực tế'),
 
             // TAB 2: THÔNG SỐ KỸ THUẬT
             Field::make('separator', 'sep_specs', '2. Thông số kỹ thuật'),
-            Field::make('complex', 'product_specs_table', 'Bảng Thông số')
-                ->set_layout('tabbed-horizontal')
-                ->add_fields(array(
-                    Field::make('text', 'spec_label', 'Tên thông số (VD: Chip)')->set_width(40),
-                    Field::make('text', 'spec_value', 'Giá trị (VD: A18 Pro)')->set_width(60),
-                    Field::make('checkbox', 'is_highlight', 'Hiện ở mục nổi bật?')->set_width(100),
-                ))
-                ->set_header_template('<%- spec_label %>: <%- spec_value %>'),
 
+            // Ảnh mô tả tính năng (Cột trái Popup)
+            Field::make('image', 'spec_feature_image', 'Ảnh mô tả tính năng')->set_value_type('url'),
+
+            Field::make('complex', 'fpt_specs_groups', 'Danh sách Nhóm thông số')
+                ->set_layout('tabbed-vertical')
+                ->add_fields(array(
+                    Field::make('text', 'group_name', 'Tên nhóm (VD: Màn hình)')->set_width(100),
+
+                    Field::make('complex', 'group_items', 'Chi tiết thông số')
+                        ->set_layout('tabbed-horizontal')
+                        ->add_fields(array(
+                            Field::make('text', 'label', 'Tên (VD: Kích thước)')->set_width(40),
+                            Field::make('text', 'spec_val', 'Giá trị (VD: 6.9 inch)')->set_width(40),
+                            Field::make('checkbox', 'is_highlight', 'Hiện ở mục nổi bật?')->set_width(20),
+                            // Thêm ô nhập Icon thủ công nếu cần
+                            Field::make('text', 'icon', 'Icon (VD: fas fa-chip)')->set_width(100),
+                        ))
+                        ->set_header_template('<%- label %>: <%- spec_val %>')
+                ))
+                ->set_header_template('<%- group_name %>'),
             // TAB 3: KHUYẾN MÃI
             Field::make('separator', 'sep_promo', '3. Khuyến mãi (FPT Style)'),
             Field::make('complex', 'fpt_promotions', 'Các nhóm khuyến mãi')
@@ -71,6 +83,7 @@ function relive_term_fields()
     if (! empty($slugs)) {
         $container = Container::make('term_meta', 'Cấu hình Biến thể (Swatches)');
 
+        // Vòng lặp OR để tương thích mọi phiên bản
         foreach ($slugs as $index => $slug) {
             if ($index === 0) {
                 $container->where('term_taxonomy', '=', $slug);
@@ -87,7 +100,7 @@ function relive_term_fields()
 }
 
 /* -------------------------------------------------------------------------
- * 3. CÁC BLOCK KHÁC (BANNER, BUILDER...)
+ * 3. CÁC BLOCK KHÁC (GIỮ NGUYÊN ĐỂ TRANG CHỦ KHÔNG LỖI)
  * ------------------------------------------------------------------------- */
 add_action('carbon_fields_register_fields', 'relive_cat_banner_fields');
 function relive_cat_banner_fields()
@@ -97,10 +110,7 @@ function relive_cat_banner_fields()
         ->add_fields(array(
             Field::make('complex', 'cat_banner_slider', 'Danh sách Banner')
                 ->set_layout('tabbed-horizontal')
-                ->add_fields(array(
-                    Field::make('image', 'img_pc', 'Ảnh Banner')->set_value_type('url'),
-                    Field::make('text', 'link', 'Link liên kết')
-                ))
+                ->add_fields(array(Field::make('image', 'img_pc', 'Ảnh Banner')->set_value_type('url'), Field::make('text', 'link', 'Link liên kết')))
         ));
 }
 
@@ -114,12 +124,7 @@ function relive_register_builder()
                 ->set_layout('tabbed-vertical')
                 ->set_collapsed(true)
                 ->add_fields('slider', __('Slider Ảnh'), array(
-                    Field::make('complex', 'slides', 'Slides')->add_fields(array(
-                        Field::make('image', 'image', 'Ảnh'),
-                        Field::make('text', 'link', 'Link'),
-                        Field::make('text', 'thumb_title', 'Tab Tiêu đề'),
-                        Field::make('text', 'thumb_desc', 'Tab Mô tả')
-                    )),
+                    Field::make('complex', 'slides', 'Slides')->add_fields(array(Field::make('image', 'image', 'Ảnh'), Field::make('text', 'link', 'Link'), Field::make('text', 'thumb_title', 'Tab Tiêu đề'), Field::make('text', 'thumb_desc', 'Tab Mô tả'))),
                     Field::make('select', 'width_mode', 'Độ rộng')->set_options(array('container' => 'Container', 'full' => 'Full Width')),
                     Field::make('text', 'height', 'Chiều cao')->set_default_value(400),
                     Field::make('select', 'pagi_style', 'Kiểu phân trang')->set_options(array('dots' => 'Chấm', 'thumbs_text' => 'Tab nội dung')),
@@ -170,8 +175,7 @@ function relive_register_builder()
                     Field::make('checkbox', 'container', 'Container?')->set_default_value(true),
                     Field::make('text', 'mt', 'Margin Top'),
                     Field::make('text', 'mb', 'Margin Bottom'),
-                    Field::make('complex', 'columns', 'Các Cột')
-                        ->set_layout('tabbed-horizontal')
+                    Field::make('complex', 'columns', 'Các Cột')->set_layout('tabbed-horizontal')
                         ->add_fields(array(
                             Field::make('select', 'width', 'Độ rộng')->set_options(array('12' => '100%', '6' => '50%', '4' => '33%', '3' => '25%'))->set_default_value('6'),
                             Field::make('complex', 'col_content', 'Nội dung')->set_collapsed(true)
