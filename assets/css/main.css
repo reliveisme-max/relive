@@ -1087,44 +1087,44 @@ body.no-scroll { overflow: hidden; }
 /* =========================================
    CHI TIẾT SẢN PHẨM (FINAL FIXED CSS)
    ========================================= */
-.col-7 { width: 58.333333%; } .col-5 { width: 41.666667%; }
-.fpt-product-detail { padding-top: 15px; }
-.prod-header-top { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
-.product_title { font-size: 24px; font-weight: 700; margin: 0 0 5px; color: #333; }
-.prod-rating { font-size: 13px; color: #f5a623; }
-
-/* --- 1. SLIDER ẢNH (FIX FULL KHUNG) --- */
-.product-gallery-wrap { margin-bottom: 25px; }
-
-.product-main-slider { 
-    border: 1px solid #eee; 
-    border-radius: 12px; 
-    overflow: hidden; 
-    background: #fff; 
-    position: relative; 
+/* 1. Khung Slider Chính */
+.product-gallery-wrap { 
+    margin-bottom: 20px; 
+    position: relative;
 }
 
+.product-main-slider { 
+    border: 1px solid #e0e0e0;     /* Viền xám nhẹ */
+    border-radius: 8px;            /* Bo góc khung */
+    overflow: hidden; 
+    background: #fff;              /* Nền trắng */
+    position: relative;
+    margin-bottom: 15px;
+}
+
+/* Slide chứa ảnh */
 .product-main-slider .swiper-slide { 
-    height: 372px; /* Chiều cao cố định bạn đã chọn */
+    height: 372px !important;      /* Chiều cao cố định chuẩn PC */
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    padding: 0; /* Bỏ padding để ảnh tràn viền */
+    box-sizing: border-box;
+    background: #fff;
+    cursor: zoom-in;
 }
 
+/* Ảnh sản phẩm: BẮT BUỘC dùng contain */
 .product-main-slider img { 
-    width: 100% !important;   /* Ép rộng 100% */
-    height: 100% !important;  /* Ép cao 100% */
+    width: 100% !important;   
+    height: 100% !important;  
     
-    /* --- QUAN TRỌNG: CHỌN 1 TRONG 2 KIỂU DƯỚI ĐÂY --- */
+    /* --- KEY FIX: Giúp ảnh hiển thị full sản phẩm, chấp nhận khoảng trắng thừa --- */
+    object-fit: contain !important; 
+    object-position: center !important;
     
-    /* Kiểu 1: Giữ nguyên ảnh, chấp nhận khoảng trắng (Khuyên dùng cho SP) */
-    object-fit: contain; 
-    
-    /* Kiểu 2: Lấp đầy khung, chấp nhận bị cắt bớt ảnh (Dùng nếu muốn full viền tuyệt đối) */
-    /* object-fit: cover; */ 
+    transition: transform 0.3s ease;
+    border-radius: 0 !important; /* Không bo góc ảnh, chỉ bo khung ngoài */
 }
-
 .video-slide iframe { width: 100%; height: 100%; }
 
 /* --- NÚT NEXT/PREV SLIDER (ĐỒNG BỘ VỚI DANH MỤC) --- */
