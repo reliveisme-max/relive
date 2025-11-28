@@ -1,19 +1,13 @@
 jQuery(document).ready(function($) {
 
     /* ==========================================================================
-       1. GLOBAL UI (STICKY HEADER, SCROLL)
+       1. GLOBAL UI
        ========================================================================== */
-    
-    // Sticky Header
     $(window).scroll(function() {
-        if ($(this).scrollTop() > 50) {
-            $('.header.sticky').addClass('is-scrolling');
-        } else {
-            $('.header.sticky').removeClass('is-scrolling');
-        }
+        if ($(this).scrollTop() > 50) $('.header.sticky').addClass('is-scrolling');
+        else $('.header.sticky').removeClass('is-scrolling');
     });
 
-    // Smooth Scroll
     $('a[href*="#"]:not([href="#"])').click(function() {
         if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
             var target = $(this.hash);
@@ -25,12 +19,9 @@ jQuery(document).ready(function($) {
         }
     });
 
-
     /* ==========================================================================
-       2. MEGA MENU & MOBILE NAVIGATION
+       2. MEGA MENU & MOBILE
        ========================================================================== */
-
-    // MỞ Menu Mobile
     $('.header-cat-btn').on('click', function(e) {
         if ($(window).width() < 992) {
             e.preventDefault();
@@ -39,13 +30,12 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // ĐÓNG Menu Mobile
-    $(document).on('click', '.m-close, .mega-overlay', function() {
+    $(document).on('click', '.m-close, .mega-overlay', function(e) {
+        e.preventDefault(); e.stopPropagation();
         $('.mega-menu-wrapper').removeClass('open');
         $('body').removeClass('no-scroll');
     });
 
-    // CHUYỂN TAB CỘT TRÁI
     $(document).on('mouseenter click', '.cat-item-left', function(e) {
         var isMobile = $(window).width() < 992;
         if (!isMobile && e.type === 'click') return; 
@@ -53,21 +43,15 @@ jQuery(document).ready(function($) {
         
         if (isMobile && e.type === 'click') {
             if ($(this).hasClass('active')) return;
-            e.preventDefault(); 
+            e.preventDefault();
         }
-
         $('.cat-item-left').removeClass('active');
         $(this).addClass('active');
-
         var uniqueID = $(this).data('id');
         $('.cat-pane').removeClass('active');
-        var $targetPane = $('#' + uniqueID);
-        if ($targetPane.length) {
-            $targetPane.addClass('active');
-        }
+        $('#' + uniqueID).addClass('active');
     });
 
-    // FIX LỖI LINK MOBILE
     $(document).on('click', '.brand-item, .sub-cat-item, .mini-prod-item, .btn-view-all', function(e) {
         if ($(window).width() < 992) {
             var url = $(this).attr('href');
@@ -77,275 +61,187 @@ jQuery(document).ready(function($) {
         }
     });
 
-
     /* ==========================================================================
-       3. SLIDERS (SWIPER CONFIG)
+       3. SLIDERS
        ========================================================================== */
-    
     if (typeof Swiper !== 'undefined') {
-        // Main Slider
         if ($('.main-slider').length) {
-            new Swiper('.main-slider', {
-                loop: true, speed: 800,
-                autoplay: { delay: 4000, disableOnInteraction: false },
-                pagination: { el: '.swiper-pagination', clickable: true },
-                navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-            });
+            new Swiper('.main-slider', { loop: true, speed: 800, autoplay: { delay: 4000 }, pagination: { el: '.swiper-pagination' }, navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' } });
         }
-
-        // Category Banner Slider
         if ($('.cat-banner-swiper').length) {
-            new Swiper('.cat-banner-swiper', {
-                slidesPerView: 1, loop: true, speed: 600,
-                autoplay: { delay: 4000, disableOnInteraction: false },
-                pagination: { el: '.cb-dots', clickable: true },
-                navigation: { nextEl: '.cb-next', prevEl: '.cb-prev' },
-            });
+            new Swiper('.cat-banner-swiper', { loop: true, autoplay: { delay: 4000 }, pagination: { el: '.cb-dots' }, navigation: { nextEl: '.cb-next', prevEl: '.cb-prev' } });
         }
-
-        // Sub-Category Slider
+        
+        // Sub-Cat Slider
         $('.sub-cat-swiper-wrap').each(function() {
-            var $container = $(this).find('.sub-cat-slider');
-            var $nextBtn = $(this).find('.sc-next');
-            var $prevBtn = $(this).find('.sc-prev');
-
-            if ($container.length) {
-                new Swiper($container[0], {
-                    slidesPerView: 3, spaceBetween: 10,
-                    observer: true, observeParents: true,
-                    touchStartPreventDefault: false,
-                    navigation: { nextEl: $nextBtn[0], prevEl: $prevBtn[0] },
-                    breakpoints: {
-                        1200: { slidesPerView: 5, spaceBetween: 15 },
-                        992:  { slidesPerView: 4, spaceBetween: 10 },
-                        768:  { slidesPerView: 3, spaceBetween: 10 }
-                    }
+            var $el = $(this).find('.sub-cat-slider');
+            var $next = $(this).find('.sc-next');
+            var $prev = $(this).find('.sc-prev');
+            if ($el.length) {
+                new Swiper($el[0], {
+                    slidesPerView: 3, spaceBetween: 10, observer: true, observeParents: true,
+                    navigation: { nextEl: $next[0], prevEl: $prev[0] },
+                    breakpoints: { 1200: { slidesPerView: 5 }, 992: { slidesPerView: 4 }, 768: { slidesPerView: 3 } }
                 });
             }
         });
 
-        // Category Grid Slider
         if ($('.cat-slider').length) {
             $('.cat-slider').each(function() {
-                var $el = $(this);
-                new Swiper($el[0], {
-                    slidesPerView: 4, spaceBetween: 10,
-                    navigation: { nextEl: '.cat-next', prevEl: '.cat-prev' },
-                    breakpoints: {
-                        1024: { slidesPerView: 8, spaceBetween: 15 },
-                        768:  { slidesPerView: 6, spaceBetween: 15 }
-                    }
+                new Swiper(this, {
+                    slidesPerView: 4, spaceBetween: 10, navigation: { nextEl: '.cat-next', prevEl: '.cat-prev' },
+                    breakpoints: { 1024: { slidesPerView: 8 }, 768: { slidesPerView: 6 } }
                 });
             });
         }
     }
 
-
     /* ==========================================================================
-       4. PRODUCT FILTERS (BỘ LỌC TGDĐ)
+       4. PRODUCT FILTERS (POPUP)
        ========================================================================== */
-
-    // Mở Popup
     $(document).on('click', '#btn-open-filter, .quick-btn', function(e) {
-        e.preventDefault();
-        $('#filter-popup').addClass('open');
-        $('body').addClass('no-scroll');
-        
-        var targetID = $(this).data('target');
-        if(targetID && $('#' + targetID).length) {
-            var $target = $('#' + targetID);
-            var $container = $('.fp-body');
-            setTimeout(function(){
-                $container.animate({
-                    scrollTop: $target.offset().top - $container.offset().top + $container.scrollTop() - 20
-                }, 500);
-            }, 100);
+        e.preventDefault(); $('#filter-popup').addClass('open'); $('body').addClass('no-scroll');
+        var target = $(this).data('target');
+        if(target && $('#'+target).length) {
+            setTimeout(function(){ $('.fp-body').animate({ scrollTop: $('#'+target).offset().top - $('.fp-body').offset().top + $('.fp-body').scrollTop() - 20 }, 500); }, 100);
         }
     });
 
-    // Đóng Popup
-    $(document).on('click', '#btn-close-filter, .fp-overlay', function() {
-        $('#filter-popup').removeClass('open');
-        $('body').removeClass('no-scroll');
+    $(document).on('click', '#btn-close-filter, .fp-overlay', function(e) {
+        e.preventDefault(); e.stopPropagation();
+        $('#filter-popup').removeClass('open'); $('body').removeClass('no-scroll');
     });
 
-    // Dropdown Filter (PC)
     $(document).on('click', '.dropdown-toggle', function(e) {
         e.preventDefault(); e.stopPropagation();
-        var $parent = $(this).parent('.filter-dropdown-wrap');
-        $('.filter-dropdown-wrap').not($parent).removeClass('open');
-        $parent.toggleClass('open');
-        if ($(window).width() < 992) {
-            $('body').toggleClass('no-scroll', $parent.hasClass('open'));
-        }
+        var $p = $(this).parent();
+        $('.filter-dropdown-wrap').not($p).removeClass('open');
+        $p.toggleClass('open');
     });
 
-    // Đóng khi click ngoài
     $(document).on('click', function(e) {
-        if (!$(e.target).closest('.filter-dropdown-wrap').length) {
-            $('.filter-dropdown-wrap').removeClass('open');
-            if (!$('#filter-popup').hasClass('open')) $('body').removeClass('no-scroll');
-        }
-    });
-    
-    $(document).on('click', '.fd-close, .fd-overlay', function() {
-        $(this).closest('.filter-dropdown-wrap').removeClass('open');
-        if (!$('#filter-popup').hasClass('open')) $('body').removeClass('no-scroll');
+        if (!$(e.target).closest('.filter-dropdown-wrap').length) $('.filter-dropdown-wrap').removeClass('open');
     });
 
-    // --- AJAX LIVE COUNT ---
+    // Ajax Count
     var filterTimer;
-    $(document).on('change', '.fp-content input, .fp-content select', function() {
-        var $form = $(this).closest('form');
-        var $btnSubmit = $form.find('.fp-submit-btn');
-        
-        $btnSubmit.css('opacity', '0.7').text('Đang tính...');
-        
+    $(document).on('change', '.fp-content input', function() {
+        var $btn = $('.fp-submit-btn');
+        $btn.css('opacity', '0.7').text('Đang tính...');
         clearTimeout(filterTimer);
         filterTimer = setTimeout(function() {
-            var formData = $form.serialize();
-            $.ajax({
-                url: relive_ajax.url,
-                type: 'POST',
-                data: {
-                    action: 'relive_get_filter_count',
-                    form_data: formData,
-                    nonce: relive_ajax.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        var count = response.data.count;
-                        if (count > 0) {
-                            $btnSubmit.text('Xem ' + count + ' kết quả');
-                            $btnSubmit.prop('disabled', false).css('opacity', '1');
-                        } else {
-                            $btnSubmit.text('Không có kết quả');
-                            $btnSubmit.prop('disabled', true).css('opacity', '0.5');
-                        }
-                    }
-                }
+            $.post(relive_ajax.url, { action: 'relive_get_filter_count', form_data: $('.fp-content').serialize(), nonce: relive_ajax.nonce }, function(res) {
+                if(res.success) $btn.text(res.data.count > 0 ? 'Xem '+res.data.count+' kết quả' : 'Không có kết quả').css('opacity', '1').prop('disabled', res.data.count <= 0);
             });
         }, 300);
     });
 
-    // --- NÚT BỎ CHỌN ---
-    $('#btn-reset-filter').on('click', function() {
-        $('.fp-option-item input[type="checkbox"]').prop('checked', false);
-        $('.fp-submit-btn').text('Xem kết quả').prop('disabled', false).css('opacity', '1');
+    $('#btn-reset-filter').on('click', function(e) {
+        e.preventDefault();
+        $('.fp-option-item input').prop('checked', false);
+        $('.fp-submit-btn').text('Xem kết quả').prop('disabled', false);
     });
 
-    // --- AJAX PAGINATION CLICK (FIXED) ---
+    // Ajax Pagination
     $(document).on('click', '.pagination .page-link', function(e) {
         e.preventDefault();
-        
-        var $btn = $(this);
-        var url = $btn.attr('href');
-        
-        var pageMatch = url.match(/page\/(\d+)/);
+        var url = $(this).attr('href');
         var page = 1;
-        if (pageMatch) {
-            page = pageMatch[1];
-        } else {
-            var urlParams = new URLSearchParams(url.split('?')[1]);
-            if (urlParams.has('paged')) page = urlParams.get('paged');
-        }
-
-        var $form = $('#filter-popup form');
-        var formData = $form.serialize(); 
-        var currentParams = new URLSearchParams(window.location.search);
-        var orderby = currentParams.get('orderby') || 'date';
-
-        $('.shop-products-grid').css('opacity', '0.4');
+        var match = url.match(/page\/(\d+)/);
+        if(match) page = match[1]; else { var p = new URLSearchParams(url.split('?')[1]); if(p.has('paged')) page = p.get('paged'); }
+        
+        $('.shop-products-grid').css('opacity', 0.4);
         $('html, body').animate({ scrollTop: $('.shop-filter-bar').offset().top - 100 }, 500);
-
-        $.ajax({
-            url: relive_ajax.url,
-            type: 'POST',
-            data: {
-                action: 'relive_load_products',
-                page: page,
-                form_data: formData,
-                orderby: orderby,
-                nonce: relive_ajax.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('.shop-products-grid').html(response.data.products).css('opacity', '1');
-                    $('.shop-pagination').html(response.data.pagination);
-                    $('.shop-result-count').html(response.data.result_count);
-                    
-                    var newUrl = url;
-                    if (window.location.search && !newUrl.includes('?')) {
-                         newUrl += window.location.search;
-                    }
-                    window.history.pushState({path: newUrl}, '', newUrl);
-                } else {
-                    $('.shop-products-grid').css('opacity', '1');
-                    alert('Lỗi tải trang. Vui lòng thử lại.');
-                }
+        
+        $.post(relive_ajax.url, { 
+            action: 'relive_load_products', 
+            page: page, 
+            form_data: $('.fp-content').serialize(), 
+            orderby: (new URLSearchParams(window.location.search)).get('orderby') || 'date',
+            nonce: relive_ajax.nonce 
+        }, function(res) {
+            if(res.success) {
+                $('.shop-products-grid').html(res.data.products).css('opacity', 1);
+                $('.shop-pagination').html(res.data.pagination);
+                $('.shop-result-count').html(res.data.result_count);
+                window.history.pushState({path: url}, '', url);
             }
         });
     });
 
-    // --- PRODUCT GALLERY & FANCYBOX (FIXED) ---
-    if ($('.product-main-slider').length) {
+
+    /* ==========================================================================
+       5. PRODUCT DETAIL (SLIDER & FANCYBOX FIX)
+       ========================================================================== */
+    
+    if ($('.product-main-slider').length && typeof Swiper !== 'undefined') {
         var productSwiper = new Swiper('.product-main-slider', {
-            loop: false, spaceBetween: 10,
-            navigation: { nextEl: '.p-next', prevEl: '.p-prev' },
+            loop: false, spaceBetween: 10, navigation: { nextEl: '.p-next', prevEl: '.p-prev' },
             on: {
                 slideChange: function () {
-                    var index = this.activeIndex;
-                    var $iframe = $('#prod-video-iframe');
-                    var $currentSlide = $(this.slides).eq(index);
-
+                    var idx = this.activeIndex;
                     $('.gallery-thumbs-nav-fpt .g-item').removeClass('active');
-                    var $targetBtn = $('.gallery-thumbs-nav-fpt .g-item[data-slide-index="' + index + '"]');
-                    if ($targetBtn.length) $targetBtn.addClass('active');
-                    else $('.gallery-thumbs-nav-fpt .g-item').first().addClass('active');
-
-                    if ($iframe.length) {
-                        if (!$currentSlide.hasClass('video-slide')) {
-                            $iframe[0].contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                        }
+                    var btn = $('.gallery-thumbs-nav-fpt .g-item[data-slide-index="'+idx+'"]');
+                    if(btn.length) btn.addClass('active'); else $('.gallery-thumbs-nav-fpt .g-item').first().addClass('active');
+                    
+                    // Auto Pause Video
+                    var iframe = $('#prod-video-iframe');
+                    if(iframe.length) {
+                         if (!$(this.slides).eq(idx).hasClass('video-slide')) {
+                            iframe[0].contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                         }
                     }
                 }
             }
         });
 
         $('.gallery-thumbs-nav-fpt .g-item').on('click', function(e) {
-            if ($(this).attr('href')) return;
+            if($(this).attr('href')) return;
             e.preventDefault();
-            var slideIndex = $(this).data('slide-index');
-            if (slideIndex !== undefined) productSwiper.slideTo(slideIndex);
+            var idx = $(this).data('slide-index');
+            if(idx !== undefined) productSwiper.slideTo(idx);
         });
 
-        // Kích hoạt Fancybox (Lazy Init)
-        $(document).on('click', '[data-fancybox="product-gallery"]', function(e) {
+        // --- FANCYBOX TRIGGER (CHỈ DÙNG 1 CÁCH NÀY ĐỂ TRÁNH MỞ 2 LẦN) ---
+        $(document).on('click', '.zoom-trigger', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
             if ($.fancybox) {
-                if (!$(this).hasClass('fancybox-initialized')) {
-                    e.preventDefault();
-                    $.fancybox.open($('[data-fancybox="product-gallery"]'), {
-                        loop: true,
-                        animationEffect: "zoom-in-out",
-                        transitionEffect: "slide",
-                        buttons: ["zoom", "slideShow", "fullScreen", "thumbs", "close"],
-                        protect: true
-                    }, $('[data-fancybox="product-gallery"]').index(this));
-                }
+                var $links = $('[data-fancybox="product-gallery"]');
+                var currentSrc = $(this).attr('href');
+                var index = 0;
+                
+                // Tìm index ảnh đang click
+                $links.each(function(i) {
+                    if ($(this).attr('href') === currentSrc) {
+                        index = i; return false;
+                    }
+                });
+
+                $.fancybox.open($links, {
+                    loop: true,
+                    infobar: false,
+                    buttons: ["zoom", "slideShow", "fullScreen", "thumbs", "close"],
+                    animationEffect: "fade",
+                    transitionEffect: "fade",
+                    touch: false,
+                    clickContent: function(current, event) { return current.type === 'image' ? 'next' : false; }
+                }, index);
             }
         });
     }
 
-    // --- POPUP CẤU HÌNH (FIXED) ---
+    // Popup Cấu hình
     $(document).on('click', '#btn-open-specs, #btn-open-specs-2, .view-all-specs', function(e) {
         e.preventDefault(); e.stopPropagation();
-        $('#specs-popup').addClass('open');
-        $('body').addClass('no-scroll');
+        $('#specs-popup').addClass('open'); $('body').addClass('no-scroll');
     });
     $(document).on('click', '#btn-close-specs, .specs-popup-overlay', function(e) {
         if (e.target === this || $(e.target).closest('.sp-close').length) {
-            $('#specs-popup').removeClass('open');
-            $('body').removeClass('no-scroll');
+            e.preventDefault();
+            $('#specs-popup').removeClass('open'); $('body').removeClass('no-scroll');
         }
     });
+
 });

@@ -1093,12 +1093,77 @@ body.no-scroll { overflow: hidden; }
 .product_title { font-size: 24px; font-weight: 700; margin: 0 0 5px; color: #333; }
 .prod-rating { font-size: 13px; color: #f5a623; }
 
-/* Slider */
+/* --- 1. SLIDER ẢNH (FIX FULL KHUNG) --- */
 .product-gallery-wrap { margin-bottom: 25px; }
-.product-main-slider { border: 1px solid #eee; border-radius: 12px; overflow: hidden; background: #fff; position: relative; }
-.product-main-slider .swiper-slide { height: 400px; display: flex; align-items: center; justify-content: center; }
-.product-main-slider img { max-height: 100%; width: auto; max-width: 100%; object-fit: contain; }
-.zoom-trigger { display: block; width: 100%; height: 100%; cursor: zoom-in; display: flex; align-items: center; justify-content: center; }
+
+.product-main-slider { 
+    border: 1px solid #eee; 
+    border-radius: 12px; 
+    overflow: hidden; 
+    background: #fff; 
+    position: relative; 
+}
+
+.product-main-slider .swiper-slide { 
+    height: 372px; /* Chiều cao cố định bạn đã chọn */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 0; /* Bỏ padding để ảnh tràn viền */
+}
+
+.product-main-slider img { 
+    width: 100% !important;   /* Ép rộng 100% */
+    height: 100% !important;  /* Ép cao 100% */
+    
+    /* --- QUAN TRỌNG: CHỌN 1 TRONG 2 KIỂU DƯỚI ĐÂY --- */
+    
+    /* Kiểu 1: Giữ nguyên ảnh, chấp nhận khoảng trắng (Khuyên dùng cho SP) */
+    object-fit: contain; 
+    
+    /* Kiểu 2: Lấp đầy khung, chấp nhận bị cắt bớt ảnh (Dùng nếu muốn full viền tuyệt đối) */
+    /* object-fit: cover; */ 
+}
+
+.video-slide iframe { width: 100%; height: 100%; }
+
+/* --- NÚT NEXT/PREV SLIDER (ĐỒNG BỘ VỚI DANH MỤC) --- */
+.product-main-slider .p-next, 
+.product-main-slider .p-prev {
+    width: 35px !important; 
+    height: 35px !important;
+    background: #fff !important; /* Nền trắng hoàn toàn */
+    border-radius: 50% !important;
+    color: #333 !important; /* Màu mũi tên đen */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important; /* Bóng đổ nhẹ */
+    opacity: 0; /* Ẩn khi chưa hover */
+    transition: all 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* Kích thước mũi tên bên trong */
+.product-main-slider .p-next:after, 
+.product-main-slider .p-prev:after {
+    font-size: 12px !important; /* Mũi tên nhỏ gọn */
+    font-weight: bold;
+}
+
+/* Hiện nút khi di chuột vào ảnh */
+.product-main-slider:hover .p-next, 
+.product-main-slider:hover .p-prev {
+    opacity: 1;
+}
+
+/* Hover vào nút thì đổi màu */
+.product-main-slider .p-next:hover, 
+.product-main-slider .p-prev:hover {
+    background: #cb1c22 !important; /* Đỏ chủ đạo */
+    color: #fff !important;
+}
+
+/* Vị trí căn chỉnh */
+.product-main-slider .p-next { right: 10px; }
+.product-main-slider .p-prev { left: 10px; }
 
 /* Thumbs Nav */
 .gallery-thumbs-nav-fpt { display: flex; gap: 10px; justify-content: center; margin-top: 15px; padding-bottom: 5px; }
@@ -1121,16 +1186,6 @@ body.no-scroll { overflow: hidden; }
     font-weight: 700; font-size: 14px; border-radius: 4px;
 }
 
-/* FIX LỖI FANCYBOX (POPUP ẢNH) */
-.fancybox-container { z-index: 999999 !important; }
-.fancybox-slide--image .fancybox-content {
-    width: auto !important; height: auto !important;
-    max-width: 90% !important; max-height: 90% !important;
-    background: transparent !important;
-}
-.fancybox-bg { background: rgba(0, 0, 0, 0.85) !important; }
-.fancybox-button { background: rgba(0,0,0,0.5) !important; color: #fff !important; }
-
 /* FIX POPUP CẤU HÌNH */
 .specs-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: none; }
 .specs-popup-overlay.open { display: block; }
@@ -1150,3 +1205,4 @@ body.no-scroll { overflow: hidden; }
     .prod-specs-highlight { display: none; }
     .specs-popup-content { width: 100%; max-width: 100%; }
 }
+
