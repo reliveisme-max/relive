@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Template: Nội dung chi tiết sản phẩm (Final Clean Version)
+ * Template: Nội dung chi tiết sản phẩm (Fixed Fancybox Double Open)
  */
 defined('ABSPATH') || exit;
 global $product;
@@ -55,7 +55,7 @@ if (empty($highlight_specs)) {
                     <div class="swiper-wrapper">
                         <div class="swiper-slide" data-type="featured">
                             <?php $img_src = $custom_featured_img ? $custom_featured_img : wp_get_attachment_image_url($main_image_id, 'full'); ?>
-                            <a href="<?php echo esc_url($img_src); ?>" data-fancybox="product-gallery"
+                            <a href="<?php echo esc_url($img_src); ?>" data-relive-gallery="product-gallery"
                                 class="zoom-trigger">
                                 <img src="<?php echo esc_url($img_src); ?>" alt="Nổi bật">
                             </a>
@@ -75,7 +75,7 @@ if (empty($highlight_specs)) {
                         <?php if ($attachment_ids) : foreach ($attachment_ids as $attachment_id) {
                                 $img_full = wp_get_attachment_image_url($attachment_id, 'full'); ?>
                         <div class="swiper-slide" data-type="album">
-                            <a href="<?php echo esc_url($img_full); ?>" data-fancybox="product-gallery"
+                            <a href="<?php echo esc_url($img_full); ?>" data-relive-gallery="product-gallery"
                                 class="zoom-trigger">
                                 <?php echo wp_get_attachment_image($attachment_id, 'full'); ?>
                             </a>
@@ -89,7 +89,7 @@ if (empty($highlight_specs)) {
                             foreach ($box_images_ids as $box_id) {
                                 $box_full = wp_get_attachment_image_url($box_id, 'full'); ?>
                         <div class="swiper-slide" data-type="box">
-                            <a href="<?php echo esc_url($box_full); ?>" data-fancybox="product-gallery"
+                            <a href="<?php echo esc_url($box_full); ?>" data-relive-gallery="product-gallery"
                                 class="zoom-trigger"><?php echo wp_get_attachment_image($box_id, 'full'); ?></a>
                         </div>
                         <?php }
@@ -101,7 +101,7 @@ if (empty($highlight_specs)) {
                             foreach ($real_images_ids as $real_id) {
                                 $real_full = wp_get_attachment_image_url($real_id, 'full'); ?>
                         <div class="swiper-slide" data-type="real">
-                            <a href="<?php echo esc_url($real_full); ?>" data-fancybox="product-gallery"
+                            <a href="<?php echo esc_url($real_full); ?>" data-relive-gallery="product-gallery"
                                 class="zoom-trigger"><?php echo wp_get_attachment_image($real_id, 'full'); ?></a>
                         </div>
                         <?php }
