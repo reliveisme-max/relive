@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Template: Nội dung chi tiết sản phẩm (Full Option: Slider FPT + Fancybox + Hybrid Specs)
+ * Template: Nội dung chi tiết sản phẩm (Final Version)
  */
 defined('ABSPATH') || exit;
 global $product;
@@ -15,7 +15,7 @@ $real_images_ids     = carbon_get_the_post_meta('real_images');
 $attachment_ids      = $product->get_gallery_image_ids();
 $main_image_id       = $product->get_image_id();
 
-// --- 2. XỬ LÝ THÔNG SỐ NỔI BẬT (HYBRID) ---
+// --- 2. XỬ LÝ THÔNG SỐ NỔI BẬT ---
 $highlight_specs = array();
 if (! empty($specs_manual)) {
     foreach ($specs_manual as $row) {
@@ -64,9 +64,7 @@ if (empty($highlight_specs)) {
                     <div class="swiper-wrapper">
 
                         <div class="swiper-slide" data-type="featured">
-                            <?php
-                            $img_src = $custom_featured_img ? $custom_featured_img : wp_get_attachment_image_url($main_image_id, 'full');
-                            ?>
+                            <?php $img_src = $custom_featured_img ? $custom_featured_img : wp_get_attachment_image_url($main_image_id, 'full'); ?>
                             <a href="<?php echo esc_url($img_src); ?>" data-fancybox="product-gallery"
                                 class="zoom-trigger">
                                 <img src="<?php echo esc_url($img_src); ?>" alt="Nổi bật">
@@ -82,9 +80,7 @@ if (empty($highlight_specs)) {
                         <div class="swiper-slide video-slide" data-type="video">
                             <iframe id="prod-video-iframe" width="100%" height="100%"
                                 src="https://www.youtube.com/embed/<?php echo $yt_id; ?>?enablejsapi=1&rel=0"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen></iframe>
+                                frameborder="0" allowfullscreen></iframe>
                         </div>
                         <?php endif; ?>
 
@@ -109,9 +105,7 @@ if (empty($highlight_specs)) {
                         ?>
                         <div class="swiper-slide" data-type="box">
                             <a href="<?php echo esc_url($box_full); ?>" data-fancybox="product-gallery"
-                                class="zoom-trigger">
-                                <?php echo wp_get_attachment_image($box_id, 'full'); ?>
-                            </a>
+                                class="zoom-trigger"><?php echo wp_get_attachment_image($box_id, 'full'); ?></a>
                         </div>
                         <?php }
                         endif; ?>
@@ -125,9 +119,7 @@ if (empty($highlight_specs)) {
                         ?>
                         <div class="swiper-slide" data-type="real">
                             <a href="<?php echo esc_url($real_full); ?>" data-fancybox="product-gallery"
-                                class="zoom-trigger">
-                                <?php echo wp_get_attachment_image($real_id, 'full'); ?>
-                            </a>
+                                class="zoom-trigger"><?php echo wp_get_attachment_image($real_id, 'full'); ?></a>
                         </div>
                         <?php }
                         endif; ?>
@@ -154,7 +146,6 @@ if (empty($highlight_specs)) {
                         $max_thumb = 5;
                         $count = 0;
                         $total_imgs = count($attachment_ids);
-
                         foreach ($attachment_ids as $idx => $att_id) {
                             if ($count >= $max_thumb) break;
                             $slide_idx = $idx + 1 + $video_offset;
@@ -181,7 +172,6 @@ if (empty($highlight_specs)) {
                         <div class="g-icon"><i class="fas fa-camera"></i></div><span>Thực tế</span>
                     </div>
                     <?php endif; ?>
-
                 </div>
             </div>
 
@@ -192,8 +182,7 @@ if (empty($highlight_specs)) {
                     <?php foreach ($highlight_specs as $spec) : ?>
                     <li><i class="<?php echo esc_attr($spec['icon']); ?>" style="color: #4caf50;"></i> <span
                             class="s-label"><?php echo esc_html($spec['label']); ?>:</span>
-                        <strong><?php echo esc_html($spec['val']); ?></strong>
-                    </li>
+                        <strong><?php echo esc_html($spec['val']); ?></strong></li>
                     <?php endforeach; ?>
                 </ul>
                 <a href="javascript:;" class="view-all-specs" id="btn-open-specs">Xem chi tiết cấu hình <i
@@ -242,13 +231,11 @@ if (empty($highlight_specs)) {
             <div class="white-box full-specs-box">
                 <h3 class="section-title">Thông số kỹ thuật</h3>
                 <table class="table-specs-sidebar">
-                    <?php
-                        $preview_data = array_slice($table_data, 0, 8);
+                    <?php $preview_data = array_slice($table_data, 0, 8);
                         foreach ($preview_data as $row):
                             $lbl = isset($row['spec_label']) ? $row['spec_label'] : (isset($row['label']) ? $row['label'] : '');
                             $val = isset($row['spec_value']) ? $row['spec_value'] : (isset($row['val']) ? $row['val'] : '');
-                            if (!$lbl) continue;
-                        ?>
+                            if (!$lbl) continue; ?>
                     <tr>
                         <td><?php echo esc_html($lbl); ?></td>
                         <td><?php echo esc_html($val); ?></td>
@@ -271,24 +258,13 @@ if (empty($highlight_specs)) {
         </div>
         <div class="sp-body">
             <div class="sp-prod-info">
-                <?php
-                    // Lấy URL ảnh thumbnail
-                    $thumb_url = wp_get_attachment_image_url($main_image_id, 'thumbnail');
-                    // Nếu không có, lấy ảnh placeholder mặc định
-                    if (! $thumb_url) {
-                        $thumb_url = wc_placeholder_img_src('thumbnail');
-                    }
-                    ?>
-                <img src="<?php echo esc_url($thumb_url); ?>" alt="<?php the_title(); ?>">
-                <strong><?php the_title(); ?></strong>
+                <?php echo wp_get_attachment_image($main_image_id, 'thumbnail'); ?><strong><?php the_title(); ?></strong>
             </div>
-
             <table class="table-specs-full">
                 <?php foreach ($table_data as $row):
                         $lbl = isset($row['spec_label']) ? $row['spec_label'] : (isset($row['label']) ? $row['label'] : '');
                         $val = isset($row['spec_value']) ? $row['spec_value'] : (isset($row['val']) ? $row['val'] : '');
-                        if (!$lbl) continue;
-                    ?>
+                        if (!$lbl) continue; ?>
                 <tr>
                     <th><?php echo esc_html($lbl); ?></th>
                     <td><?php echo esc_html($val); ?></td>

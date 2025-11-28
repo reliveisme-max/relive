@@ -287,29 +287,22 @@ jQuery(document).ready(function($) {
         });
     });
 
-    /* ==========================================================================
-       5. PRODUCT GALLERY SLIDER & FANCYBOX (FIX LỖI POPUP)
-       ========================================================================== */
-
+    // --- PRODUCT GALLERY & FANCYBOX (FIXED) ---
     if ($('.product-main-slider').length) {
         var productSwiper = new Swiper('.product-main-slider', {
-            loop: false,
-            spaceBetween: 10,
+            loop: false, spaceBetween: 10,
             navigation: { nextEl: '.p-next', prevEl: '.p-prev' },
             on: {
                 slideChange: function () {
                     var index = this.activeIndex;
-                    var $slides = $(this.slides);
-                    var $currentSlide = $slides.eq(index);
                     var $iframe = $('#prod-video-iframe');
+                    var $currentSlide = $(this.slides).eq(index);
 
-                    // Cập nhật nút Active
                     $('.gallery-thumbs-nav-fpt .g-item').removeClass('active');
                     var $targetBtn = $('.gallery-thumbs-nav-fpt .g-item[data-slide-index="' + index + '"]');
                     if ($targetBtn.length) $targetBtn.addClass('active');
                     else $('.gallery-thumbs-nav-fpt .g-item').first().addClass('active');
 
-                    // Auto Pause Video khi lướt qua
                     if ($iframe.length) {
                         if (!$currentSlide.hasClass('video-slide')) {
                             $iframe[0].contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
@@ -319,7 +312,6 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // Click Thumb
         $('.gallery-thumbs-nav-fpt .g-item').on('click', function(e) {
             if ($(this).attr('href')) return;
             e.preventDefault();
@@ -327,52 +319,33 @@ jQuery(document).ready(function($) {
             if (slideIndex !== undefined) productSwiper.slideTo(slideIndex);
         });
 
-        // --- KÍCH HOẠT LIGHTBOX (FANCYBOX LAZY INIT) ---
-        // Dùng .on('click') để đảm bảo chạy kể cả khi thư viện load chậm
+        // Kích hoạt Fancybox (Lazy Init)
         $(document).on('click', '[data-fancybox="product-gallery"]', function(e) {
-            // Kiểm tra xem thư viện đã load chưa
             if ($.fancybox) {
-                // Nếu chưa init, init ngay
                 if (!$(this).hasClass('fancybox-initialized')) {
                     e.preventDefault();
-                    var index = $('[data-fancybox="product-gallery"]').index(this);
-                    
                     $.fancybox.open($('[data-fancybox="product-gallery"]'), {
                         loop: true,
                         animationEffect: "zoom-in-out",
                         transitionEffect: "slide",
                         buttons: ["zoom", "slideShow", "fullScreen", "thumbs", "close"],
                         protect: true
-                    }, index);
+                    }, $('[data-fancybox="product-gallery"]').index(this));
                 }
-            } else {
-                console.error('Fancybox library not loaded!');
             }
         });
     }
 
-    // --- POPUP CẤU HÌNH (SLIDE TỪ PHẢI) ---
-    
-    // Mở Popup
+    // --- POPUP CẤU HÌNH (FIXED) ---
     $(document).on('click', '#btn-open-specs, #btn-open-specs-2, .view-all-specs', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        var $popup = $('#specs-popup');
-        if ($popup.length) {
-            $popup.addClass('open'); 
-            $('body').addClass('no-scroll');
-        } else {
-            console.log('Lỗi: Không tìm thấy ID #specs-popup trong HTML');
-        }
+        e.preventDefault(); e.stopPropagation();
+        $('#specs-popup').addClass('open');
+        $('body').addClass('no-scroll');
     });
-
-    // Đóng Popup
     $(document).on('click', '#btn-close-specs, .specs-popup-overlay', function(e) {
         if (e.target === this || $(e.target).closest('.sp-close').length) {
             $('#specs-popup').removeClass('open');
             $('body').removeClass('no-scroll');
         }
     });
-
 });
