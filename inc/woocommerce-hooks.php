@@ -219,3 +219,106 @@ function relive_ajax_get_filter_count()
     // 6. Trả kết quả về cho JS
     wp_send_json_success(array('count' => $count));
 }
+
+
+/**
+ * --- AJAX PAGINATION (PHÂN TRANG KHÔNG LOAD LẠI) ---
+ */
+add_action('wp_ajax_relive_load_products', 'relive_ajax_load_products');
+add_action('wp_ajax_nopriv_relive_load_products', 'relive_ajax_load_products');
+
+function relive_ajax_load_products()
+{
+    // 1. Nhận dữ liệu từ JS
+    $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $form_data = isset($_POST['form_data']) ? $_POST['form_data'] : '';
+    $orderby = isset($_POST['orderby']) ? $_POST['orderby'] : 'date'; // Lấy sắp xếp
+
+    // Parse chuỗi form data thành mảng
+    $params = array();
+    parse_str($form_data, $params);
+
+    // 2. Chuẩn bị Query
+    $args = array(
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'posts_per_page' => carbon_get_theme_option('shop_per_page') ? carbon_get_theme_option('shop_per_page') : 12,
+        'paged'          => $page,
+        'tax_query'      => array('relation' => 'AND'),
+    );
+
+    // Xử lý sắp xếp (Orderby)
+    if ($orderby == 'price') {
+        $args['orderby'] = 'meta_value_num';
+        $args['meta_key'] = '_price';
+        $args['order'] = 'ASC';
+    } elseif ($orderby == 'price-desc') {
+        $args['orderby'] = 'meta_value_num';
+        $args['meta_key'] = '_price';
+        $args['order'] = 'DESC';
+    } elseif ($orderby == 'popularity') {
+        $args['orderby'] = 'meta_value_num';
+        $args['meta_key'] = 'total_sales';
+        $args['order'] = 'DESC';
+    } else {
+        $args['orderby'] = 'date';
+        $args['order'] = 'DESC';
+    }
+
+    // 3. Tái tạo bộ lọc (Giống hệt hàm đếm số lượng)
+    // - Danh mục hiện tại
+    if (! empty($params['product_cat'])) {
+        $args['tax_query'][] = array(
+            'taxonomy' => 'product_cat',
+            'field'    => 'slug',
+            'terms'    => $params['product_cat'],
+        );
+    }
+    // - Các bộ lọc thuộc tính
+    foreach ($params as $key => $value) {
+        if (strpos($key, 'filter_') === 0 && ! empty($value)) {
+            $slug = str_replace('filter_', '', $key);
+            $args['tax_query'][] = array(
+                'taxonomy' => 'pa_' . $slug,
+                'field'    => 'slug',
+                'terms'    => $value,
+                'operator' => 'IN',
+            );
+        }
+    }
+
+    // 4. Chạy Query
+    $query = new WP_Query($args);
+
+    // 5. Trả về HTML
+    if ($query->have_posts()) {
+        // A. HTML Danh sách sản phẩm
+        ob_start();
+        while ($query->have_posts()) {
+            $query->the_post();
+            wc_get_template_part('content', 'product');
+        }
+        $products_html = ob_get_clean();
+
+        // B. HTML Phân trang mới (FIX LỖI MẤT PHÂN TRANG)
+        ob_start();
+        // Quan trọng: Truyền $query vào để hàm phân trang biết tổng số trang
+        relive_pagination($query);
+        $pagination_html = ob_get_clean();
+
+        // C. HTML Số lượng kết quả
+        $total = $query->found_posts;
+        $first = ($page - 1) * $args['posts_per_page'] + 1;
+        $last = min($total, $page * $args['posts_per_page']);
+        $result_count_html = 'Hiển thị <b>' . $first . '-' . $last . '</b> trong <b>' . $total . '</b> kết quả';
+
+        wp_send_json_success(array(
+            'products' => $products_html,
+            'pagination' => $pagination_html, // HTML phân trang mới sẽ được gửi về
+            'result_count' => $result_count_html
+        ));
+    } else {
+        wp_send_json_error();
+    }
+    wp_die();
+}

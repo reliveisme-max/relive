@@ -1,21 +1,23 @@
 <?php
+
 /**
- * Template Chi tiết sản phẩm (Clean Version)
+ * Template: Single Product (Khung sườn)
+ * File: woocommerce/single-product.php
  */
-if ( ! defined( 'ABSPATH' ) ) exit;
+if (! defined('ABSPATH')) exit;
 
-get_header( 'shop' ); ?>
+get_header('shop'); ?>
 
-<main id="main" class="site-main" style="background-color: #f4f4f4; padding-bottom: 40px;">
-    
-    <div class="container" style="padding-top: 20px;">
-        <?php if(function_exists('relive_breadcrumbs')) relive_breadcrumbs(); ?>
+<main id="main" class="site-main" style="background-color: #fff; padding-bottom: 40px;">
+
+    <div class="container" style="padding-top: 15px;">
+        <?php if (function_exists('relive_breadcrumbs')) relive_breadcrumbs(); ?>
     </div>
 
-    <?php while ( have_posts() ) : the_post(); ?>
-        <?php wc_get_template_part( 'content', 'single-product' ); ?>
+    <?php while (have_posts()) : the_post(); ?>
+    <?php wc_get_template_part('content', 'single-product'); ?>
     <?php endwhile; ?>
 
 </main>
 
-<?php get_footer( 'shop' );
+<?php get_footer('shop'); ?>

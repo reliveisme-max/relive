@@ -67,43 +67,51 @@ function relive_breadcrumbs()
  * 2. CUSTOM PAGINATION (Phân trang dạng số 1 2 3)
  * Thay thế cho "Previous / Next" mặc định
  */
-function relive_pagination()
+function relive_pagination($custom_query = null)
 {
-    global $wp_query;
+    // Nếu không truyền query thì lấy query chính (cho load lần đầu)
+    if (! $custom_query) {
+        global $wp_query;
+        $custom_query = $wp_query;
+    }
 
-    $big = 999999999; // Số ngẫu nhiên lớn để thay thế link
+    $total_pages = $custom_query->max_num_pages;
+    if ($total_pages <= 1) return;
+
+    // Lấy trang hiện tại
+    $current = max(1, get_query_var('paged'), get_query_var('page'));
+
+    // NẾU LÀ AJAX: Lấy trang từ biến query (vì get_query_var có thể sai trong ajax)
+    if (isset($custom_query->query_vars['paged']) && $custom_query->query_vars['paged'] > 0) {
+        $current = $custom_query->query_vars['paged'];
+    }
 
     $pages = paginate_links(array(
-        'base'      => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
+        'base'      => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
         'format'    => '?paged=%#%',
-        'current'   => max(1, get_query_var('paged')),
-        'total'     => $wp_query->max_num_pages,
+        'current'   => $current,
+        'total'     => $total_pages,
         'type'      => 'array',
-        'prev_text' => '&laquo;',
-        'next_text' => '&raquo;',
+        'prev_text' => '<i class="fas fa-chevron-left"></i>',
+        'next_text' => '<i class="fas fa-chevron-right"></i>',
+        'mid_size'  => 2,
     ));
 
     if (is_array($pages)) {
-        echo '<ul class="pagination" style="display: flex; gap: 5px; justify-content: center; margin-top: 40px;">';
+        echo '<div class="shop-pagination-wrap"><ul class="pagination">';
         foreach ($pages as $page) {
-            // Style inline (Sau này đưa vào CSS)
-            $active_style = strpos($page, 'current') !== false ? 'background: #cb1c22; color: #fff; border-color: #cb1c22;' : 'background: #fff; color: #333;';
-
-            echo '<li class="page-item" style="list-style: none;">';
-            echo str_replace('page-numbers', 'page-link', $page);
-            echo '</li>';
+            // Fix class active cho đẹp
+            $page = str_replace('page-numbers', 'page-link', $page);
+            echo '<li class="page-item">' . $page . '</li>';
         }
-        echo '</ul>';
-
-        // CSS Inline nhỏ cho phân trang đẹp luôn
-        echo '<style>
-            .pagination .page-link {
-                display: block; padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; text-decoration: none; font-weight: bold;
-            }
-            .pagination .page-link.current {
-                background: var(--primary-color, #cb1c22); color: #fff; border-color: var(--primary-color, #cb1c22);
-            }
-            .pagination .page-link:hover:not(.current) { background: #f0f0f0; }
-        </style>';
+        echo '</ul></div>';
     }
+}
+
+
+// Thêm vào functions.php
+function get_youtube_id_from_url($url)
+{
+    preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match);
+    return isset($match[1]) ? $match[1] : '';
 }

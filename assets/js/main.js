@@ -4,7 +4,7 @@ jQuery(document).ready(function($) {
        1. GLOBAL UI (STICKY HEADER, SCROLL)
        ========================================================================== */
     
-    // Sticky Header: Thêm class khi cuộn trang
+    // Sticky Header
     $(window).scroll(function() {
         if ($(this).scrollTop() > 50) {
             $('.header.sticky').addClass('is-scrolling');
@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // Smooth Scroll cho các link neo (#)
+    // Smooth Scroll
     $('a[href*="#"]:not([href="#"])').click(function() {
         if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname) {
             var target = $(this.hash);
@@ -30,46 +30,35 @@ jQuery(document).ready(function($) {
        2. MEGA MENU & MOBILE NAVIGATION
        ========================================================================== */
 
-    // MỞ Menu Mobile (Khi bấm nút "Danh mục")
+    // MỞ Menu Mobile
     $('.header-cat-btn').on('click', function(e) {
         if ($(window).width() < 992) {
             e.preventDefault();
             $('.mega-menu-wrapper').addClass('open');
-            $('body').addClass('no-scroll'); // Khóa cuộn
+            $('body').addClass('no-scroll');
         }
     });
 
-    // ĐÓNG Menu Mobile (Bấm nút X hoặc Nền đen)
+    // ĐÓNG Menu Mobile
     $(document).on('click', '.m-close, .mega-overlay', function() {
         $('.mega-menu-wrapper').removeClass('open');
-        $('body').removeClass('no-scroll'); // Mở khóa cuộn
+        $('body').removeClass('no-scroll');
     });
 
-    // CHUYỂN TAB CỘT TRÁI (LOGIC THÔNG MINH)
-    // PC: Hover chuyển tab. Mobile: Bấm chuyển tab, bấm lần nữa vào link.
+    // CHUYỂN TAB CỘT TRÁI
     $(document).on('mouseenter click', '.cat-item-left', function(e) {
         var isMobile = $(window).width() < 992;
-
-        // PC: Chỉ xử lý Hover, bỏ qua Click
         if (!isMobile && e.type === 'click') return; 
-        
-        // Mobile: Bỏ qua Hover
         if (isMobile && e.type === 'mouseenter') return;
         
-        // Mobile Logic: Double Tap to Go
         if (isMobile && e.type === 'click') {
-            // Nếu đã active rồi thì cho phép chạy link
             if ($(this).hasClass('active')) return;
-            
-            // Nếu chưa active thì chặn link để mở tab trước
             e.preventDefault(); 
         }
 
-        // Xử lý giao diện Active
         $('.cat-item-left').removeClass('active');
         $(this).addClass('active');
 
-        // Hiện nội dung cột phải tương ứng
         var uniqueID = $(this).data('id');
         $('.cat-pane').removeClass('active');
         var $targetPane = $('#' + uniqueID);
@@ -78,8 +67,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // FIX LỖI KHÔNG BẤM ĐƯỢC LINK TRÊN MOBILE (QUAN TRỌNG)
-    // Ép trình duyệt chuyển trang khi bấm vào các item con
+    // FIX LỖI LINK MOBILE
     $(document).on('click', '.brand-item, .sub-cat-item, .mini-prod-item, .btn-view-all', function(e) {
         if ($(window).width() < 992) {
             var url = $(this).attr('href');
@@ -95,32 +83,27 @@ jQuery(document).ready(function($) {
        ========================================================================== */
     
     if (typeof Swiper !== 'undefined') {
-
-        // A. MAIN HOME SLIDER (Slider chính trang chủ)
+        // Main Slider
         if ($('.main-slider').length) {
             new Swiper('.main-slider', {
-                loop: true,
-                speed: 800,
+                loop: true, speed: 800,
                 autoplay: { delay: 4000, disableOnInteraction: false },
                 pagination: { el: '.swiper-pagination', clickable: true },
                 navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
             });
         }
 
-        // B. CATEGORY BANNER SLIDER (Slider FPT Style ở trang danh mục)
+        // Category Banner Slider
         if ($('.cat-banner-swiper').length) {
             new Swiper('.cat-banner-swiper', {
-                slidesPerView: 1,
-                loop: true,
-                speed: 600,
+                slidesPerView: 1, loop: true, speed: 600,
                 autoplay: { delay: 4000, disableOnInteraction: false },
                 pagination: { el: '.cb-dots', clickable: true },
                 navigation: { nextEl: '.cb-next', prevEl: '.cb-prev' },
             });
         }
 
-        // C. SUB-CATEGORY SLIDER (Slider tròn trong Mega Menu)
-        // Dùng .each để khởi tạo riêng biệt cho từng Tab, tránh xung đột nút bấm
+        // Sub-Category Slider
         $('.sub-cat-swiper-wrap').each(function() {
             var $container = $(this).find('.sub-cat-slider');
             var $nextBtn = $(this).find('.sc-next');
@@ -128,15 +111,10 @@ jQuery(document).ready(function($) {
 
             if ($container.length) {
                 new Swiper($container[0], {
-                    slidesPerView: 3, // Mobile hiện 3
-                    spaceBetween: 10,
-                    observer: true,       // Tự cập nhật khi hiện từ display:none
-                    observeParents: true,
-                    touchStartPreventDefault: false, // Fix lỗi chạm link mobile
-                    navigation: {
-                        nextEl: $nextBtn[0],
-                        prevEl: $prevBtn[0],
-                    },
+                    slidesPerView: 3, spaceBetween: 10,
+                    observer: true, observeParents: true,
+                    touchStartPreventDefault: false,
+                    navigation: { nextEl: $nextBtn[0], prevEl: $prevBtn[0] },
                     breakpoints: {
                         1200: { slidesPerView: 5, spaceBetween: 15 },
                         992:  { slidesPerView: 4, spaceBetween: 10 },
@@ -146,15 +124,12 @@ jQuery(document).ready(function($) {
             }
         });
 
-        // D. CATEGORY GRID SLIDER (Slider danh mục trang chủ)
+        // Category Grid Slider
         if ($('.cat-slider').length) {
-            // Lấy ID động hoặc class chung
             $('.cat-slider').each(function() {
                 var $el = $(this);
-                // Config cơ bản, có thể tùy biến thêm nếu cần
                 new Swiper($el[0], {
-                    slidesPerView: 4,
-                    spaceBetween: 10,
+                    slidesPerView: 4, spaceBetween: 10,
                     navigation: { nextEl: '.cat-next', prevEl: '.cat-prev' },
                     breakpoints: {
                         1024: { slidesPerView: 8, spaceBetween: 15 },
@@ -170,18 +145,16 @@ jQuery(document).ready(function($) {
        4. PRODUCT FILTERS (BỘ LỌC TGDĐ)
        ========================================================================== */
 
-    // MỞ/ĐÓNG POPUP LỌC (Nút "Lọc" hoặc nút nhanh)
+    // Mở Popup
     $(document).on('click', '#btn-open-filter, .quick-btn', function(e) {
         e.preventDefault();
         $('#filter-popup').addClass('open');
         $('body').addClass('no-scroll');
         
-        // Scroll tới mục tương ứng nếu bấm nút nhanh
         var targetID = $(this).data('target');
         if(targetID && $('#' + targetID).length) {
             var $target = $('#' + targetID);
             var $container = $('.fp-body');
-            // Tính toán vị trí scroll
             setTimeout(function(){
                 $container.animate({
                     scrollTop: $target.offset().top - $container.offset().top + $container.scrollTop() - 20
@@ -190,68 +163,47 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // Đóng Popup Filter
+    // Đóng Popup
     $(document).on('click', '#btn-close-filter, .fp-overlay', function() {
         $('#filter-popup').removeClass('open');
         $('body').removeClass('no-scroll');
     });
 
-    // DROPDOWN FILTER (Bộ lọc xổ xuống trên PC)
+    // Dropdown Filter (PC)
     $(document).on('click', '.dropdown-toggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
+        e.preventDefault(); e.stopPropagation();
         var $parent = $(this).parent('.filter-dropdown-wrap');
-        
-        // Đóng các dropdown khác
         $('.filter-dropdown-wrap').not($parent).removeClass('open');
-        
-        // Toggle cái hiện tại
         $parent.toggleClass('open');
-        
-        // Trên mobile thì khóa cuộn body khi mở dropdown
         if ($(window).width() < 992) {
             $('body').toggleClass('no-scroll', $parent.hasClass('open'));
         }
     });
 
-    // Đóng Dropdown khi click ra ngoài
+    // Đóng khi click ngoài
     $(document).on('click', function(e) {
         if (!$(e.target).closest('.filter-dropdown-wrap').length) {
             $('.filter-dropdown-wrap').removeClass('open');
-            // Chỉ mở khóa cuộn nếu không có popup nào khác đang mở
-            if (!$('#filter-popup').hasClass('open')) {
-                $('body').removeClass('no-scroll');
-            }
+            if (!$('#filter-popup').hasClass('open')) $('body').removeClass('no-scroll');
         }
     });
     
-    // Nút đóng trong Dropdown Mobile
     $(document).on('click', '.fd-close, .fd-overlay', function() {
         $(this).closest('.filter-dropdown-wrap').removeClass('open');
-        if (!$('#filter-popup').hasClass('open')) {
-            $('body').removeClass('no-scroll');
-        }
+        if (!$('#filter-popup').hasClass('open')) $('body').removeClass('no-scroll');
     });
 
-    // --- AJAX LIVE COUNT (CẬP NHẬT SỐ LƯỢNG KHI LỌC) ---
+    // --- AJAX LIVE COUNT ---
     var filterTimer;
-    
-    // Bắt sự kiện khi thay đổi bất kỳ input nào trong popup
     $(document).on('change', '.fp-content input, .fp-content select', function() {
         var $form = $(this).closest('form');
         var $btnSubmit = $form.find('.fp-submit-btn');
-        var originalText = 'Xem kết quả';
         
-        // Hiện hiệu ứng đang tải...
         $btnSubmit.css('opacity', '0.7').text('Đang tính...');
         
-        // Dùng Timeout để tránh gửi quá nhiều request nếu bấm liên tục (Debounce)
         clearTimeout(filterTimer);
         filterTimer = setTimeout(function() {
-            
-            var formData = $form.serialize(); // Lấy toàn bộ dữ liệu đã chọn
-            
+            var formData = $form.serialize();
             $.ajax({
                 url: relive_ajax.url,
                 type: 'POST',
@@ -263,30 +215,118 @@ jQuery(document).ready(function($) {
                 success: function(response) {
                     if (response.success) {
                         var count = response.data.count;
-                        // Cập nhật text nút bấm
                         if (count > 0) {
                             $btnSubmit.text('Xem ' + count + ' kết quả');
                             $btnSubmit.prop('disabled', false).css('opacity', '1');
                         } else {
                             $btnSubmit.text('Không có kết quả');
-                            $btnSubmit.prop('disabled', true).css('opacity', '0.5'); // Khóa nút nếu = 0
+                            $btnSubmit.prop('disabled', true).css('opacity', '0.5');
                         }
                     }
                 }
             });
-            
-        }, 300); // Đợi 300ms sau khi bấm mới gửi request
+        }, 300);
     });
-    // --- NÚT BỎ CHỌN (RESET FILTER) ---
+
+    // --- NÚT BỎ CHỌN ---
     $('#btn-reset-filter').on('click', function() {
-        // 1. Bỏ tick tất cả checkbox
         $('.fp-option-item input[type="checkbox"]').prop('checked', false);
-        
-        // 2. Reset text nút Submit về mặc định
         $('.fp-submit-btn').text('Xem kết quả').prop('disabled', false).css('opacity', '1');
-        
-        // 3. (Tùy chọn) Reload lại trang gốc để xóa bộ lọc
-        // window.location.href = window.location.pathname;
     });
+
+    // --- AJAX PAGINATION CLICK (FIXED) ---
+    $(document).on('click', '.pagination .page-link', function(e) {
+        e.preventDefault();
+        
+        var $btn = $(this);
+        var url = $btn.attr('href');
+        
+        var pageMatch = url.match(/page\/(\d+)/);
+        var page = 1;
+        if (pageMatch) {
+            page = pageMatch[1];
+        } else {
+            var urlParams = new URLSearchParams(url.split('?')[1]);
+            if (urlParams.has('paged')) page = urlParams.get('paged');
+        }
+
+        var $form = $('#filter-popup form');
+        var formData = $form.serialize(); 
+        var currentParams = new URLSearchParams(window.location.search);
+        var orderby = currentParams.get('orderby') || 'date';
+
+        $('.shop-products-grid').css('opacity', '0.4');
+        $('html, body').animate({ scrollTop: $('.shop-filter-bar').offset().top - 100 }, 500);
+
+        $.ajax({
+            url: relive_ajax.url,
+            type: 'POST',
+            data: {
+                action: 'relive_load_products',
+                page: page,
+                form_data: formData,
+                orderby: orderby,
+                nonce: relive_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('.shop-products-grid').html(response.data.products).css('opacity', '1');
+                    $('.shop-pagination').html(response.data.pagination);
+                    $('.shop-result-count').html(response.data.result_count);
+                    
+                    var newUrl = url;
+                    if (window.location.search && !newUrl.includes('?')) {
+                         newUrl += window.location.search;
+                    }
+                    window.history.pushState({path: newUrl}, '', newUrl);
+                } else {
+                    $('.shop-products-grid').css('opacity', '1');
+                    alert('Lỗi tải trang. Vui lòng thử lại.');
+                }
+            }
+        });
+    });
+
+    // --- POPUP CẤU HÌNH ---
+    $('#btn-open-specs, #btn-open-specs-2').on('click', function(e) {
+        e.preventDefault();
+        $('#specs-popup').addClass('open');
+        $('body').addClass('no-scroll');
+    });
+
+    $('#btn-close-specs, .specs-popup-overlay').on('click', function(e) {
+        if (e.target === this || $(e.target).closest('.sp-close').length) {
+            $('#specs-popup').removeClass('open');
+            $('body').removeClass('no-scroll');
+        }
+    });
+
+    // --- PRODUCT GALLERY SLIDER ---
+    if ($('.product-main-slider').length) {
+        var productSwiper = new Swiper('.product-main-slider', {
+            loop: false,
+            navigation: { nextEl: '.p-next', prevEl: '.p-prev' },
+            on: {
+                slideChange: function () {
+                    var index = this.activeIndex;
+                    $('.gallery-thumbs-list .thumb-item').removeClass('active');
+                    // Chỉ highlight những thumb đang hiển thị (trong khoảng 0-5)
+                    var $target = $('.gallery-thumbs-list .thumb-item[data-slide-index="' + index + '"]');
+                    if ($target.length) {
+                        $target.addClass('active');
+                    } else {
+                        // Nếu lướt qua ảnh thứ 7, 8... thì vẫn active cái cuối cùng (+5)
+                        $('.gallery-thumbs-list .thumb-item').last().addClass('active');
+                    }
+                }
+            }
+        });
+
+        // Click Thumb -> Chuyển ảnh
+        $('.gallery-thumbs-list .thumb-item').on('click', function() {
+            var index = $(this).data('slide-index');
+            productSwiper.slideTo(index);
+        });
+    }
 
 });

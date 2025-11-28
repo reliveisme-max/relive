@@ -3,6 +3,32 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
+//Thông số kĩ thuật
+add_action('carbon_fields_register_fields', 'relive_product_meta');
+function relive_product_meta()
+{
+    Container::make('post_meta', 'Cấu hình Sản phẩm (FPT Style)')
+        ->where('post_type', '=', 'product')
+        ->add_fields(array(
+
+            // 1. Link Video
+            Field::make('text', 'prod_video', 'Link Video Youtube'),
+
+            // 2. Bảng Thông số kỹ thuật (Nhập tay linh hoạt)
+            Field::make('complex', 'product_specs_table', 'Bảng Thông số kỹ thuật')
+                ->set_layout('tabbed-horizontal')
+                ->add_fields(array(
+                    Field::make('text', 'spec_label', 'Tên thông số (VD: Dung tích)')->set_width(40),
+                    Field::make('text', 'spec_value', 'Giá trị (VD: 200 Lít)')->set_width(60),
+                    Field::make('checkbox', 'is_highlight', 'Hiện ở mục "Thông số nổi bật"?')->set_width(100),
+                ))
+                ->set_header_template('<%- spec_label %>: <%- spec_value %>'),
+
+            // 3. Ảnh mở hộp (Gallery riêng nếu cần)
+            Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện'),
+        ));
+}
+
 // Đăng ký Slider cho Danh mục sản phẩm (Product Category)
 add_action('carbon_fields_register_fields', 'relive_cat_banner_fields');
 function relive_cat_banner_fields()
