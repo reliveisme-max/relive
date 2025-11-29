@@ -2463,3 +2463,595 @@ a.zoom-trigger {
     .sp-col-left, .sp-col-right { width: 100%; border-right: none; height: auto; overflow: visible; }
     .sp-list-container { overflow: visible; height: auto; }
 }
+
+/* ==========================================================================
+   8. CHI TIẾT SẢN PHẨM - TÍNH NĂNG MỚI (FPT STYLE)
+   ========================================================================== */
+
+/* --- A. MÔ TẢ SẢN PHẨM (THU GỌN / XEM THÊM) --- */
+.content-body-wrap {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+.content-body {
+    height: 500px; /* Chiều cao mặc định khi chưa mở */
+    overflow: hidden;
+    line-height: 1.6;
+    font-size: 15px;
+    color: #333;
+}
+.content-body.expanded {
+    height: auto !important;
+}
+.content-body img {
+    margin: 15px auto;
+    border-radius: 8px;
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.content-body h2, .content-body h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Hiệu ứng mờ dần ở đáy khi thu gọn */
+.content-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+    pointer-events: none;
+    transition: 0.3s;
+}
+.content-body.expanded + .content-gradient {
+    display: none;
+}
+
+/* Nút Xem thêm / Thu gọn */
+.content-action {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.btn-view-more-content {
+    background: #fff;
+    border: 1px solid #cb1c22;
+    color: #cb1c22;
+    padding: 8px 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-view-more-content:hover {
+    background: #cb1c22;
+    color: #fff;
+}
+
+/* --- B. MUA KÈM GIÁ SỐC (BOUGHT TOGETHER) --- */
+.bought-together-box {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.bt-header {
+    background: #fffbf0; /* Nền vàng nhạt */
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #fee2b3;
+}
+.bt-icon {
+    font-size: 18px;
+    color: #ff6a00;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+}
+.bt-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+    flex: 1;
+    text-transform: none;
+}
+.bt-view-all {
+    font-size: 13px;
+    color: #288ad6;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.bt-list-form {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.bt-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+    transition: 0.2s;
+}
+.bt-item:hover {
+    border-color: #cb1c22;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.bt-img {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+.bt-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.bt-info {
+    flex: 1;
+    margin-right: 10px;
+}
+.bt-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    text-decoration: none;
+}
+.bt-price {
+    font-size: 13px;
+    color: #d70018;
+    font-weight: 700;
+}
+.bt-price del {
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+    margin-left: 5px;
+}
+.bt-promo-text {
+    font-size: 11px;
+    color: #d70018;
+    margin-top: 2px;
+}
+
+.bt-action {
+    width: 90px;
+    text-align: right;
+}
+.bt-checkbox-btn input {
+    display: none; /* Ẩn checkbox gốc */
+}
+.btn-select-add {
+    display: inline-block;
+    padding: 6px 10px;
+    background: #eff3f6;
+    color: #288ad6;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.btn-select-add i {
+    font-size: 10px;
+    margin-left: 2px;
+}
+
+/* Trạng thái đã chọn */
+.bt-checkbox-btn input:checked + .btn-select-add {
+    background: #288ad6;
+    color: #fff;
+}
+
+/* --- C. HỆ THỐNG ĐÁNH GIÁ (REVIEW SYSTEM) --- */
+
+/* 1. Tổng quan điểm số (Rating Overview) */
+.fpt-rating-overview {
+    display: flex;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    background: #fff;
+}
+.ro-left {
+    width: 20%;
+    text-align: center;
+    border-right: 1px solid #eee;
+    padding-right: 15px;
+}
+.ro-left .score {
+    font-size: 36px;
+    font-weight: 700;
+    color: #cb1c22;
+    line-height: 1;
+}
+.ro-left .stars {
+    color: #f5a623;
+    margin: 5px 0;
+    font-size: 16px;
+}
+.ro-left .stars i:not(.filled) {
+    color: #ddd;
+}
+.ro-left .count-text {
+    font-size: 13px;
+    color: #555;
+}
+
+/* Bộ lọc sao */
+.ro-middle {
+    flex: 1;
+    padding: 0 30px;
+}
+.filter-stars-wrap {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.filter-star-item {
+    border: 1px solid #ddd;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: #fff;
+    color: #555;
+}
+.filter-star-item:hover, .filter-star-item.active {
+    border-color: #cb1c22;
+    color: #cb1c22;
+    background: #fcebeb;
+    font-weight: 600;
+}
+
+/* Nút viết đánh giá */
+.ro-right {
+    width: 20%;
+    text-align: center;
+}
+.btn-write-review {
+    background: #cb1c22;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.btn-write-review:hover {
+    background: #a61217;
+}
+
+/* 2. Danh sách Comment (Review List) */
+.review-item {
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+}
+.review-item:last-child {
+    border-bottom: none;
+}
+.ri-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.ri-avatar {
+    width: 28px;
+    height: 28px;
+    background: #ddd;
+    color: #555;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 10px;
+    text-transform: uppercase;
+}
+.ri-name {
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 10px;
+    color: #333;
+}
+.ri-check {
+    color: #28a745;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.ri-content {
+    margin-left: 38px;
+}
+.ri-stars {
+    color: #f5a623;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.ri-text {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+.ri-actions {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #288ad6;
+}
+.ri-action-btn {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.ri-action-btn:hover {
+    text-decoration: underline;
+}
+.ri-action-btn.liked {
+    color: #cb1c22;
+    font-weight: 600;
+}
+.ri-date {
+    color: #999;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+/* 3. Popup Đánh giá (Modal Form) */
+.relive-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+.relive-modal-overlay.open {
+    display: flex;
+    animation: fadeIn 0.2s;
+}
+.relive-modal-content {
+    background: #fff;
+    width: 550px;
+    max-width: 95%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.rm-header {
+    background: #fff;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.rm-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.rm-close {
+    cursor: pointer;
+    font-size: 20px;
+    color: #999;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.rm-close:hover {
+    color: #333;
+}
+
+.rm-body {
+    padding: 20px;
+}
+.rm-product-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f1f1;
+}
+.rm-rating-select {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.star-widget i {
+    font-size: 32px;
+    color: #e0e0e0;
+    cursor: pointer;
+    margin: 0 6px;
+    transition: 0.2s;
+}
+.star-widget i.active, .star-widget i:hover {
+    color: #f5a623;
+}
+.rating-text {
+    font-size: 14px;
+    margin-top: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.rm-form-group {
+    margin-bottom: 15px;
+}
+.rm-form-group textarea {
+    width: 100%;
+    height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    resize: none;
+    font-family: inherit;
+    font-size: 14px;
+}
+.rm-form-group textarea:focus, .rm-row-inputs input:focus {
+    border-color: #288ad6;
+    outline: none;
+}
+
+.btn-upload-img {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    border-radius: 6px;
+    display: block;
+    cursor: pointer;
+    text-align: center;
+    color: #288ad6;
+    font-size: 13px;
+    transition: 0.2s;
+}
+.btn-upload-img:hover {
+    background: #f9f9f9;
+    border-color: #288ad6;
+}
+
+.rm-row-inputs {
+    display: flex;
+    gap: 15px;
+}
+.rm-row-inputs input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.rm-footer-action {
+    margin-top: 20px;
+}
+.btn-submit-review {
+    width: 100%;
+    background: #cb1c22;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.2s;
+}
+.btn-submit-review:hover {
+    background: #a61217;
+}
+.btn-submit-review:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .content-body img {
+        width: 100%;
+    }
+    .fpt-rating-overview {
+        flex-direction: column;
+    }
+    .ro-left {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    .ro-middle {
+        width: 100%;
+        padding: 0;
+        margin-bottom: 15px;
+    }
+    .ro-right {
+        width: 100%;
+    }
+    .filter-stars-wrap {
+        justify-content: center;
+    }
+    .bt-item {
+        flex-wrap: wrap;
+    }
+    .bt-action {
+        width: 100%;
+        text-align: right;
+        margin-top: 10px;
+    }
+    .rm-row-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+/* Style xem trước ảnh trong popup */
+.preview-item {
+    animation: fadeIn 0.2s;
+}
+.remove-img-btn {
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.remove-img-btn:hover {
+    background: #cc0000 !important;
+    transform: scale(1.1);
+}
+
+/* Style hiển thị ảnh trong comment */
+.ri-img-item img {
+    transition: 0.3s;
+    cursor: zoom-in;
+}
+.ri-img-item:hover img {
+    opacity: 0.8;
+    border-color: #cb1c22 !important;
+}

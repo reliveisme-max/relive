@@ -110,6 +110,11 @@ get_header('shop');
         <div class="tgdd-filter-popup" id="filter-popup">
             <div class="fp-overlay"></div>
             <form action="<?php echo esc_url($current_url); ?>" method="GET" class="fp-content">
+
+                <?php if (is_product_category()) : ?>
+                <input type="hidden" name="current_cat_id" value="<?php echo get_queried_object_id(); ?>">
+                <?php endif; ?>
+
                 <div class="fp-header">
                     <h3>Tất cả bộ lọc</h3>
                     <span class="fp-close" id="btn-close-filter"><i class="fas fa-times"></i> Đóng</span>

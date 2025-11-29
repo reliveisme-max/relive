@@ -50,6 +50,11 @@ function relive_scripts()
         'url' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('relive_filter_nonce')
     ));
+    // Ajax Localize (Cập nhật đoạn này)
+    wp_localize_script('relive-js', 'relive_ajax', array(
+        'url'   => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('relive_review_nonce') // Đặt tên thống nhất là relive_review_nonce
+    ));
 }
 
 /**

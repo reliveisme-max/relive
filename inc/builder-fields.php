@@ -60,6 +60,12 @@ function relive_product_fields()
                         ))
                 ))
                 ->set_header_template('<%- promo_title %>'),
+            // TAB 4: SẢN PHẨM MUA KÈM
+            Field::make('separator', 'sep_bought_together', '4. Mua kèm giá sốc'),
+            Field::make('association', 'bought_together_ids', 'Chọn sản phẩm mua kèm')
+                ->set_types(array(
+                    array('type' => 'post', 'post_type' => 'product')
+                )),
         ));
 }
 

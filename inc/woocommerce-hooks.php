@@ -55,49 +55,14 @@ function relive_header_add_to_cart_fragment($fragments)
     return $fragments;
 }
 
-// 6. BỘ LỌC NÂNG CAO
-add_action('woocommerce_product_query', 'relive_advanced_product_filter');
-function relive_advanced_product_filter($q)
-{
-    if (is_admin() || ! $q->is_main_query()) return;
-    $tax_query = $q->get('tax_query');
-    if (! $tax_query) $tax_query = array();
-
-    foreach ($_GET as $key => $value) {
-        if (strpos($key, 'filter_') === 0 && ! empty($value)) {
-            $slug = str_replace('filter_', '', $key);
-            $taxonomy = 'pa_' . $slug;
-            if (is_string($value)) $terms = explode(',', $value);
-            elseif (is_array($value)) $terms = $value;
-            else continue;
-
-            $tax_query[] = array(
-                'taxonomy' => $taxonomy,
-                'field'    => 'slug',
-                'terms'    => $terms,
-                'operator' => 'IN',
-            );
-        }
-    }
-    if (count($tax_query) > 1) $tax_query['relation'] = 'AND';
-    $q->set('tax_query', $tax_query);
-}
-
-// 7. AJAX FILTER & PAGINATION (Các hàm ajax giữ nguyên...)
-add_action('wp_ajax_relive_get_filter_count', 'relive_ajax_get_filter_count');
-add_action('wp_ajax_nopriv_relive_get_filter_count', 'relive_ajax_get_filter_count');
-function relive_ajax_get_filter_count()
-{ /* ... Code cũ ... */
-}
-
-add_action('wp_ajax_relive_load_products', 'relive_ajax_load_products');
-add_action('wp_ajax_nopriv_relive_load_products', 'relive_ajax_load_products');
-function relive_ajax_load_products()
-{ /* ... Code cũ ... */
-}
+/* ==========================================================================
+   6. LƯU Ý: Phần bộ lọc nâng cao (relive_advanced_product_filter) và Ajax
+   đã được chuyển sang functions.php để tránh lỗi trùng lặp.
+   Đã xóa code cũ ở đây.
+   ========================================================================== */
 
 /* ==========================================================================
-   8. XÓA CÁC THÀNH PHẦN THỪA TRONG TRANG CHI TIẾT (NEW FIX)
+   7. XÓA CÁC THÀNH PHẦN THỪA TRONG TRANG CHI TIẾT
    ========================================================================== */
 
 // Xóa nút Reset biến thể
@@ -110,6 +75,3 @@ remove_action('woocommerce_single_product_summary', 'woocommerce_template_single
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20);
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40);
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_sharing', 50);
-
-// Chỉ giữ lại phần Form Add to Cart (biến thể)
-// add_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 ); // Cái này mặc định có rồi
