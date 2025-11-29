@@ -66,6 +66,15 @@ function relive_product_fields()
                 ->set_types(array(
                     array('type' => 'post', 'post_type' => 'product')
                 )),
+            // TAB 4: MÃ GIẢM GIÁ (COUPON) - MỚI
+            Field::make('separator', 'sep_coupons', '4. Mã giảm giá thêm'),
+            Field::make('complex', 'product_coupons', 'Danh sách Mã giảm giá')
+                ->set_layout('tabbed-horizontal')
+                ->add_fields(array(
+                    Field::make('text', 'code', 'Mã Code (VD: APPLE500)')->set_width(30),
+                    Field::make('text', 'desc', 'Mô tả (VD: Giảm thêm 500k)')->set_width(70),
+                ))
+                ->set_header_template('<%- code %>'),
         ));
 }
 

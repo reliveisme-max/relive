@@ -64,7 +64,9 @@
 
                 <div class="rm-row-inputs" style="display:flex; gap:10px;">
                     <input type="text" name="author" placeholder="Họ tên (bắt buộc)" required style="flex:1;">
-                    <input type="text" name="phone" placeholder="Số điện thoại (bắt buộc)" required style="flex:1;">
+
+                    <input type="tel" name="phone" placeholder="Số điện thoại (bắt buộc)" required pattern="[0-9]*"
+                        inputmode="numeric" maxlength="10" style="flex:1;">
                 </div>
 
                 <div class="rm-footer-action">

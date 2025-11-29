@@ -3123,3 +3123,154 @@ a.zoom-trigger {
     margin: 0 !important;
     background: none !important;
 }
+/* =========================================
+   13. COUPON BOX (MÃ GIẢM GIÁ)
+   ========================================= */
+.fpt-coupon-section {
+    margin-bottom: 20px;
+}
+.c-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #333;
+    text-transform: uppercase;
+}
+.c-title i {
+    color: #cb1c22;
+    font-size: 14px;
+}
+
+.coupon-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.coupon-item {
+    flex: 1;
+    min-width: 250px;
+    border: 1px dashed #cb1c22;
+    background: #fff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: 0.2s;
+}
+.coupon-item:hover {
+    background: #fff9f9;
+}
+
+.c-info {
+    display: flex;
+    flex-direction: column;
+}
+.c-code {
+    font-weight: 700;
+    color: #cb1c22;
+    font-size: 13px;
+}
+.c-desc {
+    font-size: 11px;
+    color: #666;
+}
+
+.btn-copy-code {
+    background: #cb1c22;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-copy-code:hover {
+    background: #a61217;
+}
+.btn-copy-code.copied {
+    background: #28a745;
+}
+/* =========================================
+   14. CART PAGE (FPT STYLE)
+   ========================================= */
+.cart-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: 600; }
+.cart-item-row { display: flex; padding: 15px; border-bottom: 1px solid #eee; align-items: flex-start; }
+.cart-item-row:last-child { border-bottom: none; }
+
+.ci-check { padding-top: 30px; margin-right: 10px; }
+.ci-img { width: 80px; height: 80px; margin-right: 15px; border: 1px solid #eee; border-radius: 4px; padding: 2px; }
+.ci-img img { width: 100%; height: 100%; object-fit: contain; }
+
+.ci-info { flex: 1; }
+.ci-name-wrap { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.ci-name { font-size: 14px; font-weight: 600; color: #333; line-height: 1.3; text-decoration: none; }
+.ci-remove { color: #999; }
+.ci-remove:hover { color: #cb1c22; }
+
+.ci-price-wrap { margin-bottom: 10px; }
+.ci-price { color: #cb1c22; font-size: 15px; }
+.ci-price-wrap del { color: #999; font-size: 12px; margin-left: 5px; }
+
+/* Bộ nút tăng giảm số lượng */
+.ci-qty-control { display: inline-flex; border: 1px solid #ddd; border-radius: 4px; height: 30px; overflow: hidden; }
+.qty-btn { width: 30px; background: #fff; border: none; cursor: pointer; font-size: 16px; color: #555; display: flex; align-items: center; justify-content: center; }
+.qty-btn:hover { background: #f1f1f1; }
+.qty-input { width: 40px; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; text-align: center; font-size: 13px; font-weight: 600; -moz-appearance: textfield; }
+
+/* Sidebar Phải */
+.cart-coupon-box { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+.coupon-input-wrap { display: flex; gap: 5px; }
+.coupon-input-wrap input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.coupon-input-wrap button { background: #333; color: #fff; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer; font-size: 13px; }
+
+.row-total { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+.main-total { border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; align-items: flex-end; }
+.main-total strong { color: #cb1c22; font-size: 20px; }
+
+.btn-fpt-primary.full-width {
+    display: block; width: 100%; text-align: center;
+    background: linear-gradient(180deg, #cb1c22 0%, #b40f14 100%);
+    color: #fff; padding: 15px; border-radius: 4px;
+    font-weight: 700; text-transform: uppercase; text-decoration: none;
+    margin-top: 20px;
+}
+/* Nút chọn Mua kèm */
+.bt-action { 
+    text-align: right; 
+    min-width: 100px; 
+}
+
+.bt-checkbox-btn input { display: none; }
+
+.btn-select-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    background: #eff3f6;
+    color: #288ad6;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.btn-select-add:hover {
+    background: #e0e6eb;
+}
+
+/* Trạng thái ĐÃ CHỌN */
+.bt-checkbox-btn input:checked + .btn-select-add {
+    background: #288ad6;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(40, 138, 214, 0.3);
+}

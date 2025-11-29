@@ -68,9 +68,9 @@ add_action('wp_ajax_nopriv_relive_load_reviews', 'relive_ajax_load_reviews');
 function relive_ajax_load_reviews()
 {
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-    $star = isset($_POST['star']) ? $_POST['star'] : 'all';
-    $per_page = 5;
+    $page       = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $star       = isset($_POST['star']) ? $_POST['star'] : 'all';
+    $per_page   = 5;
 
     $args = array(
         'post_id' => $product_id,
@@ -88,7 +88,7 @@ function relive_ajax_load_reviews()
     $comments_query = new WP_Comment_Query;
     $comments = $comments_query->query($args);
 
-    // Tính tổng trang để phân trang
+    // Tính tổng trang
     $count_args = $args;
     unset($count_args['number'], $count_args['paged']);
     $count_args['count'] = true;
@@ -106,13 +106,27 @@ function relive_ajax_load_reviews()
             $author_name = $comment->comment_author;
             $first_char = function_exists('mb_substr') ? mb_substr($author_name, 0, 1) : substr($author_name, 0, 1);
 
-            // Lấy comment con (Reply)
+            // [MỚI] Kiểm tra QTV cho bình luận CHÍNH
+            $is_parent_admin = false;
+            if ($comment->user_id > 0) {
+                $user = get_userdata($comment->user_id);
+                if ($user && array_intersect(['administrator', 'shop_manager', 'editor'], (array) $user->roles)) {
+                    $is_parent_admin = true;
+                }
+            }
+
             $children = get_comments(array('parent' => $comment->comment_ID, 'type' => 'review', 'status' => 'approve', 'order' => 'ASC'));
 ?>
 <div class="review-item">
     <div class="ri-header">
         <div class="ri-avatar"><?php echo esc_html(strtoupper($first_char)); ?></div>
-        <div class="ri-name"><?php echo esc_html($author_name); ?></div>
+        <div class="ri-name">
+            <?php echo esc_html($author_name); ?>
+            <?php if ($is_parent_admin): ?>
+            <span
+                style="background:#cb1c22; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; font-weight:600;">QTV</span>
+            <?php endif; ?>
+        </div>
         <?php if ($phone): ?><div class="ri-check"><i class="fas fa-check-circle"></i> Đã mua tại FPT Shop</div>
         <?php endif; ?>
     </div>
@@ -124,9 +138,11 @@ function relive_ajax_load_reviews()
 
         <?php if (!empty($img_ids)): ?>
         <div class="ri-gallery" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-            <?php foreach ($img_ids as $img_id): $url = wp_get_attachment_image_url($img_id, 'full');
+            <?php foreach ($img_ids as $img_id):
+                                $url = wp_get_attachment_image_url($img_id, 'full');
                                 $thumb = wp_get_attachment_image_url($img_id, 'thumbnail');
-                                if (!$thumb) continue; ?>
+                                if (!$thumb) continue;
+                            ?>
             <a href="<?php echo esc_url($url); ?>" data-fancybox="review-gallery-<?php echo $comment->comment_ID; ?>"
                 class="ri-img-item"><img src="<?php echo esc_url($thumb); ?>"
                     style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #eee;"></a>
@@ -146,12 +162,43 @@ function relive_ajax_load_reviews()
         <?php if ($children): ?>
         <div class="ri-replies"
             style="margin-top:15px; background:#f9f9f9; padding:15px; border-radius:8px; position:relative;">
-            <?php foreach ($children as $child): ?>
+            <div
+                style="position:absolute; top:-10px; left:20px; width:0; height:0; border-left:10px solid transparent; border-right:10px solid transparent; border-bottom:10px solid #f9f9f9;">
+            </div>
+            <?php foreach ($children as $child):
+                                // [MỚI] Kiểm tra QTV cho bình luận TRẢ LỜI
+                                $is_child_admin = false;
+                                if ($child->user_id > 0) {
+                                    $u = get_userdata($child->user_id);
+                                    if ($u && array_intersect(['administrator', 'shop_manager', 'editor'], (array) $u->roles)) {
+                                        $is_child_admin = true;
+                                    }
+                                }
+                                $child_img_ids = get_comment_meta($child->comment_ID, 'review_image_id', false);
+                            ?>
             <div class="child-review"
                 style="margin-bottom:12px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:8px;">
-                <strong style="color:#333;"><?php echo $child->comment_author; ?></strong> <span
-                    style="background:#cb1c22; color:#fff; font-size:9px; padding:2px 5px; border-radius:3px;">QTV</span>
+                <strong style="color:#333;"><?php echo $child->comment_author; ?></strong>
+                <?php if ($is_child_admin): ?><span
+                    style="background:#cb1c22; color:#fff; font-size:9px; padding:2px 5px; border-radius:3px; margin-left:5px;">QTV</span><?php endif; ?>
+
                 <div style="margin-top:4px; color:#555;"><?php echo wpautop($child->comment_content); ?></div>
+
+                <?php if (!empty($child_img_ids)): ?>
+                <div class="ri-gallery" style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;">
+                    <?php foreach ($child_img_ids as $c_img_id):
+                                                $c_url = wp_get_attachment_image_url($c_img_id, 'full');
+                                                $c_thumb = wp_get_attachment_image_url($c_img_id, 'thumbnail');
+                                                if (!$c_thumb) continue;
+                                            ?>
+                    <a href="<?php echo esc_url($c_url); ?>"
+                        data-fancybox="reply-gallery-<?php echo $child->comment_ID; ?>" class="ri-img-item">
+                        <img src="<?php echo esc_url($c_thumb); ?>"
+                            style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #eee;">
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
             </div>
             <?php endforeach; ?>
         </div>
@@ -182,39 +229,59 @@ function relive_ajax_load_reviews()
 
     wp_send_json_success(array('html' => $html, 'pagination' => $pagination));
 }
-
 add_action('wp_ajax_relive_submit_review', 'relive_ajax_submit_review');
 add_action('wp_ajax_nopriv_relive_submit_review', 'relive_ajax_submit_review');
 
 function relive_ajax_submit_review()
 {
-    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'relive_review_nonce')) wp_send_json_error(array('message' => 'Lỗi bảo mật. F5 lại trang.'));
+    // 1. Check bảo mật
+    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'relive_review_nonce')) {
+        wp_send_json_error(array('message' => 'Lỗi bảo mật. F5 lại trang.'));
+    }
 
     $product_id = intval($_POST['product_id']);
-    $rating = intval($_POST['rating']);
-    $comment = sanitize_textarea_field($_POST['comment']);
-    $author = sanitize_text_field($_POST['author']);
-    $phone = sanitize_text_field($_POST['phone']);
-    $parent_id = isset($_POST['comment_parent']) ? intval($_POST['comment_parent']) : 0;
+    $rating     = intval($_POST['rating']);
+    $comment    = sanitize_textarea_field($_POST['comment']);
+    $author     = sanitize_text_field($_POST['author']);
+    $phone      = sanitize_text_field($_POST['phone']);
+    $parent_id  = isset($_POST['comment_parent']) ? intval($_POST['comment_parent']) : 0;
 
-    if (!$comment || !$author || !$phone) wp_send_json_error(array('message' => 'Vui lòng điền đủ thông tin.'));
+    if (!$comment || !$author || !$phone) {
+        wp_send_json_error(array('message' => 'Vui lòng điền đủ thông tin.'));
+    }
 
-    $comment_id = wp_insert_comment(array(
+    // 2. [FIX QUAN TRỌNG] Kiểm tra user đang đăng nhập
+    $user = wp_get_current_user();
+    if ($user->exists()) {
+        // Nếu là thành viên (Admin/User) -> Lưu ID thật
+        $user_id = $user->ID;
+        $email   = $user->user_email;
+    } else {
+        // Nếu là khách -> ID = 0, Email ảo
+        $user_id = 0;
+        $email   = $phone . '@noemail.com';
+    }
+
+    $data = array(
         'comment_post_ID' => $product_id,
         'comment_author' => $author,
-        'comment_author_email' => $phone . '@noemail.com',
+        'comment_author_email' => $email,
         'comment_content' => $comment,
         'comment_type' => 'review',
         'comment_parent' => $parent_id,
-        'comment_approved' => 1
-    ));
+        'comment_approved' => 1,
+        'user_id' => $user_id, // Dòng này giúp nhận diện Admin
+    );
+
+    $comment_id = wp_insert_comment($data);
 
     if ($comment_id) {
         update_comment_meta($comment_id, 'rating', $rating);
         update_comment_meta($comment_id, 'phone', $phone);
         update_comment_meta($comment_id, 'likes', 0);
 
-        if (!empty($_FILES['review_image'])) {
+        // Upload Ảnh
+        if (! empty($_FILES['review_image'])) {
             require_once(ABSPATH . 'wp-admin/includes/image.php');
             require_once(ABSPATH . 'wp-admin/includes/file.php');
             require_once(ABSPATH . 'wp-admin/includes/media.php');
@@ -222,10 +289,18 @@ function relive_ajax_submit_review()
             $files = $_FILES['review_image'];
             foreach ($files['name'] as $key => $value) {
                 if ($files['name'][$key]) {
-                    $file = array('name' => $files['name'][$key], 'type' => $files['type'][$key], 'tmp_name' => $files['tmp_name'][$key], 'error' => $files['error'][$key], 'size' => $files['size'][$key]);
+                    $file = array(
+                        'name' => $files['name'][$key],
+                        'type' => $files['type'][$key],
+                        'tmp_name' => $files['tmp_name'][$key],
+                        'error' => $files['error'][$key],
+                        'size' => $files['size'][$key]
+                    );
                     $_FILES['single_review_image'] = $file;
                     $attachment_id = media_handle_upload('single_review_image', $product_id);
-                    if (!is_wp_error($attachment_id)) add_comment_meta($comment_id, 'review_image_id', $attachment_id);
+                    if (! is_wp_error($attachment_id)) {
+                        add_comment_meta($comment_id, 'review_image_id', $attachment_id);
+                    }
                 }
             }
         }
@@ -356,4 +431,65 @@ function relive_ajax_load_products()
     $pagination = str_replace('ul class="page-link page-numbers"', 'ul class="pagination"', $pagination);
 
     wp_send_json_success(array('products' => $products, 'pagination' => $pagination));
+}
+
+/* ==========================================================================
+   XỬ LÝ MUA KÈM (HỖ TRỢ CẢ SẢN PHẨM ĐƠN & BIẾN THỂ)
+   ========================================================================== */
+add_action('wp_ajax_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
+add_action('wp_ajax_nopriv_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
+
+function relive_ajax_add_multiple_to_cart()
+{
+    $product_ids = isset($_POST['product_ids']) ? $_POST['product_ids'] : array();
+    $main_variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+
+    if (empty($product_ids)) {
+        wp_send_json_error(array('message' => 'Chưa chọn sản phẩm nào.'));
+    }
+
+    $added_count = 0;
+
+    foreach ($product_ids as $index => $p_id) {
+        $p_id = intval($p_id);
+
+        // Sản phẩm đầu tiên là SP Chính
+        if ($index === 0) {
+            if ($main_variation_id > 0) {
+                WC()->cart->add_to_cart($p_id, 1, $main_variation_id);
+            } else {
+                WC()->cart->add_to_cart($p_id, 1);
+            }
+            $added_count++;
+        }
+        // Các sản phẩm mua kèm
+        else {
+            $product = wc_get_product($p_id);
+            if ($product) {
+                // Nếu là sản phẩm đơn -> Thêm luôn
+                if ($product->is_type('simple')) {
+                    WC()->cart->add_to_cart($p_id, 1);
+                    $added_count++;
+                }
+                // Nếu là biến thể -> Tìm biến thể mặc định hoặc thêm ID cha (nếu Woo cho phép)
+                // Để đơn giản: Code này chỉ hỗ trợ SP mua kèm là Simple Product. 
+                // Nếu muốn hỗ trợ SP biến thể mua kèm, cần làm popup chọn màu cho từng SP mua kèm.
+                elseif ($product->is_type('variable')) {
+                    // Thử thêm biến thể mặc định đầu tiên (nếu cần gấp)
+                    $variations = $product->get_available_variations();
+                    if (!empty($variations)) {
+                        $first_var_id = $variations[0]['variation_id'];
+                        WC()->cart->add_to_cart($p_id, 1, $first_var_id);
+                        $added_count++;
+                    }
+                }
+            }
+        }
+    }
+
+    if ($added_count > 0) {
+        wp_send_json_success(array('redirect' => wc_get_cart_url()));
+    } else {
+        wp_send_json_error(array('message' => 'Không thể thêm sản phẩm vào giỏ.'));
+    }
 }
