@@ -1,12 +1,7 @@
 <?php
-
-/**
- * Template: Nội dung chi tiết sản phẩm (Full Features + Coupon Box)
- */
 defined('ABSPATH') || exit;
 global $product;
 
-// 1. LẤY DỮ LIỆU
 $custom_featured_img = carbon_get_the_post_meta('prod_featured_image');
 $video_url           = carbon_get_the_post_meta('prod_video');
 $fpt_promos          = carbon_get_the_post_meta('fpt_promotions');
@@ -18,9 +13,9 @@ $main_image_id       = $product->get_image_id();
 $spec_groups         = carbon_get_the_post_meta('fpt_specs_groups');
 $spec_feature_img    = carbon_get_the_post_meta('spec_feature_image');
 
-// Dữ liệu Mới
+// DỮ LIỆU MUA KÈM VÀ COUPON
 $bought_items        = carbon_get_the_post_meta('fpt_bought_together');
-$coupons             = carbon_get_the_post_meta('product_coupons');
+$coupons_data        = carbon_get_the_post_meta('product_coupons');
 
 function get_fpt_icon($label)
 {
@@ -50,7 +45,6 @@ if (! empty($spec_groups)) {
 ?>
 
 <div class="container fpt-product-detail" style="padding-top: 0;">
-
     <div class="row">
         <div class="col col-7 col-md-12">
             <div class="product-gallery-wrap">
@@ -63,52 +57,41 @@ if (! empty($spec_groups)) {
                                     alt="Nổi bật">
                             </a>
                         </div>
-                        <?php if (!empty($video_url)):
-                            preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
+                        <?php if (!empty($video_url)): preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $video_url, $match);
                             $yt_id = isset($match[1]) ? $match[1] : '';
                             if ($yt_id): ?>
-                        <div class="swiper-slide video-slide" data-type="video">
-                            <iframe id="prod-video-iframe" width="100%" height="100%"
+                        <div class="swiper-slide video-slide" data-type="video"><iframe id="prod-video-iframe"
+                                width="100%" height="100%"
                                 src="https://www.youtube.com/embed/<?php echo $yt_id; ?>?enablejsapi=1&rel=0"
-                                frameborder="0" allowfullscreen></iframe>
-                        </div>
+                                frameborder="0" allowfullscreen></iframe></div>
                         <?php endif;
                         endif; ?>
                         <?php if ($attachment_ids) : foreach ($attachment_ids as $attachment_id) {
                                 $img_full = wp_get_attachment_image_url($attachment_id, 'full'); ?>
-                        <div class="swiper-slide" data-type="album">
-                            <a href="<?php echo esc_url($img_full); ?>" data-relive-gallery="product-gallery"
-                                class="zoom-trigger">
-                                <?php echo wp_get_attachment_image($attachment_id, 'full'); ?>
-                            </a>
+                        <div class="swiper-slide" data-type="album"><a href="<?php echo esc_url($img_full); ?>"
+                                data-relive-gallery="product-gallery"
+                                class="zoom-trigger"><?php echo wp_get_attachment_image($attachment_id, 'full'); ?></a>
                         </div>
                         <?php }
                         endif; ?>
                         <?php if ($box_images_ids) : foreach ($box_images_ids as $box_id) {
                                 $box_full = wp_get_attachment_image_url($box_id, 'full'); ?>
-                        <div class="swiper-slide" data-type="box">
-                            <a href="<?php echo esc_url($box_full); ?>" data-relive-gallery="product-gallery"
-                                class="zoom-trigger">
-                                <?php echo wp_get_attachment_image($box_id, 'full'); ?>
-                            </a>
-                        </div>
+                        <div class="swiper-slide" data-type="box"><a href="<?php echo esc_url($box_full); ?>"
+                                data-relive-gallery="product-gallery"
+                                class="zoom-trigger"><?php echo wp_get_attachment_image($box_id, 'full'); ?></a></div>
                         <?php }
                         endif; ?>
                         <?php if ($real_images_ids) : foreach ($real_images_ids as $real_id) {
                                 $real_full = wp_get_attachment_image_url($real_id, 'full'); ?>
-                        <div class="swiper-slide" data-type="real">
-                            <a href="<?php echo esc_url($real_full); ?>" data-relive-gallery="product-gallery"
-                                class="zoom-trigger">
-                                <?php echo wp_get_attachment_image($real_id, 'full'); ?>
-                            </a>
-                        </div>
+                        <div class="swiper-slide" data-type="real"><a href="<?php echo esc_url($real_full); ?>"
+                                data-relive-gallery="product-gallery"
+                                class="zoom-trigger"><?php echo wp_get_attachment_image($real_id, 'full'); ?></a></div>
                         <?php }
                         endif; ?>
                     </div>
                     <div class="swiper-button-next p-next"></div>
                     <div class="swiper-button-prev p-prev"></div>
                 </div>
-
                 <div class="gallery-thumbs-nav-fpt">
                     <div class="g-item active" data-slide-index="0">
                         <div class="g-icon"><i class="fas fa-star"></i></div><span>Nổi bật</span>
@@ -116,8 +99,7 @@ if (! empty($spec_groups)) {
                     <?php if ($has_video = !empty($video_url)): ?><div class="g-item g-item-video" data-slide-index="1">
                         <div class="g-icon"><i class="fas fa-play-circle"></i></div><span>Video</span>
                     </div><?php endif; ?>
-                    <?php
-                    $video_offset = $has_video ? 1 : 0;
+                    <?php $video_offset = $has_video ? 1 : 0;
                     $count_album = is_array($attachment_ids) ? count($attachment_ids) : 0;
                     $count_box = is_array($box_images_ids) ? count($box_images_ids) : 0;
                     $idx_box_start = 1 + $video_offset + $count_album;
@@ -129,15 +111,13 @@ if (! empty($spec_groups)) {
                             if ($c >= $max_thumb) break;
                             $slide_idx = $idx + 1 + $video_offset;
                             $is_last = ($c === $max_thumb - 1 && $count_album > $max_thumb);
-                            $remain = $count_album - $max_thumb;
-                    ?>
+                            $remain = $count_album - $max_thumb; ?>
                     <div class="g-item g-thumb-img" data-slide-index="<?php echo $slide_idx; ?>">
-                        <?php echo wp_get_attachment_image($att_id, 'thumbnail'); ?>
-                        <?php if ($is_last) : ?><div class="more-count">+<?php echo $remain; ?></div><?php endif; ?>
-                    </div>
+                        <?php echo wp_get_attachment_image($att_id, 'thumbnail'); ?><?php if ($is_last) : ?><div
+                            class="more-count">+<?php echo $remain; ?></div><?php endif; ?></div>
                     <?php $c++;
-                        }
-                    } ?>
+                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                } ?>
                     <?php if (!empty($box_images_ids)): ?><div class="g-item"
                         data-slide-index="<?php echo $idx_box_start; ?>">
                         <div class="g-icon"><i class="fas fa-box-open"></i></div><span>Mở hộp</span>
@@ -155,16 +135,12 @@ if (! empty($spec_groups)) {
                     <h3 class="title">Thông số nổi bật</h3><a href="javascript:;" class="btn-view-more-specs"
                         id="btn-open-specs">Xem tất cả thông số</a>
                 </div>
-                <div class="specs-grid-list">
-                    <?php foreach ($highlight_specs as $spec) : ?>
-                    <div class="spec-item">
+                <div class="specs-grid-list"><?php foreach ($highlight_specs as $spec) : ?><div class="spec-item">
                         <div class="spec-icon"><i class="<?php echo esc_attr($spec['icon']); ?>"></i></div>
                         <div class="spec-content"><span
                                 class="spec-label"><?php echo esc_html($spec['label']); ?></span><strong
                                 class="spec-val"><?php echo esc_html($spec['val']); ?></strong></div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
+                    </div><?php endforeach; ?></div>
             </div>
             <?php endif; ?>
 
@@ -174,7 +150,7 @@ if (! empty($spec_groups)) {
                 </div>
                 <div class="policy-list">
                     <div class="p-item"><i class="fas fa-shield-alt"></i> <span>Hư gì đổi nấy <b>12 tháng</b> tại 3000
-                            siêu thị toàn quốc (miễn phí tháng đầu)</span></div>
+                            siêu thị toàn quốc</span></div>
                     <div class="p-item"><i class="fas fa-shipping-fast"></i> <span>Giao hàng nhanh toàn quốc, miễn phí
                             vận chuyển</span></div>
                     <div class="p-item"><i class="fas fa-user-headset"></i> <span>Kỹ thuật viên hỗ trợ trực tuyến</span>
@@ -186,22 +162,19 @@ if (! empty($spec_groups)) {
         <div class="col col-5 col-md-12">
             <h1 class="product_title entry-title" style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">
                 <?php the_title(); ?></h1>
-            <div style="color: #777; font-size: 13px; margin-bottom: 15px;">
-                Mã SP: <?php echo $product->get_sku() ? $product->get_sku() : 'N/A'; ?> <span
-                    style="margin: 0 5px;">|</span>
+            <div style="color: #777; font-size: 13px; margin-bottom: 15px;">Mã SP:
+                <?php echo $product->get_sku() ? $product->get_sku() : 'N/A'; ?> <span style="margin: 0 5px;">|</span>
                 <?php $review_count = $product->get_review_count();
-                $average = $product->get_average_rating();
-                if ($review_count > 0) : ?> Đánh giá: <i class="fas fa-star" style="color: #f5a623;"></i>
+                                                                                                                                                                                            $average = $product->get_average_rating();
+                                                                                                                                                                                            if ($review_count > 0) : ?> Đánh
+                giá: <i class="fas fa-star" style="color: #f5a623;"></i>
                 <b><?php echo number_format($average, 1); ?></b> <span style="color:#999;">(<?php echo $review_count; ?>
-                    đánh giá)</span> <?php else : ?> Chưa có đánh giá <?php endif; ?>
-            </div>
+                    đánh giá)</span> <?php else : ?> Chưa có đánh giá <?php endif; ?></div>
 
             <div class="prod-variations-box fpt-style-variations" style="margin-bottom: 20px; border-top: none;">
-                <?php do_action('woocommerce_single_product_summary'); ?>
-            </div>
+                <?php do_action('woocommerce_single_product_summary'); ?></div>
 
-            <?php
-            if ($product->is_type('variable')) {
+            <?php if ($product->is_type('variable')) {
                 $current_price = $product->get_variation_price('min', true);
                 $regular_price = $product->get_variation_regular_price('min', true);
             } else {
@@ -212,63 +185,61 @@ if (! empty($spec_groups)) {
             if ($regular_price > 0 && $current_price < $regular_price) {
                 $percent = round((($regular_price - $current_price) / $regular_price) * 100);
             }
-            $installment = $current_price > 0 ? ($current_price / 12) : 0;
-            ?>
+            $installment = $current_price > 0 ? ($current_price / 12) : 0; ?>
             <div class="fpt-main-box-yellow">
                 <div class="fpt-price-block" id="fpt-price-dynamic">
                     <div class="fp-left">
                         <div class="current-price"><?php echo wc_price($current_price); ?></div>
-                        <div class="old-price-wrap <?php echo ($percent <= 0) ? 'd-none' : ''; ?>">
-                            <del class="regular-price"><?php echo wc_price($regular_price); ?></del>
-                            <span class="percent-tag">-<?php echo $percent; ?>%</span>
-                        </div>
+                        <div class="old-price-wrap <?php echo ($percent <= 0) ? 'd-none' : ''; ?>"><del
+                                class="regular-price"><?php echo wc_price($regular_price); ?></del><span
+                                class="percent-tag">-<?php echo $percent; ?>%</span></div>
                         <div class="reward-points"><i class="fas fa-coins" style="color: #b78a28;"></i> +<span
                                 class="points-val"><?php echo number_format($current_price / 10000); ?></span> Điểm
                             thưởng</div>
                     </div>
                     <div class="fp-sep"><span>Hoặc</span></div>
-                    <div class="fp-right">
-                        <span class="lbl-gop">Trả góp</span>
-                        <span class="val-gop"><strong
+                    <div class="fp-right"><span class="lbl-gop">Trả góp</span><span class="val-gop"><strong
                                 class="installment-price"><?php echo number_format($installment, 0, ',', '.'); ?>₫</strong>/tháng</span>
                     </div>
                 </div>
-
                 <?php if (! empty($fpt_promos)) : ?>
-                <div class="fpt-promo-inner-red">
-                    <?php foreach ($fpt_promos as $group) : ?>
-                    <div class="promo-group-item">
+                <div class="fpt-promo-inner-red"><?php foreach ($fpt_promos as $group) : ?><div
+                        class="promo-group-item">
                         <h4 class="promo-group-title"><?php echo esc_html($group['promo_title']); ?></h4>
                         <ul class="promo-list-ul">
-                            <?php if (!empty($group['promo_items'])): foreach ($group['promo_items'] as $item): ?>
-                            <li><i class="fas fa-circle"
+                            <?php if (!empty($group['promo_items'])): foreach ($group['promo_items'] as $item): ?><li><i
+                                    class="fas fa-circle"
                                     style="font-size: 6px; margin-right: 8px; margin-top: 8px; color: #555;"></i>
                                 <div><?php echo esc_html($item['content']); ?><?php if (!empty($item['link'])): ?><a
                                         href="<?php echo esc_url($item['link']); ?>" target="_blank"
                                         style="color:#288ad6; font-size: 12px;">Xem chi tiết</a><?php endif; ?></div>
-                            </li>
-                            <?php endforeach;
-                                    endif; ?>
-                        </ul>
-                    </div>
-                    <?php endforeach; ?>
-                    <div class="corner-ribbon"></div><i class="fas fa-check ribbon-icon"></i>
+                            </li><?php endforeach;
+                                                            endif; ?></ul>
+                    </div><?php endforeach; ?><div class="corner-ribbon"></div><i class="fas fa-check ribbon-icon"></i>
                 </div>
                 <?php endif; ?>
             </div>
 
-            <?php if (! empty($coupons)) : ?>
+            <?php if (! empty($coupons_data)) : ?>
             <div class="fpt-coupon-section">
                 <div class="c-title"><i class="fas fa-ticket-alt"></i> MÃ GIẢM GIÁ THÊM</div>
                 <div class="coupon-list">
-                    <?php foreach ($coupons as $coupon) : ?>
+                    <?php foreach ($coupons_data as $c_item) :
+                            $c_id = $c_item['id'];
+                            $coupon = new WC_Coupon($c_id);
+                            if (!$coupon || !$coupon->get_id()) continue;
+                            $code = $coupon->get_code();
+                            $amount = $coupon->get_amount();
+                            $type = $coupon->get_discount_type();
+                            $desc = '';
+                            if ($type == 'percent') $desc = 'Giảm thêm ' . $amount . '%';
+                            elseif ($type == 'fixed_cart' || $type == 'fixed_product') $desc = 'Giảm thêm ' . number_format($amount, 0, ',', '.') . 'đ';
+                            else $desc = 'Nhập mã để nhận ưu đãi';
+                        ?>
                     <div class="coupon-item">
-                        <div class="c-info">
-                            <span class="c-code"><?php echo esc_html($coupon['code']); ?></span>
-                            <span class="c-desc"><?php echo esc_html($coupon['desc']); ?></span>
-                        </div>
-                        <button class="btn-copy-code" data-code="<?php echo esc_attr($coupon['code']); ?>">Sao
-                            chép</button>
+                        <div class="c-info"><span class="c-code"><?php echo esc_html(strtoupper($code)); ?></span><span
+                                class="c-desc"><?php echo esc_html($desc); ?></span></div><button class="btn-copy-code"
+                            data-code="<?php echo esc_attr($code); ?>">Sao chép</button>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -291,70 +262,44 @@ if (! empty($spec_groups)) {
                         phút)</span></button>
             </div>
 
-            <?php
-            // -------------------------------------------------------------
-            // PHẦN MUA KÈM GIÁ SỐC (CẬP NHẬT HIỂN THỊ GIÁ GIẢM)
-            // -------------------------------------------------------------
-            if (! empty($bought_items)) : ?>
+            <?php if (! empty($bought_items)) : ?>
             <div class="bought-together-box" style="margin-top: 20px;">
                 <div class="bt-header"><span class="bt-icon"><i class="fas fa-fire"></i></span>
                     <h3>Mua kèm giá sốc</h3>
                 </div>
                 <form class="bt-list-form">
-                    <?php
-                        foreach ($bought_items as $item_data) :
+                    <?php foreach ($bought_items as $item_data) :
                             $assoc = isset($item_data['product_assoc']) ? $item_data['product_assoc'] : array();
                             if (empty($assoc)) continue;
                             $p_id = $assoc[0]['id'];
-
                             $p = wc_get_product($p_id);
                             if (! $p || ! $p->is_visible()) continue;
-
-                            // Lấy % giảm
                             $percent = isset($item_data['percent_sale']) ? intval($item_data['percent_sale']) : 0;
                             $regular_price = $p->get_price();
                             $sale_price = $regular_price;
-                            if ($percent > 0) {
-                                $sale_price = $regular_price * (100 - $percent) / 100;
-                            }
+                            if ($percent > 0) $sale_price = $regular_price * (100 - $percent) / 100;
                         ?>
                     <div class="bt-item">
-                        <div class="bt-img">
-                            <a href="<?php echo get_permalink($p_id); ?>" target="_blank">
-                                <?php echo $p->get_image('thumbnail'); ?>
-                            </a>
-                        </div>
-                        <div class="bt-info">
-                            <a href="<?php echo get_permalink($p_id); ?>" target="_blank"
+                        <div class="bt-img"><a href="<?php echo get_permalink($p_id); ?>"
+                                target="_blank"><?php echo $p->get_image('thumbnail'); ?></a></div>
+                        <div class="bt-info"><a href="<?php echo get_permalink($p_id); ?>" target="_blank"
                                 class="bt-title"><?php echo $p->get_name(); ?></a>
-                            <div class="bt-price">
-                                <?php if ($percent > 0): ?>
-                                <?php echo wc_price($sale_price); ?>
-                                <del><?php echo wc_price($regular_price); ?></del>
-                                <?php else: ?>
-                                <?php echo $p->get_price_html(); ?>
-                                <?php endif; ?>
-                            </div>
-                            <?php if ($percent > 0): ?>
-                            <div class="bt-promo-text">Giảm thêm <?php echo $percent; ?>%</div>
-                            <?php endif; ?>
+                            <div class="bt-price"><?php if ($percent > 0): echo wc_price($sale_price); ?>
+                                <del><?php echo wc_price($regular_price); ?></del><?php else: echo $p->get_price_html();
+                                                                                                                                                                endif; ?>
+                            </div><?php if ($percent > 0): ?><div class="bt-promo-text">Giảm thêm
+                                <?php echo $percent; ?>%</div><?php endif; ?>
                         </div>
-                        <div class="bt-action">
-                            <label class="bt-checkbox-btn">
-                                <input type="checkbox" name="add_bought_together[]"
-                                    value="<?php echo esc_attr($p_id); ?>">
-                                <span class="btn-select-add">Thêm <i class="fas fa-plus"></i></span>
-                            </label>
-                        </div>
+                        <div class="bt-action"><label class="bt-checkbox-btn"><input type="checkbox"
+                                    name="add_bought_together[]" value="<?php echo esc_attr($p_id); ?>"><span
+                                    class="btn-select-add">Thêm <i class="fas fa-plus"></i></span></label></div>
                     </div>
                     <?php endforeach; ?>
                 </form>
             </div>
             <?php endif; ?>
-
         </div>
     </div>
-
     <div class="row" style="margin-top: 30px;">
         <div class="col col-7 col-md-12">
             <div class="white-box prod-content-box" id="prod-description" style="height: 100%;">
@@ -367,18 +312,14 @@ if (! empty($spec_groups)) {
                             class="fas fa-caret-down"></i></button></div>
             </div>
         </div>
-        <div class="col col-5 col-md-12">
-
-        </div>
+        <div class="col col-5 col-md-12"></div>
     </div>
-
     <div class="row" style="margin-top: 20px;">
         <div class="col col-12">
             <div class="white-box prod-review-box" id="prod-reviews">
                 <h3 class="section-title">Đánh giá & Nhận xét <?php the_title(); ?></h3>
                 <?php $rating_count = $product->get_rating_count();
-                $average = $product->get_average_rating(); ?>
-                <div class="fpt-rating-overview">
+                                                                                        $average = $product->get_average_rating(); ?><div class="fpt-rating-overview">
                     <div class="ro-left">
                         <div class="score"><?php echo number_format($average, 1); ?>/5</div>
                         <div class="stars">
@@ -406,7 +347,6 @@ if (! empty($spec_groups)) {
         </div>
     </div>
 </div>
-
 <?php if (!empty($spec_groups)): ?>
 <div class="specs-popup-overlay" id="specs-popup">
     <div class="specs-popup-content fpt-popup-style">
@@ -431,8 +371,7 @@ if (! empty($spec_groups)) {
                             <th><?php echo esc_html($item['label']); ?></th>
                             <td><?php echo esc_html($val); ?></td>
                         </tr><?php endforeach;
-                                                    endif; ?>
-                    </table>
+                                                            endif; ?></table>
                 </div><?php endforeach; ?></div>
         </div>
     </div>

@@ -3,10 +3,6 @@
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
-/* -------------------------------------------------------------------------
- * CẤU HÌNH SẢN PHẨM (TAB THÔNG SỐ, ẢNH & KHUYẾN MÃI)
- * ------------------------------------------------------------------------- */
-
 add_action('carbon_fields_register_fields', 'relive_product_fields');
 function relive_product_fields()
 {
@@ -14,18 +10,16 @@ function relive_product_fields()
         ->where('post_type', '=', 'product')
         ->add_fields(array(
 
-            // TAB 1: THƯ VIỆN ẢNH & VIDEO
+            // TAB 1: ẢNH & VIDEO
             Field::make('separator', 'sep_gallery', '1. Thư viện ảnh & Video'),
             Field::make('image', 'prod_featured_image', 'Ảnh Nổi Bật (Slide đầu tiên)')->set_value_type('url'),
             Field::make('text', 'prod_video', 'Link Video Youtube'),
-
             Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện'),
             Field::make('media_gallery', 'real_images', 'Ảnh thực tế'),
 
             // TAB 2: THÔNG SỐ KỸ THUẬT
             Field::make('separator', 'sep_specs', '2. Thông số kỹ thuật'),
             Field::make('image', 'spec_feature_image', 'Ảnh mô tả tính năng')->set_value_type('url'),
-
             Field::make('complex', 'fpt_specs_groups', 'Danh sách Nhóm thông số')
                 ->set_layout('tabbed-vertical')
                 ->add_fields(array(
@@ -33,31 +27,31 @@ function relive_product_fields()
                     Field::make('complex', 'group_items', 'Chi tiết thông số')
                         ->set_layout('tabbed-horizontal')
                         ->add_fields(array(
-                            Field::make('text', 'label', 'Tên (VD: Kích thước)')->set_width(40),
-                            Field::make('text', 'spec_val', 'Giá trị (VD: 6.9 inch)')->set_width(40),
-                            Field::make('checkbox', 'is_highlight', 'Hiện ở mục nổi bật?')->set_width(20),
-                            Field::make('text', 'icon', 'Icon (VD: fas fa-chip)')->set_width(100),
+                            Field::make('text', 'label', 'Tên')->set_width(40),
+                            Field::make('text', 'spec_val', 'Giá trị')->set_width(40),
+                            Field::make('checkbox', 'is_highlight', 'Nổi bật?')->set_width(20),
+                            Field::make('text', 'icon', 'Icon')->set_width(100),
                         ))
                         ->set_header_template('<%- label %>: <%- spec_val %>')
                 ))
                 ->set_header_template('<%- group_name %>'),
 
             // TAB 3: KHUYẾN MÃI
-            Field::make('separator', 'sep_promo', '3. Khuyến mãi (FPT Style)'),
+            Field::make('separator', 'sep_promo', '3. Khuyến mãi'),
             Field::make('complex', 'fpt_promotions', 'Các nhóm khuyến mãi')
                 ->set_layout('tabbed-vertical')
                 ->add_fields(array(
-                    Field::make('text', 'promo_title', 'Tiêu đề nhóm (VD: Khuyến mãi 1)'),
+                    Field::make('text', 'promo_title', 'Tiêu đề nhóm'),
                     Field::make('complex', 'promo_items', 'Danh sách ưu đãi')
                         ->set_layout('tabbed-horizontal')
                         ->add_fields(array(
                             Field::make('text', 'content', 'Nội dung'),
-                            Field::make('text', 'link', 'Link chi tiết (Nếu có)'),
+                            Field::make('text', 'link', 'Link chi tiết'),
                         ))
                 ))
                 ->set_header_template('<%- promo_title %>'),
 
-            // TAB 4: SẢN PHẨM MUA KÈM (CẬP NHẬT MỚI: CÓ NHẬP %)
+            // TAB 4: MUA KÈM
             Field::make('separator', 'sep_bought_together', '4. Mua kèm giá sốc'),
             Field::make('complex', 'fpt_bought_together', 'Danh sách Mua kèm')
                 ->set_layout('tabbed-horizontal')
@@ -72,15 +66,13 @@ function relive_product_fields()
                 ))
                 ->set_header_template('<%- percent_sale %> %'),
 
-            // TAB 5: MÃ GIẢM GIÁ (COUPON)
+            // TAB 5: MÃ GIẢM GIÁ (CẬP NHẬT MỚI: CHỌN TỪ WOOCOMMERCE)
             Field::make('separator', 'sep_coupons', '5. Mã giảm giá thêm'),
-            Field::make('complex', 'product_coupons', 'Danh sách Mã giảm giá')
-                ->set_layout('tabbed-horizontal')
-                ->add_fields(array(
-                    Field::make('text', 'code', 'Mã Code (VD: APPLE500)')->set_width(30),
-                    Field::make('text', 'desc', 'Mô tả (VD: Giảm thêm 500k)')->set_width(70),
+            Field::make('association', 'product_coupons', 'Chọn Mã giảm giá (Đã tạo trong Marketing > Coupons)')
+                ->set_types(array(
+                    // Cho phép chọn post type là shop_coupon
+                    array('type' => 'post', 'post_type' => 'shop_coupon')
                 ))
-                ->set_header_template('<%- code %>'),
         ));
 }
 
