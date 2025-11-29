@@ -123,18 +123,12 @@ jQuery(document).ready(function($) {
     $(document).on('click', '#btn-close-specs, .sp-close, .specs-popup-overlay', function(e) { if (e.target === this || $(this).hasClass('sp-close')) { e.preventDefault(); $('#specs-popup').removeClass('open'); $('body').removeClass('no-scroll'); } });
     $(document).on('click', '.sp-nav-item', function(e) { e.preventDefault(); $('.sp-nav-item').removeClass('active'); $(this).addClass('active'); var $target = $($(this).attr('href')); if ($target.length) $('.sp-body').animate({ scrollTop: $target.offset().top - $('.sp-body').offset().top + $('.sp-body').scrollTop() - 50 }, 400); });
 
-    /* [FIXED] MUA KÈM: CHỈ TICK CHỌN, KHÔNG AJAX */
-    $(document).off('change', '.bt-checkbox-btn input').on('change', '.bt-checkbox-btn input', function() {
-        var $input = $(this); var $btn = $input.next('.btn-select-add');
-        if($input.is(':checked')) { $btn.html('Đã chọn <i class="fas fa-check"></i>').addClass('added').css({'background': '#28a745', 'color': '#fff', 'border-color': '#28a745'}); } 
-        else { $btn.html('Thêm <i class="fas fa-plus"></i>').removeClass('added').removeAttr('style'); }
-    });
-
-    /* COUPON LOCAL STORAGE */
+    // --- COUPON LOCALSTORAGE ---
     if($('body').hasClass('single-product')) localStorage.removeItem('relive_active_coupon');
     $(document).on('click', '.btn-copy-code', function(e) {
         e.preventDefault();
-        var $btn = $(this); var code = $btn.data('code');
+        var $btn = $(this);
+        var code = $btn.data('code');
         navigator.clipboard.writeText(code).then(function() {
             localStorage.setItem('relive_active_coupon', code);
             $btn.text('Đã Lưu').addClass('copied').css({'background':'#28a745', 'border-color':'#28a745'});
@@ -142,9 +136,21 @@ jQuery(document).ready(function($) {
         });
     });
 
-    /* XỬ LÝ MUA HÀNG */
+    // --- [QUAN TRỌNG] NÚT MUA KÈM: CHỈ TICK (KHÔNG AJAX) ---
+    $(document).off('change', '.bt-checkbox-btn input').on('change', '.bt-checkbox-btn input', function() {
+        var $input = $(this);
+        var $btn = $input.next('.btn-select-add');
+        if($input.is(':checked')) {
+            $btn.html('Đã chọn <i class="fas fa-check"></i>').addClass('added').css({'background': '#28a745', 'color': '#fff', 'border-color': '#28a745'});
+        } else {
+            $btn.html('Thêm <i class="fas fa-plus"></i>').removeClass('added').removeAttr('style');
+        }
+    });
+
+    // --- XỬ LÝ MUA NGAY (GOM HÀNG) ---
     $(document).on('click', '.action-trigger', function(e) {
-        e.preventDefault(); var type = $(this).data('type'); 
+        e.preventDefault();
+        var type = $(this).data('type'); 
         var $form = $('.variations_form'); 
         var $simpleBtn = $('button[name="add-to-cart"]'); 
         
@@ -163,14 +169,19 @@ jQuery(document).ready(function($) {
         if (!mainProductID) { alert('Lỗi: Không tìm thấy ID sản phẩm.'); return; }
 
         var productIDs = [];
-        productIDs.push({ id: mainProductID, qty: quantity, vid: variationID });
-        $('input[name="add_bought_together[]"]:checked').each(function() { productIDs.push({ id: $(this).val(), qty: 1, vid: 0 }); });
+        productIDs.push({ id: mainProductID, qty: quantity, vid: variationID }); // Index 0
+        
+        // Quét các checkbox đã chọn
+        $('input[name="add_bought_together[]"]:checked').each(function() {
+            productIDs.push({ id: $(this).val(), qty: 1, vid: 0 });
+        });
 
         var appliedCoupon = localStorage.getItem('relive_active_coupon') || '';
         var $btn = $(this); var originalText = $btn.html(); $btn.css('opacity', '0.7').text('Đang xử lý...');
 
         $.ajax({
-            url: relive_ajax.url, type: 'POST',
+            url: relive_ajax.url,
+            type: 'POST',
             data: { action: 'relive_add_multiple_to_cart', items: productIDs, coupon_code: appliedCoupon, nonce: relive_ajax.nonce },
             success: function(res) {
                 if (res.success) {
@@ -182,10 +193,15 @@ jQuery(document).ready(function($) {
                         localStorage.removeItem('relive_active_coupon');
                         location.reload();
                     }
-                } else { alert(res.data.message || 'Có lỗi xảy ra.'); }
+                } else {
+                    alert(res.data.message || 'Có lỗi xảy ra.');
+                }
                 $btn.css('opacity', '1').html(originalText);
             },
-            error: function() { alert('Lỗi kết nối máy chủ.'); $btn.css('opacity', '1').html(originalText); }
+            error: function() {
+                alert('Lỗi kết nối máy chủ.');
+                $btn.css('opacity', '1').html(originalText);
+            }
         });
     });
 
