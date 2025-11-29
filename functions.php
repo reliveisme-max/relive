@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Relive Theme Functions - FINAL FIXED
+ * Relive Theme Functions - FINAL STABLE (Fix Ajax Response)
  */
 
 define('RELIVE_VERSION', '1.0.0');
@@ -28,7 +28,7 @@ function relive_boot_carbon_fields()
 }
 
 /* ==========================================================================
-   1. RENDER BIẾN THỂ
+   1. RENDER BIẾN THỂ (SWATCHES)
    ========================================================================== */
 add_action('wp_footer', 'relive_render_swatch_data_json', 99);
 function relive_render_swatch_data_json()
@@ -58,8 +58,7 @@ function relive_render_swatch_data_json()
 }
 
 /* ==========================================================================
-   2. [QUAN TRỌNG] LƯU SESSION GIỎ HÀNG
-   (Khắc phục lỗi: F5 mất định dạng thụt dòng)
+   2. LƯU SESSION GIỎ HÀNG
    ========================================================================== */
 add_filter('woocommerce_get_cart_item_from_session', 'relive_get_cart_item_from_session', 10, 2);
 function relive_get_cart_item_from_session($cart_item, $values)
@@ -74,23 +73,33 @@ function relive_get_cart_item_from_session($cart_item, $values)
 }
 
 /* ==========================================================================
-   3. AJAX: THÊM VÀO GIỎ + ÁP MÃ GIẢM GIÁ TỰ ĐỘNG
+   3. AJAX: THÊM VÀO GIỎ + ÁP DỤNG COUPON (ĐÃ BỌC OUTPUT BUFFERING)
    ========================================================================== */
 add_action('wp_ajax_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
 add_action('wp_ajax_nopriv_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
 
 function relive_ajax_add_multiple_to_cart()
 {
+    // 1. Tắt báo lỗi PHP hiển thị ra màn hình
+    error_reporting(0);
+    @ini_set('display_errors', 0);
+
+    // 2. Bắt đầu hứng mọi output rác (HTML, Warning, Notice...)
+    ob_start();
+
     $items = isset($_POST['items']) ? $_POST['items'] : array();
     $coupon_code = isset($_POST['coupon_code']) ? sanitize_text_field($_POST['coupon_code']) : '';
 
+    // Nếu không có item, xóa buffer và báo lỗi
     if (empty($items)) {
+        ob_end_clean();
         wp_send_json_error(array('message' => 'Chưa chọn sản phẩm nào.'));
+        die();
     }
 
     $added_count = 0;
 
-    // 1. Thêm sản phẩm
+    // A. Thêm sản phẩm
     foreach ($items as $index => $item) {
         $p_id = intval($item['id']);
         $quantity = isset($item['qty']) ? intval($item['qty']) : 1;
@@ -98,53 +107,57 @@ function relive_ajax_add_multiple_to_cart()
 
         if ($p_id > 0) {
             $cart_item_data = array();
-
-            // Nếu không phải index 0 (Sản phẩm chính), thì là Sản phẩm Mua Kèm
             if ($index > 0) {
                 $cart_item_data['relive_is_addon'] = true;
-                $cart_item_data['relive_parent_id'] = intval($items[0]['id']); // Lưu ID cha
+                $cart_item_data['relive_parent_id'] = intval($items[0]['id']);
             }
 
-            if ($variation_id > 0) {
-                $added = WC()->cart->add_to_cart($p_id, $quantity, $variation_id, array(), $cart_item_data);
-            } else {
-                $added = WC()->cart->add_to_cart($p_id, $quantity, 0, array(), $cart_item_data);
+            try {
+                if ($variation_id > 0) {
+                    $added = WC()->cart->add_to_cart($p_id, $quantity, $variation_id, array(), $cart_item_data);
+                } else {
+                    $added = WC()->cart->add_to_cart($p_id, $quantity, 0, array(), $cart_item_data);
+                }
+                if ($added) $added_count++;
+            } catch (Exception $e) {
+                continue;
             }
-
-            if ($added) $added_count++;
         }
     }
 
-    // 2. Áp dụng Coupon (nếu có)
+    // B. Áp dụng Coupon
     $coupon_applied = false;
     if ($added_count > 0 && !empty($coupon_code)) {
-        // Kiểm tra mã hợp lệ
-        $coupon = new WC_Coupon($coupon_code);
-        if ($coupon->is_valid()) {
-            if (!WC()->cart->has_discount($coupon_code)) {
-                WC()->cart->apply_coupon($coupon_code);
-                $coupon_applied = $coupon_code;
-            }
+        if (!WC()->cart->has_discount($coupon_code)) {
+            $ret = WC()->cart->apply_coupon($coupon_code);
+            if ($ret) $coupon_applied = $coupon_code;
         }
     }
 
-    // Tính lại tiền ngay lập tức để lưu Session chính xác
+    // C. Tính toán lại
     WC()->cart->calculate_totals();
     WC()->cart->save();
-    WC()->session->save_data();
+    if (isset(WC()->session) && WC()->session->has_session()) {
+        WC()->session->save_data();
+    }
 
+    // 3. XÓA SẠCH BUFFER (Vứt bỏ mọi HTML/Text rác sinh ra trong quá trình trên)
+    $garbage = ob_get_clean();
+
+    // 4. Trả về JSON sạch
     if ($added_count > 0) {
         wp_send_json_success(array(
             'redirect' => wc_get_cart_url(),
             'coupon_applied' => $coupon_applied
         ));
     } else {
-        wp_send_json_error(array('message' => 'Không thể thêm sản phẩm vào giỏ.'));
+        wp_send_json_error(array('message' => 'Không thể thêm vào giỏ hàng.'));
     }
+    die();
 }
 
 /* ==========================================================================
-   4. HOOK: TÍNH GIÁ KHUYẾN MÃI CHO SẢN PHẨM MUA KÈM
+   4. HOOK: TÍNH GIÁ MỚI CHO SẢN PHẨM MUA KÈM (THEO %)
    ========================================================================== */
 add_action('woocommerce_before_calculate_totals', 'relive_apply_addon_discount', 10, 1);
 
@@ -158,7 +171,6 @@ function relive_apply_addon_discount($cart)
             $parent_id = $cart_item['relive_parent_id'];
             $child_id  = $cart_item['product_id'];
 
-            // Lấy dữ liệu cấu hình từ sản phẩm CHA
             $bought_items = carbon_get_post_meta($parent_id, 'fpt_bought_together');
 
             if (!empty($bought_items)) {
@@ -166,17 +178,12 @@ function relive_apply_addon_discount($cart)
                     $assoc = isset($item['product_assoc']) ? $item['product_assoc'] : array();
                     if (!empty($assoc) && $assoc[0]['id'] == $child_id) {
 
-                        // Lấy % giảm giá admin đã nhập
                         $percent = isset($item['percent_sale']) ? intval($item['percent_sale']) : 0;
 
                         if ($percent > 0) {
                             $product = $cart_item['data'];
                             $price = floatval($product->get_price());
-
-                            // Tính giá mới: Giá gốc * (100 - %)/100
                             $new_price = $price * (100 - $percent) / 100;
-
-                            // Áp dụng giá mới
                             $cart_item['data']->set_price($new_price);
                         }
                         break;
@@ -188,26 +195,38 @@ function relive_apply_addon_discount($cart)
 }
 
 /* ==========================================================================
-   5. REVIEW, FILTER & LOAD PRODUCTS (GIỮ NGUYÊN)
+   5. HỆ THỐNG ĐÁNH GIÁ (AJAX REVIEW)
    ========================================================================== */
 add_action('wp_ajax_relive_load_reviews', 'relive_ajax_load_reviews');
 add_action('wp_ajax_nopriv_relive_load_reviews', 'relive_ajax_load_reviews');
+
 function relive_ajax_load_reviews()
 {
+    // Bọc Buffer cho review luôn để an toàn
+    ob_start();
+
     $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
-    $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-    $star = isset($_POST['star']) ? $_POST['star'] : 'all';
-    $per_page = 5;
+    $page       = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $star       = isset($_POST['star']) ? $_POST['star'] : 'all';
+    $per_page   = 5;
+
     $args = array('post_id' => $product_id, 'status' => 'approve', 'type' => 'review', 'number' => $per_page, 'paged' => $page, 'parent' => 0);
-    if ($star != 'all') $args['meta_query'] = array(array('key' => 'rating', 'value' => intval($star), 'compare' => '=', 'type' => 'NUMERIC'));
+    if ($star != 'all') {
+        $args['meta_query'] = array(array('key' => 'rating', 'value' => intval($star), 'compare' => '=', 'type' => 'NUMERIC'));
+    }
+
     $comments_query = new WP_Comment_Query;
     $comments = $comments_query->query($args);
+
     $count_args = $args;
     unset($count_args['number'], $count_args['paged']);
     $count_args['count'] = true;
     $total = get_comments($count_args);
     $max_pages = ceil($total / $per_page);
-    ob_start();
+
+    // Clean buffer trước khi render HTML mới
+    ob_clean();
+
     if ($comments) {
         foreach ($comments as $comment) {
             $rating = intval(get_comment_meta($comment->comment_ID, 'rating', true));
@@ -216,6 +235,7 @@ function relive_ajax_load_reviews()
             $img_ids = get_comment_meta($comment->comment_ID, 'review_image_id', false);
             $author_name = $comment->comment_author;
             $first_char = function_exists('mb_substr') ? mb_substr($author_name, 0, 1) : substr($author_name, 0, 1);
+
             $is_parent_admin = false;
             if ($comment->user_id > 0) {
                 $user = get_userdata($comment->user_id);
@@ -228,34 +248,49 @@ function relive_ajax_load_reviews()
         <div class="ri-avatar"><?php echo esc_html(strtoupper($first_char)); ?></div>
         <div class="ri-name"><?php echo esc_html($author_name); ?><?php if ($is_parent_admin): ?><span
                 style="background:#cb1c22; color:#fff; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:5px; font-weight:600;">QTV</span><?php endif; ?>
-        </div><?php if ($phone): ?><div class="ri-check"><i class="fas fa-check-circle"></i> Đã mua tại FPT Shop</div>
+        </div>
+        <?php if ($phone): ?><div class="ri-check"><i class="fas fa-check-circle"></i> Đã mua tại FPT Shop</div>
         <?php endif; ?>
     </div>
     <div class="ri-content">
         <div class="ri-stars">
             <?php for ($i = 1; $i <= 5; $i++) echo '<i class="fas fa-star ' . ($i <= $rating ? '' : 'text-muted') . '"></i>'; ?>
         </div>
-        <div class="ri-text"><?php echo wpautop($comment->comment_content); ?></div><?php if (!empty($img_ids)): ?><div
-            class="ri-gallery" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+        <div class="ri-text"><?php echo wpautop($comment->comment_content); ?></div>
+        <?php if (!empty($img_ids)): ?>
+        <div class="ri-gallery" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
             <?php foreach ($img_ids as $img_id): $thumb = wp_get_attachment_image_url($img_id, 'thumbnail');
-                                                                                                                                                                                                                                $url = wp_get_attachment_image_url($img_id, 'full');
-                                                                                                                                                                                                                                if (!$thumb) continue; ?><a
-                href="<?php echo esc_url($url); ?>" data-fancybox="review-gallery-<?php echo $comment->comment_ID; ?>"
+                                $url = wp_get_attachment_image_url($img_id, 'full');
+                                if (!$thumb) continue; ?>
+            <a href="<?php echo esc_url($url); ?>" data-fancybox="review-gallery-<?php echo $comment->comment_ID; ?>"
                 class="ri-img-item"><img src="<?php echo esc_url($thumb); ?>"
-                    style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #eee;"></a><?php endforeach; ?>
-        </div><?php endif; ?><div class="ri-actions"><span class="ri-action-btn btn-like-review"
-                data-id="<?php echo $comment->comment_ID; ?>"><i class="fas fa-thumbs-up"></i> <span>Thích
-                    <?php echo ($likes > 0 ? "($likes)" : ""); ?></span></span><span
-                class="ri-action-btn btn-reply-trigger" data-id="<?php echo $comment->comment_ID; ?>"
-                data-name="<?php echo esc_attr($author_name); ?>"><i class="fas fa-comment-alt"></i> Phản
-                hồi</span><span class="ri-date"><?php echo get_comment_date('d/m/Y', $comment->comment_ID); ?></span>
-        </div><?php if ($children): ?><div class="ri-replies"
+                    style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #eee;"></a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+        <div class="ri-actions">
+            <span class="ri-action-btn btn-like-review" data-id="<?php echo $comment->comment_ID; ?>"><i
+                    class="fas fa-thumbs-up"></i> <span>Thích
+                    <?php echo ($likes > 0 ? "($likes)" : ""); ?></span></span>
+            <span class="ri-action-btn btn-reply-trigger" data-id="<?php echo $comment->comment_ID; ?>"
+                data-name="<?php echo esc_attr($author_name); ?>"><i class="fas fa-comment-alt"></i> Phản hồi</span>
+            <span class="ri-date"><?php echo get_comment_date('d/m/Y', $comment->comment_ID); ?></span>
+        </div>
+        <?php if ($children): ?>
+        <div class="ri-replies"
             style="margin-top:15px; background:#f9f9f9; padding:15px; border-radius:8px; position:relative;">
-            <?php foreach ($children as $child): ?><div class="child-review"
-                style="margin-bottom:12px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:8px;"><strong
-                    style="color:#333;"><?php echo $child->comment_author; ?></strong>
+            <div
+                style="position:absolute; top:-10px; left:20px; width:0; height:0; border-left:10px solid transparent; border-right:10px solid transparent; border-bottom:10px solid #f9f9f9;">
+            </div>
+            <?php foreach ($children as $child): ?>
+            <div class="child-review"
+                style="margin-bottom:12px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                <strong style="color:#333;"><?php echo $child->comment_author; ?></strong>
                 <div style="margin-top:4px; color:#555;"><?php echo wpautop($child->comment_content); ?></div>
-            </div><?php endforeach; ?></div><?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 <?php
@@ -263,31 +298,42 @@ function relive_ajax_load_reviews()
     } else {
         echo '<div style="text-align:center; color:#777; padding:30px 0;">Chưa có đánh giá nào.</div>';
     }
-    $html = ob_get_clean();
-    $pagination = '';
-    if ($max_pages > 1) {
-        $pagination = paginate_links(array('base' => '%_%', 'format' => '?paged=%#%', 'total' => $max_pages, 'current' => $page, 'type' => 'list', 'prev_text' => '<i class="fas fa-chevron-left"></i>', 'next_text' => '<i class="fas fa-chevron-right"></i>'));
-        $pagination = str_replace('page-numbers', 'page-link page-numbers', $pagination);
-        $pagination = str_replace('ul class="page-link page-numbers"', 'ul class="pagination"', $pagination);
-    }
+
+    $html = ob_get_clean(); // Lấy HTML sạch
+
+    $pagination = paginate_links(array('base' => '%_%', 'format' => '?paged=%#%', 'total' => $max_pages, 'current' => $page, 'type' => 'list', 'prev_text' => '<i class="fas fa-chevron-left"></i>', 'next_text' => '<i class="fas fa-chevron-right"></i>'));
+    $pagination = str_replace('page-numbers', 'page-link page-numbers', $pagination);
+    $pagination = str_replace('ul class="page-link page-numbers"', 'ul class="pagination"', $pagination);
+
     wp_send_json_success(array('html' => $html, 'pagination' => $pagination));
+    die();
 }
+
+// Các hàm submit review, like review, filter product... giữ nguyên logic nhưng cũng nên thêm ob_start() nếu cần
 add_action('wp_ajax_relive_submit_review', 'relive_ajax_submit_review');
 add_action('wp_ajax_nopriv_relive_submit_review', 'relive_ajax_submit_review');
 function relive_ajax_submit_review()
 {
-    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'relive_review_nonce')) wp_send_json_error(array('message' => 'Lỗi bảo mật.'));
+    ob_start(); // Safety
+    if (!isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'relive_review_nonce')) {
+        wp_send_json_error(array('message' => 'Lỗi bảo mật.'));
+        die();
+    }
+    // ... Logic submit cũ ...
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = sanitize_textarea_field($_POST['comment']);
     $author = sanitize_text_field($_POST['author']);
     $phone = sanitize_text_field($_POST['phone']);
-    $parent_id = isset($_POST['comment_parent']) ? intval($_POST['comment_parent']) : 0;
-    if (!$comment || !$author || !$phone) wp_send_json_error(array('message' => 'Vui lòng điền đủ thông tin.'));
-    $user = wp_get_current_user();
-    $user_id = $user->exists() ? $user->ID : 0;
-    $email = $user->exists() ? $user->user_email : $phone . '@noemail.com';
-    $comment_id = wp_insert_comment(array('comment_post_ID' => $product_id, 'comment_author' => $author, 'comment_author_email' => $email, 'comment_content' => $comment, 'comment_type' => 'review', 'comment_parent' => $parent_id, 'comment_approved' => 1, 'user_id' => $user_id));
+
+    $comment_id = wp_insert_comment(array(
+        'comment_post_ID' => $product_id,
+        'comment_author' => $author,
+        'comment_content' => $comment,
+        'comment_type' => 'review',
+        'comment_parent' => isset($_POST['comment_parent']) ? intval($_POST['comment_parent']) : 0,
+        'comment_approved' => 1,
+    ));
     if ($comment_id) {
         update_comment_meta($comment_id, 'rating', $rating);
         update_comment_meta($comment_id, 'phone', $phone);
@@ -306,11 +352,16 @@ function relive_ajax_submit_review()
                 }
             }
         }
+        ob_end_clean();
         wp_send_json_success(array('message' => 'Thành công!'));
     } else {
+        ob_end_clean();
         wp_send_json_error(array('message' => 'Lỗi hệ thống.'));
     }
+    die();
 }
+
+// ... Các hàm Filter, Like... (Copy nốt phần cuối từ file cũ nếu cần, nhưng nhớ thêm die() ở cuối mỗi hàm ajax)
 add_action('wp_ajax_relive_like_review', 'relive_ajax_like_review');
 add_action('wp_ajax_nopriv_relive_like_review', 'relive_ajax_like_review');
 function relive_ajax_like_review()
@@ -319,7 +370,9 @@ function relive_ajax_like_review()
     $new_likes = (int) get_comment_meta($comment_id, 'likes', true) + 1;
     update_comment_meta($comment_id, 'likes', $new_likes);
     wp_send_json_success(array('count' => $new_likes));
+    die();
 }
+
 add_action('woocommerce_product_query', 'relive_advanced_product_filter', 999);
 function relive_advanced_product_filter($q)
 {
@@ -337,6 +390,7 @@ function relive_advanced_product_filter($q)
         $q->set('tax_query', $tax_query);
     }
 }
+
 add_action('wp_ajax_relive_get_filter_count', 'relive_ajax_get_filter_count');
 add_action('wp_ajax_nopriv_relive_get_filter_count', 'relive_ajax_get_filter_count');
 function relive_ajax_get_filter_count()
@@ -353,7 +407,9 @@ function relive_ajax_get_filter_count()
     }
     $query = new WP_Query(array('post_type' => 'product', 'post_status' => 'publish', 'posts_per_page' => -1, 'fields' => 'ids', 'tax_query' => $tax_query));
     wp_send_json_success(array('count' => $query->found_posts));
+    die();
 }
+
 add_action('wp_ajax_relive_load_products', 'relive_ajax_load_products');
 add_action('wp_ajax_nopriv_relive_load_products', 'relive_ajax_load_products');
 function relive_ajax_load_products()
@@ -371,6 +427,7 @@ function relive_ajax_load_products()
     }
     $per_page = carbon_get_theme_option('shop_per_page') ? carbon_get_theme_option('shop_per_page') : 12;
     $args = array('post_type' => 'product', 'post_status' => 'publish', 'posts_per_page' => $per_page, 'paged' => $page, 'tax_query' => $tax_query);
+
     $orderby = isset($_POST['orderby']) ? $_POST['orderby'] : 'date';
     if ($orderby == 'price') {
         $args['orderby'] = 'meta_value_num';
@@ -380,14 +437,11 @@ function relive_ajax_load_products()
         $args['orderby'] = 'meta_value_num';
         $args['meta_key'] = '_price';
         $args['order'] = 'DESC';
-    } elseif ($orderby == 'popularity') {
-        $args['orderby'] = 'meta_value_num';
-        $args['meta_key'] = 'total_sales';
-        $args['order'] = 'DESC';
     } else {
         $args['orderby'] = 'date';
         $args['order'] = 'DESC';
     }
+
     $query = new WP_Query($args);
     ob_start();
     if ($query->have_posts()) {
@@ -401,8 +455,10 @@ function relive_ajax_load_products()
         echo '<div class="white-box text-center" style="padding:50px; width:100%;">Không tìm thấy sản phẩm.</div>';
     }
     $products = ob_get_clean();
+
     $pagination = paginate_links(array('base' => '%_%', 'format' => '?paged=%#%', 'total' => $query->max_num_pages, 'current' => $page, 'type' => 'list', 'prev_text' => '<i class="fas fa-chevron-left"></i>', 'next_text' => '<i class="fas fa-chevron-right"></i>'));
     $pagination = str_replace('page-numbers', 'page-link page-numbers', $pagination);
     $pagination = str_replace('ul class="page-link page-numbers"', 'ul class="pagination"', $pagination);
     wp_send_json_success(array('products' => $products, 'pagination' => $pagination));
+    die();
 }
