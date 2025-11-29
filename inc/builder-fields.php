@@ -4,7 +4,7 @@ use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
 /* -------------------------------------------------------------------------
- * 1. CẤU HÌNH SẢN PHẨM (TAB THÔNG SỐ, ẢNH & KHUYẾN MÃI)
+ * CẤU HÌNH SẢN PHẨM (TAB THÔNG SỐ, ẢNH & KHUYẾN MÃI)
  * ------------------------------------------------------------------------- */
 
 add_action('carbon_fields_register_fields', 'relive_product_fields');
@@ -19,33 +19,29 @@ function relive_product_fields()
             Field::make('image', 'prod_featured_image', 'Ảnh Nổi Bật (Slide đầu tiên)')->set_value_type('url'),
             Field::make('text', 'prod_video', 'Link Video Youtube'),
 
-            // QUAN TRỌNG: Để trống set_type để tránh lỗi mất dữ liệu
             Field::make('media_gallery', 'box_images', 'Ảnh mở hộp / Phụ kiện'),
             Field::make('media_gallery', 'real_images', 'Ảnh thực tế'),
 
             // TAB 2: THÔNG SỐ KỸ THUẬT
             Field::make('separator', 'sep_specs', '2. Thông số kỹ thuật'),
-
-            // Ảnh mô tả tính năng (Cột trái Popup)
             Field::make('image', 'spec_feature_image', 'Ảnh mô tả tính năng')->set_value_type('url'),
 
             Field::make('complex', 'fpt_specs_groups', 'Danh sách Nhóm thông số')
                 ->set_layout('tabbed-vertical')
                 ->add_fields(array(
                     Field::make('text', 'group_name', 'Tên nhóm (VD: Màn hình)')->set_width(100),
-
                     Field::make('complex', 'group_items', 'Chi tiết thông số')
                         ->set_layout('tabbed-horizontal')
                         ->add_fields(array(
                             Field::make('text', 'label', 'Tên (VD: Kích thước)')->set_width(40),
                             Field::make('text', 'spec_val', 'Giá trị (VD: 6.9 inch)')->set_width(40),
                             Field::make('checkbox', 'is_highlight', 'Hiện ở mục nổi bật?')->set_width(20),
-                            // Thêm ô nhập Icon thủ công nếu cần
                             Field::make('text', 'icon', 'Icon (VD: fas fa-chip)')->set_width(100),
                         ))
                         ->set_header_template('<%- label %>: <%- spec_val %>')
                 ))
                 ->set_header_template('<%- group_name %>'),
+
             // TAB 3: KHUYẾN MÃI
             Field::make('separator', 'sep_promo', '3. Khuyến mãi (FPT Style)'),
             Field::make('complex', 'fpt_promotions', 'Các nhóm khuyến mãi')
@@ -60,14 +56,24 @@ function relive_product_fields()
                         ))
                 ))
                 ->set_header_template('<%- promo_title %>'),
-            // TAB 4: SẢN PHẨM MUA KÈM
+
+            // TAB 4: SẢN PHẨM MUA KÈM (CẬP NHẬT MỚI: CÓ NHẬP %)
             Field::make('separator', 'sep_bought_together', '4. Mua kèm giá sốc'),
-            Field::make('association', 'bought_together_ids', 'Chọn sản phẩm mua kèm')
-                ->set_types(array(
-                    array('type' => 'post', 'post_type' => 'product')
-                )),
-            // TAB 4: MÃ GIẢM GIÁ (COUPON) - MỚI
-            Field::make('separator', 'sep_coupons', '4. Mã giảm giá thêm'),
+            Field::make('complex', 'fpt_bought_together', 'Danh sách Mua kèm')
+                ->set_layout('tabbed-horizontal')
+                ->add_fields(array(
+                    Field::make('association', 'product_assoc', 'Chọn sản phẩm')
+                        ->set_types(array(array('type' => 'post', 'post_type' => 'product')))
+                        ->set_max(1)
+                        ->set_width(50),
+                    Field::make('text', 'percent_sale', '% Giảm giá (VD: 20)')
+                        ->set_width(50)
+                        ->set_attribute('type', 'number'),
+                ))
+                ->set_header_template('<%- percent_sale %> %'),
+
+            // TAB 5: MÃ GIẢM GIÁ (COUPON)
+            Field::make('separator', 'sep_coupons', '5. Mã giảm giá thêm'),
             Field::make('complex', 'product_coupons', 'Danh sách Mã giảm giá')
                 ->set_layout('tabbed-horizontal')
                 ->add_fields(array(
@@ -78,6 +84,7 @@ function relive_product_fields()
         ));
 }
 
+// ... (Giữ nguyên các phần khác: relive_term_fields, relive_cat_banner_fields, relive_register_builder) ...
 /* -------------------------------------------------------------------------
  * 2. CẤU HÌNH THUỘC TÍNH (ĐỂ CHỌN MÀU/ẢNH CHO BIẾN THỂ)
  * ------------------------------------------------------------------------- */

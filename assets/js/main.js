@@ -721,4 +721,106 @@ jQuery(document).ready(function($) {
         var $updateBtn = $('button[name="update_cart"]');
         $updateBtn.prop('disabled', false).trigger('click');
     });
+    /* ==========================================================================
+       XỬ LÝ COUPON: SAO CHÉP & TỰ ĐỘNG LƯU
+       ========================================================================== */
+    var autoApplyCoupon = ''; // Biến lưu mã tạm thời
+
+    $(document).on('click', '.btn-copy-code', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var code = $btn.data('code');
+        
+        // 1. Copy vào Clipboard
+        navigator.clipboard.writeText(code).then(function() {
+            // 2. Lưu vào biến để tí nữa mua hàng thì gửi đi
+            autoApplyCoupon = code; 
+            
+            // 3. Hiệu ứng đổi nút
+            $btn.text('Đã Lưu').addClass('copied');
+            $btn.css({'background':'#28a745', 'border-color':'#28a745'});
+            
+            setTimeout(function() { 
+                $btn.text('Sao chép').removeClass('copied').removeAttr('style'); 
+            }, 2000);
+        });
+    });
+
+    /* ==========================================================================
+       XỬ LÝ MUA HÀNG: GOM NHÓM SP + GỬI KÈM MÃ GIẢM GIÁ
+       ========================================================================== */
+    $(document).on('click', '.action-trigger', function(e) {
+        e.preventDefault();
+        var type = $(this).data('type'); // 'buy-now' hoặc 'add-to-cart'
+        
+        // Tìm thông tin sản phẩm chính
+        var $form = $('.variations_form'); 
+        var $simpleBtn = $('button[name="add-to-cart"]');
+        
+        var mainProductID = 0;
+        var variationID = 0;
+        var quantity = $('input.qty').val() ? parseInt($('input.qty').val()) : 1;
+
+        if ($form.length > 0) {
+            // Sản phẩm biến thể
+            mainProductID = $form.find('input[name="product_id"]').val();
+            variationID = $form.find('input[name="variation_id"]').val();
+            if (!variationID || variationID == 0) { alert('Vui lòng chọn đầy đủ Màu sắc/Phiên bản!'); return; }
+        } else if ($simpleBtn.length > 0) {
+            // Sản phẩm đơn
+            mainProductID = $simpleBtn.val();
+        } else {
+            mainProductID = $('input[name="add-to-cart"]').val();
+        }
+
+        if (!mainProductID) { alert('Lỗi: Không tìm thấy ID sản phẩm.'); return; }
+
+        // --- GOM DANH SÁCH SẢN PHẨM ---
+        var productIDs = [];
+        
+        // 1. Luôn thêm sản phẩm CHÍNH vào đầu danh sách (Index 0)
+        productIDs.push({ id: mainProductID, qty: quantity, vid: variationID });
+
+        // 2. Quét các sản phẩm MUA KÈM đã được tick
+        $('input[name="add_bought_together[]"]:checked').each(function() {
+            productIDs.push({ id: $(this).val(), qty: 1, vid: 0 });
+        });
+
+        // --- GỬI AJAX ---
+        var $btn = $(this);
+        var originalText = $btn.html();
+        $btn.css('opacity', '0.7').text('Đang xử lý...');
+
+        $.ajax({
+            url: relive_ajax.url,
+            type: 'POST',
+            data: {
+                action: 'relive_add_multiple_to_cart',
+                items: productIDs,            // Danh sách sản phẩm
+                coupon_code: autoApplyCoupon, // Mã giảm giá (nếu có)
+                nonce: relive_ajax.nonce
+            },
+            success: function(res) {
+                if (res.success) {
+                    if (type === 'buy-now') {
+                        // Chuyển ngay tới giỏ hàng
+                        window.location.href = res.data.redirect;
+                    } else {
+                        // Nếu là thêm vào giỏ -> Reload để cập nhật
+                        var msg = 'Đã thêm vào giỏ hàng thành công!';
+                        if(res.data.coupon_applied) msg += '\nMã giảm giá ' + res.data.coupon_applied + ' đã được áp dụng.';
+                        alert(msg);
+                        location.reload();
+                    }
+                } else {
+                    alert(res.data.message || 'Có lỗi xảy ra.');
+                }
+                $btn.css('opacity', '1').html(originalText);
+            },
+            error: function() {
+                alert('Lỗi kết nối máy chủ.');
+                $btn.css('opacity', '1').html(originalText);
+            }
+        });
+    });
 });

@@ -352,14 +352,15 @@ function relive_ajax_load_products()
 }
 
 /* ==========================================================================
-   XỬ LÝ MUA KÈM (HỖ TRỢ CẢ SẢN PHẨM ĐƠN & BIẾN THỂ - CẬP NHẬT)
+   XỬ LÝ MUA KÈM + ÁP DỤNG COUPON TỰ ĐỘNG
    ========================================================================== */
 add_action('wp_ajax_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
 add_action('wp_ajax_nopriv_relive_add_multiple_to_cart', 'relive_ajax_add_multiple_to_cart');
 
 function relive_ajax_add_multiple_to_cart()
 {
-    $items = isset($_POST['items']) ? $_POST['items'] : array(); // Nhận mảng items từ JS
+    $items = isset($_POST['items']) ? $_POST['items'] : array();
+    $coupon_code = isset($_POST['coupon_code']) ? sanitize_text_field($_POST['coupon_code']) : ''; // Nhận mã từ JS
 
     if (empty($items)) {
         wp_send_json_error(array('message' => 'Chưa chọn sản phẩm nào.'));
@@ -367,36 +368,95 @@ function relive_ajax_add_multiple_to_cart()
 
     $added_count = 0;
 
+    // 1. Thêm sản phẩm vào giỏ
     foreach ($items as $index => $item) {
         $p_id = intval($item['id']);
         $quantity = isset($item['qty']) ? intval($item['qty']) : 1;
         $variation_id = isset($item['vid']) ? intval($item['vid']) : 0;
 
         if ($p_id > 0) {
-            // Dữ liệu meta để đánh dấu sản phẩm phụ
             $cart_item_data = array();
 
             // Nếu không phải sản phẩm đầu tiên (index 0 là SP chính), đánh dấu là Addon
             if ($index > 0) {
                 $cart_item_data['relive_is_addon'] = true;
+                // Lưu ID của sản phẩm chính để tính giá
+                $cart_item_data['relive_parent_id'] = intval($items[0]['id']);
             }
 
-            // Thêm vào giỏ
             if ($variation_id > 0) {
                 $added = WC()->cart->add_to_cart($p_id, $quantity, $variation_id, array(), $cart_item_data);
             } else {
                 $added = WC()->cart->add_to_cart($p_id, $quantity, 0, array(), $cart_item_data);
             }
 
-            if ($added) {
-                $added_count++;
+            if ($added) $added_count++;
+        }
+    }
+
+    // 2. Áp dụng Coupon (nếu có và hợp lệ)
+    $coupon_applied = false;
+    if ($added_count > 0 && !empty($coupon_code)) {
+        if (!WC()->cart->has_discount($coupon_code)) {
+            $result = WC()->cart->apply_coupon($coupon_code);
+            if ($result === true) {
+                $coupon_applied = $coupon_code;
             }
         }
     }
 
     if ($added_count > 0) {
-        wp_send_json_success(array('redirect' => wc_get_cart_url()));
+        wp_send_json_success(array(
+            'redirect' => wc_get_cart_url(),
+            'coupon_applied' => $coupon_applied
+        ));
     } else {
         wp_send_json_error(array('message' => 'Không thể thêm sản phẩm vào giỏ.'));
+    }
+}
+
+/* ==========================================================================
+   TÍNH GIÁ KHUYẾN MÃI CHO SẢN PHẨM MUA KÈM (DỰA TRÊN %)
+   ========================================================================== */
+add_action('woocommerce_before_calculate_totals', 'relive_apply_addon_discount', 10, 1);
+
+function relive_apply_addon_discount($cart)
+{
+    if (is_admin() && !defined('DOING_AJAX')) return;
+
+    foreach ($cart->get_cart() as $cart_item) {
+        // 1. Kiểm tra xem sản phẩm này có phải là hàng mua kèm không
+        if (isset($cart_item['relive_parent_id']) && $cart_item['relive_parent_id'] > 0) {
+
+            $parent_id = $cart_item['relive_parent_id'];
+            $child_id  = $cart_item['product_id'];
+
+            // 2. Lấy danh sách cấu hình mua kèm từ sản phẩm CHA
+            // Dùng carbon_get_post_meta vì lấy từ DB của cha
+            $bought_items = carbon_get_post_meta($parent_id, 'fpt_bought_together');
+
+            if (!empty($bought_items)) {
+                foreach ($bought_items as $item) {
+                    // Tìm xem sản phẩm con này nằm ở đâu trong list của cha
+                    if (!empty($item['product_assoc']) && $item['product_assoc'][0]['id'] == $child_id) {
+
+                        // 3. Lấy % giảm giá
+                        $percent = isset($item['percent_sale']) ? intval($item['percent_sale']) : 0;
+
+                        if ($percent > 0) {
+                            $product = $cart_item['data'];
+                            $price = floatval($product->get_price());
+
+                            // 4. Tính giá mới
+                            $new_price = $price * (100 - $percent) / 100;
+
+                            // 5. Set giá mới cho item trong giỏ
+                            $cart_item['data']->set_price($new_price);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

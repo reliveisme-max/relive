@@ -17,9 +17,9 @@ $main_image_id       = $product->get_image_id();
 
 $spec_groups         = carbon_get_the_post_meta('fpt_specs_groups');
 $spec_feature_img    = carbon_get_the_post_meta('spec_feature_image');
-$bought_together     = carbon_get_the_post_meta('bought_together_ids');
 
-// [MỚI] Lấy dữ liệu Coupon
+// Dữ liệu Mới
+$bought_items        = carbon_get_the_post_meta('fpt_bought_together');
 $coupons             = carbon_get_the_post_meta('product_coupons');
 
 function get_fpt_icon($label)
@@ -259,7 +259,7 @@ if (! empty($spec_groups)) {
 
             <?php if (! empty($coupons)) : ?>
             <div class="fpt-coupon-section">
-                <div class="c-title"><i class="fas fa-ticket-alt"></i> Mã giảm giá thêm</div>
+                <div class="c-title"><i class="fas fa-ticket-alt"></i> MÃ GIẢM GIÁ THÊM</div>
                 <div class="coupon-list">
                     <?php foreach ($coupons as $coupon) : ?>
                     <div class="coupon-item">
@@ -274,6 +274,7 @@ if (! empty($spec_groups)) {
                 </div>
             </div>
             <?php endif; ?>
+
             <div class="fpt-bot-action-group">
                 <button type="button" class="btn-fpt-cart action-trigger" data-type="add-to-cart">
                     <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -289,6 +290,68 @@ if (! empty($spec_groups)) {
                 <button type="button" class="btn-fpt-installment"><strong>TRẢ GÓP 0%</strong><span>(Duyệt hồ sơ trong 5
                         phút)</span></button>
             </div>
+
+            <?php
+            // -------------------------------------------------------------
+            // PHẦN MUA KÈM GIÁ SỐC (CẬP NHẬT HIỂN THỊ GIÁ GIẢM)
+            // -------------------------------------------------------------
+            if (! empty($bought_items)) : ?>
+            <div class="bought-together-box" style="margin-top: 20px;">
+                <div class="bt-header"><span class="bt-icon"><i class="fas fa-fire"></i></span>
+                    <h3>Mua kèm giá sốc</h3>
+                </div>
+                <form class="bt-list-form">
+                    <?php
+                        foreach ($bought_items as $item_data) :
+                            $assoc = isset($item_data['product_assoc']) ? $item_data['product_assoc'] : array();
+                            if (empty($assoc)) continue;
+                            $p_id = $assoc[0]['id'];
+
+                            $p = wc_get_product($p_id);
+                            if (! $p || ! $p->is_visible()) continue;
+
+                            // Lấy % giảm
+                            $percent = isset($item_data['percent_sale']) ? intval($item_data['percent_sale']) : 0;
+                            $regular_price = $p->get_price();
+                            $sale_price = $regular_price;
+                            if ($percent > 0) {
+                                $sale_price = $regular_price * (100 - $percent) / 100;
+                            }
+                        ?>
+                    <div class="bt-item">
+                        <div class="bt-img">
+                            <a href="<?php echo get_permalink($p_id); ?>" target="_blank">
+                                <?php echo $p->get_image('thumbnail'); ?>
+                            </a>
+                        </div>
+                        <div class="bt-info">
+                            <a href="<?php echo get_permalink($p_id); ?>" target="_blank"
+                                class="bt-title"><?php echo $p->get_name(); ?></a>
+                            <div class="bt-price">
+                                <?php if ($percent > 0): ?>
+                                <?php echo wc_price($sale_price); ?>
+                                <del><?php echo wc_price($regular_price); ?></del>
+                                <?php else: ?>
+                                <?php echo $p->get_price_html(); ?>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ($percent > 0): ?>
+                            <div class="bt-promo-text">Giảm thêm <?php echo $percent; ?>%</div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="bt-action">
+                            <label class="bt-checkbox-btn">
+                                <input type="checkbox" name="add_bought_together[]"
+                                    value="<?php echo esc_attr($p_id); ?>">
+                                <span class="btn-select-add">Thêm <i class="fas fa-plus"></i></span>
+                            </label>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </form>
+            </div>
+            <?php endif; ?>
+
         </div>
     </div>
 
@@ -305,35 +368,7 @@ if (! empty($spec_groups)) {
             </div>
         </div>
         <div class="col col-5 col-md-12">
-            <?php if (! empty($bought_together)) : ?>
-            <div class="bought-together-box">
-                <div class="bt-header"><span class="bt-icon"><i class="fas fa-fire"></i></span>
-                    <h3>Mua kèm giá sốc</h3><a href="#" class="bt-view-all">Xem tất cả <i
-                            class="fas fa-chevron-right"></i></a>
-                </div>
-                <form class="bt-list-form">
-                    <?php foreach ($bought_together as $assoc) : $p_id = $assoc['id'];
-                            $p = wc_get_product($p_id);
-                            if (! $p || ! $p->is_visible()) continue; ?>
-                    <div class="bt-item">
-                        <div class="bt-img"><a href="<?php echo get_permalink($p_id); ?>"
-                                target="_blank"><?php echo $p->get_image('thumbnail'); ?></a></div>
-                        <div class="bt-info">
-                            <a href="<?php echo get_permalink($p_id); ?>" target="_blank"
-                                class="bt-title"><?php echo $p->get_name(); ?></a>
-                            <div class="bt-price"><?php echo $p->get_price_html(); ?></div>
-                            <?php if ($p->is_on_sale()): ?><div class="bt-promo-text">Giảm thêm
-                                <?php echo round(100 - ($p->get_price() / $p->get_regular_price() * 100)); ?>%</div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="bt-action"><label class="bt-checkbox-btn"><input type="checkbox"
-                                    name="add_bought_together[]" value="<?php echo esc_attr($p_id); ?>"><span
-                                    class="btn-select-add">Chọn thêm <i class="fas fa-plus"></i></span></label></div>
-                    </div>
-                    <?php endforeach; ?>
-                </form>
-            </div>
-            <?php endif; ?>
+
         </div>
     </div>
 
@@ -396,7 +431,8 @@ if (! empty($spec_groups)) {
                             <th><?php echo esc_html($item['label']); ?></th>
                             <td><?php echo esc_html($val); ?></td>
                         </tr><?php endforeach;
-                                                            endif; ?></table>
+                                                    endif; ?>
+                    </table>
                 </div><?php endforeach; ?></div>
         </div>
     </div>
