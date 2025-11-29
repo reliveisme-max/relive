@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Tùy biến logic WooCommerce
+ * Tùy biến logic WooCommerce (Đã dọn dẹp các hàm trùng lặp)
  */
 
-// 1. Thay đổi số lượng sản phẩm hiển thị trên trang Shop/Danh mục
+// 1. Thay đổi số lượng sản phẩm hiển thị
 add_filter('loop_shop_per_page', 'relive_loop_shop_per_page', 20);
 function relive_loop_shop_per_page($cols)
 {
@@ -31,7 +31,6 @@ function relive_show_sale_percentage()
     if ($product->is_on_sale() && $product->get_type() != 'variable') {
         $regular_price = (float) $product->get_regular_price();
         $sale_price    = (float) $product->get_sale_price();
-
         if ($regular_price > 0) {
             $percentage = round((($regular_price - $sale_price) / $regular_price) * 100);
             echo '<span class="onsale" style="position: absolute; top: 10px; right: 10px; background: red; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px; z-index:9;">-' . $percentage . '%</span>';
@@ -55,20 +54,8 @@ function relive_header_add_to_cart_fragment($fragments)
     return $fragments;
 }
 
-/* ==========================================================================
-   6. LƯU Ý: Phần bộ lọc nâng cao (relive_advanced_product_filter) và Ajax
-   đã được chuyển sang functions.php để tránh lỗi trùng lặp.
-   Đã xóa code cũ ở đây.
-   ========================================================================== */
-
-/* ==========================================================================
-   7. XÓA CÁC THÀNH PHẦN THỪA TRONG TRANG CHI TIẾT
-   ========================================================================== */
-
-// Xóa nút Reset biến thể
+// 6. XÓA CÁC THÀNH PHẦN THỪA TRONG TRANG CHI TIẾT
 add_filter('woocommerce_reset_variations_link', '__return_empty_string');
-
-// Xóa Tiêu đề, Giá, Rating, Meta bị lặp lại do hook mặc định
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_title', 5);
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_rating', 10);
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_price', 10);

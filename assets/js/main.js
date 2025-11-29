@@ -65,16 +65,12 @@ jQuery(document).ready(function($) {
        3. SLIDERS (SWIPER)
        ========================================================================== */
     if (typeof Swiper !== 'undefined') {
-        // Banner chính
         if ($('.main-slider').length) {
             new Swiper('.main-slider', { loop: true, speed: 800, autoplay: { delay: 4000 }, pagination: { el: '.swiper-pagination' }, navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' } });
         }
-        // Banner danh mục
         if ($('.cat-banner-swiper').length) {
             new Swiper('.cat-banner-swiper', { loop: true, autoplay: { delay: 4000 }, pagination: { el: '.cb-dots' }, navigation: { nextEl: '.cb-next', prevEl: '.cb-prev' } });
         }
-        
-        // Mega Menu Sub-Cat Slider
         $('.sub-cat-swiper-wrap').each(function() {
             var $el = $(this).find('.sub-cat-slider');
             var $next = $(this).find('.sc-next');
@@ -87,8 +83,6 @@ jQuery(document).ready(function($) {
                 });
             }
         });
-
-        // Slider Danh mục trang chủ
         if ($('.cat-slider').length) {
             $('.cat-slider').each(function() {
                 new Swiper(this, {
@@ -100,28 +94,59 @@ jQuery(document).ready(function($) {
     }
 
     /* ==========================================================================
-       4. PRODUCT FILTERS (POPUP LỌC)
+       4. PRODUCT FILTERS (POPUP LỌC - FIXED LOGIC HIỆN 1 MỤC)
        ========================================================================== */
-    $(document).on('click', '#btn-open-filter, .quick-btn', function(e) {
+    
+    // A. BẤM NÚT LỌC CHÍNH (Hiện tất cả)
+    $(document).on('click', '#btn-open-filter', function(e) {
         e.preventDefault(); 
         $('#filter-popup').addClass('open'); 
         $('body').addClass('no-scroll');
-        var target = $(this).data('target');
-        if(target && $('#'+target).length) {
-            setTimeout(function(){ 
-                $('.fp-body').animate({ 
-                    scrollTop: $('#'+target).offset().top - $('.fp-body').offset().top + $('.fp-body').scrollTop() - 20 
-                }, 500); 
-            }, 100);
+        
+        // Hiện lại tất cả các nhóm (vì nút Lọc chính là xem hết)
+        $('.fp-group').show();
+        $('.fp-header h3').text('Tất cả bộ lọc');
+    });
+
+    // B. BẤM NÚT LỌC NHANH (Chỉ hiện nhóm tương ứng)
+    $(document).on('click', '.quick-btn', function(e) {
+        e.preventDefault(); 
+        $('#filter-popup').addClass('open'); 
+        $('body').addClass('no-scroll');
+        
+        var targetID = $(this).data('target');
+        // Lấy tên nút để thay đổi tiêu đề popup (VD: Dung lượng)
+        var label = $(this).text().trim(); 
+
+        // Ẩn tất cả các nhóm trước
+        $('.fp-group').hide();
+
+        // Chỉ hiện nhóm mục tiêu
+        if(targetID && $('#' + targetID).length) {
+            $('#' + targetID).show();
+            // Đổi tiêu đề Popup cho khớp
+            $('.fp-header h3').text(label); 
+        } else {
+            // Fallback nếu không tìm thấy ID thì hiện hết
+            $('.fp-group').show();
+            $('.fp-header h3').text('Tất cả bộ lọc');
         }
     });
 
+    // Đóng Popup Lọc
     $(document).on('click', '#btn-close-filter, .fp-overlay', function(e) {
         e.preventDefault(); e.stopPropagation();
         $('#filter-popup').removeClass('open'); 
         $('body').removeClass('no-scroll');
+        
+        // Reset lại khi đóng để lần sau mở "Tất cả bộ lọc" vẫn thấy đủ
+        setTimeout(function(){
+            $('.fp-group').show();
+            $('.fp-header h3').text('Tất cả bộ lọc');
+        }, 300);
     });
 
+    // Ajax Count
     var filterTimer;
     $(document).on('change', '.fp-content input', function() {
         var $btn = $('.fp-submit-btn');
@@ -135,7 +160,8 @@ jQuery(document).ready(function($) {
             }, function(res) {
                 if(res.success) {
                     $btn.text(res.data.count > 0 ? 'Xem '+res.data.count+' kết quả' : 'Không có kết quả')
-                        .css('opacity', '1').prop('disabled', res.data.count <= 0);
+                        .css('opacity', '1')
+                        .prop('disabled', res.data.count <= 0);
                 }
             });
         }, 300);
@@ -177,7 +203,7 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       5. CHI TIẾT SẢN PHẨM (SLIDER & FANCYBOX)
+       5. CHI TIẾT SẢN PHẨM
        ========================================================================== */
     if ($('.product-main-slider').length && typeof Swiper !== 'undefined') {
         var productSwiper = new Swiper('.product-main-slider', {
@@ -257,7 +283,7 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       7. AUTO SWATCHES & PRICE UPDATE
+       7. BIẾN THỂ & GIÁ
        ========================================================================== */
     if ($('.variations_form').length > 0) {
         var $form = $('.variations_form');
@@ -347,7 +373,7 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       9. MÔ TẢ SẢN PHẨM (EXPAND/COLLAPSE)
+       9. MÔ TẢ SẢN PHẨM & MUA KÈM
        ========================================================================== */
     $('#btn-expand-content').on('click', function(e) {
         e.preventDefault();
@@ -363,9 +389,6 @@ jQuery(document).ready(function($) {
         }
     });
 
-    /* ==========================================================================
-       10. MUA KÈM GIÁ SỐC
-       ========================================================================== */
     $('.bt-checkbox-btn input').on('change', function() {
         var $btn = $(this).next('.btn-select-add');
         if($(this).is(':checked')) $btn.html('Đã chọn <i class="fas fa-check"></i>');
@@ -373,10 +396,9 @@ jQuery(document).ready(function($) {
     });
 
     /* ==========================================================================
-       11. HỆ THỐNG ĐÁNH GIÁ (MULTIPLE IMAGE + REPLY)
+       10. HỆ THỐNG ĐÁNH GIÁ (REVIEW SYSTEM)
        ========================================================================== */
     
-    // --- LOAD REVIEW ---
     function loadReviews(page, star) {
         var $container = $('#relive-reviews-container');
         if($container.length === 0) return;
@@ -399,22 +421,6 @@ jQuery(document).ready(function($) {
 
     if($('#relive-reviews-container').length) loadReviews(1, 'all');
 
-    // --- LỌC SAO & PHÂN TRANG ---
-    $('.filter-star-item').on('click', function() {
-        $('.filter-star-item').removeClass('active');
-        $(this).addClass('active');
-        loadReviews(1, $(this).data('star'));
-    });
-
-    $(document).on('click', '.reviews-pagination .page-numbers', function(e) {
-        e.preventDefault();
-        var url = $(this).attr('href');
-        var page = 1;
-        if(url) { var match = url.match(/paged=(\d+)/); if(match) page = match[1]; }
-        loadReviews(page, $('.filter-star-item.active').data('star'));
-    });
-
-    // --- XỬ LÝ ẢNH (MULTIPLE) ---
     var dt = new DataTransfer(); 
 
     $('#review_image').on('change', function(e) {
@@ -460,11 +466,10 @@ jQuery(document).ready(function($) {
         $('.btn-upload-img span').text('Gửi ảnh thực tế (tối đa 5 ảnh)');
         $('#review-modal').removeClass('open');
         $('body').removeClass('no-scroll');
-        $('.star-widget i').addClass('active'); // Reset 5 sao
+        $('.star-widget i').addClass('active'); 
         $('#rating-input').val(5);
     }
 
-    // --- POPUP EVENTS ---
     $('#btn-open-review').on('click', function(e) {
         e.preventDefault();
         $('#review-modal').addClass('open');
@@ -499,7 +504,20 @@ jQuery(document).ready(function($) {
         $('.rating-text').text(text[val-1]);
     });
 
-    // --- SUBMIT FORM ---
+    $('.filter-star-item').on('click', function() {
+        $('.filter-star-item').removeClass('active');
+        $(this).addClass('active');
+        loadReviews(1, $(this).data('star'));
+    });
+
+    $(document).on('click', '.reviews-pagination .page-numbers', function(e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        var page = 1;
+        if(url) { var match = url.match(/paged=(\d+)/); if(match) page = match[1]; }
+        loadReviews(page, $('.filter-star-item.active').data('star'));
+    });
+
     $('#relive-review-form').on('submit', function(e) {
         e.preventDefault();
         var formData = new FormData(this);
@@ -522,7 +540,6 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // --- LIKE ---
     $(document).on('click', '.btn-like-review', function(e) {
         e.preventDefault();
         var $btn = $(this);
@@ -533,5 +550,4 @@ jQuery(document).ready(function($) {
             }
         });
     });
-
 });

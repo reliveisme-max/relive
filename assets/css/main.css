@@ -3055,3 +3055,71 @@ a.zoom-trigger {
     opacity: 0.8;
     border-color: #cb1c22 !important;
 }
+/* =========================================
+   REVIEW PAGINATION FIX (XÓA KHUNG BAO NGOÀI)
+   ========================================= */
+
+/* 1. Xóa viền của khung chứa lớn nhất */
+#relive-reviews-container .reviews-pagination {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 20px 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important; /* Căn giữa màn hình */
+}
+
+/* 2. Xóa viền của thẻ UL (nếu có) và dàn ngang */
+.reviews-pagination ul,
+.reviews-pagination ul.pagination {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: flex !important;
+    gap: 10px !important; /* Khoảng cách giữa các nút */
+    padding: 0 !important;
+    margin: 0 !important;
+    align-items: center !important;
+}
+
+/* 3. Style nút bấm (Vuông, đẹp, tách rời) */
+.reviews-pagination .page-numbers {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    background-color: #fff !important;
+    border: 1px solid #e0e0e0 !important; /* Viền từng nút */
+    border-radius: 4px !important;
+    
+    color: #333 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    
+    transition: all 0.2s ease !important;
+}
+
+/* 4. Trạng thái Hover & Active (Đỏ FPT) */
+.reviews-pagination .page-numbers:hover,
+.reviews-pagination .page-numbers.current {
+    background-color: #cb1c22 !important;
+    border-color: #cb1c22 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 5px rgba(203, 28, 34, 0.3) !important;
+}
+
+/* 5. Ẩn các thành phần thừa */
+.reviews-pagination li {
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: none !important;
+}

@@ -136,7 +136,7 @@ if (! empty($spec_groups)) {
                     $idx_real_start = $idx_box_start + $count_box;
 
                     if ($attachment_ids) {
-                        $max_thumb = 5;
+                        $max_thumb = 6;
                         $c = 0;
                         foreach ($attachment_ids as $idx => $att_id) {
                             if ($c >= $max_thumb) break;
