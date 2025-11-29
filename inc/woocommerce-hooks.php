@@ -1,10 +1,11 @@
 <?php
 
 /**
- * Tùy biến logic WooCommerce (Đã dọn dẹp các hàm trùng lặp)
+ * Tùy biến logic WooCommerce
+ * (Đã xóa các hàm trùng lặp với functions.php)
  */
 
-// 1. Thay đổi số lượng sản phẩm hiển thị
+// 1. Thay đổi số lượng sản phẩm hiển thị trên trang Shop/Danh mục
 add_filter('loop_shop_per_page', 'relive_loop_shop_per_page', 20);
 function relive_loop_shop_per_page($cols)
 {
@@ -31,6 +32,7 @@ function relive_show_sale_percentage()
     if ($product->is_on_sale() && $product->get_type() != 'variable') {
         $regular_price = (float) $product->get_regular_price();
         $sale_price    = (float) $product->get_sale_price();
+
         if ($regular_price > 0) {
             $percentage = round((($regular_price - $sale_price) / $regular_price) * 100);
             echo '<span class="onsale" style="position: absolute; top: 10px; right: 10px; background: red; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 11px; z-index:9;">-' . $percentage . '%</span>';

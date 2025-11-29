@@ -3274,3 +3274,70 @@ a.zoom-trigger {
     color: #fff;
     box-shadow: 0 2px 6px rgba(40, 138, 214, 0.3);
 }
+/* --- [QUAN TRỌNG] STYLE SẢN PHẨM MUA KÈM (THỤT VÀO) --- */
+.cart-item-addon {
+    margin-left: 50px !important; /* Thụt vào 50px so với lề trái */
+    width: calc(100% - 50px) !important; /* Thu nhỏ chiều rộng lại */
+    background-color: #fafafa !important; /* Nền xám nhẹ để phân biệt */
+    border: 1px dashed #e0e0e0 !important; /* Viền nét đứt */
+    border-radius: 8px;
+    position: relative;
+    margin-top: -5px; /* Dính gần hơn với SP trên */
+    padding: 10px 15px !important;
+}
+
+/* Đường nối hình chữ L */
+.cart-item-addon::before {
+    content: '';
+    position: absolute;
+    left: -25px; /* Vị trí của đường nối */
+    top: -20px;  /* Bắt đầu từ SP trên */
+    width: 25px;
+    height: 50px;
+    border-left: 2px solid #e0e0e0;
+    border-bottom: 2px solid #e0e0e0;
+    border-bottom-left-radius: 10px;
+    z-index: 1;
+}
+
+.addon-label {
+    color: #288ad6; 
+    font-size: 11px; 
+    margin-bottom: 5px; 
+    font-weight: 600; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px;
+}
+
+/* Ẩn checkbox của sản phẩm mua kèm (Vì nó đi theo SP chính) */
+.cart-item-addon .ci-check {
+    visibility: hidden; 
+    pointer-events: none;
+}
+/* Loading effect for Quantity Box */
+.ci-qty-wrap {
+    position: relative;
+}
+.ci-qty-wrap.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.ci-qty-wrap.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    margin-left: -8px;
+    border: 2px solid #cb1c22;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

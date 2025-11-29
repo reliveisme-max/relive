@@ -94,59 +94,38 @@ jQuery(document).ready(function($) {
     }
 
     /* ==========================================================================
-       4. PRODUCT FILTERS (POPUP LỌC - FIXED LOGIC HIỆN 1 MỤC)
+       4. PRODUCT FILTERS
        ========================================================================== */
-    
-    // A. BẤM NÚT LỌC CHÍNH (Hiện tất cả)
     $(document).on('click', '#btn-open-filter', function(e) {
         e.preventDefault(); 
         $('#filter-popup').addClass('open'); 
         $('body').addClass('no-scroll');
-        
-        // Hiện lại tất cả các nhóm (vì nút Lọc chính là xem hết)
-        $('.fp-group').show();
+        $('.fp-group').show(); 
         $('.fp-header h3').text('Tất cả bộ lọc');
     });
 
-    // B. BẤM NÚT LỌC NHANH (Chỉ hiện nhóm tương ứng)
     $(document).on('click', '.quick-btn', function(e) {
         e.preventDefault(); 
         $('#filter-popup').addClass('open'); 
         $('body').addClass('no-scroll');
-        
         var targetID = $(this).data('target');
-        // Lấy tên nút để thay đổi tiêu đề popup (VD: Dung lượng)
         var label = $(this).text().trim(); 
-
-        // Ẩn tất cả các nhóm trước
         $('.fp-group').hide();
-
-        // Chỉ hiện nhóm mục tiêu
         if(targetID && $('#' + targetID).length) {
             $('#' + targetID).show();
-            // Đổi tiêu đề Popup cho khớp
             $('.fp-header h3').text(label); 
         } else {
-            // Fallback nếu không tìm thấy ID thì hiện hết
             $('.fp-group').show();
-            $('.fp-header h3').text('Tất cả bộ lọc');
         }
     });
 
-    // Đóng Popup Lọc
     $(document).on('click', '#btn-close-filter, .fp-overlay', function(e) {
         e.preventDefault(); e.stopPropagation();
         $('#filter-popup').removeClass('open'); 
         $('body').removeClass('no-scroll');
-        
-        // Reset lại khi đóng để lần sau mở "Tất cả bộ lọc" vẫn thấy đủ
-        setTimeout(function(){
-            $('.fp-group').show();
-            $('.fp-header h3').text('Tất cả bộ lọc');
-        }, 300);
+        setTimeout(function(){ $('.fp-group').show(); $('.fp-header h3').text('Tất cả bộ lọc'); }, 300);
     });
 
-    // Ajax Count
     var filterTimer;
     $(document).on('change', '.fp-content input', function() {
         var $btn = $('.fp-submit-btn');
@@ -160,8 +139,7 @@ jQuery(document).ready(function($) {
             }, function(res) {
                 if(res.success) {
                     $btn.text(res.data.count > 0 ? 'Xem '+res.data.count+' kết quả' : 'Không có kết quả')
-                        .css('opacity', '1')
-                        .prop('disabled', res.data.count <= 0);
+                        .css('opacity', '1').prop('disabled', res.data.count <= 0);
                 }
             });
         }, 300);
@@ -214,7 +192,6 @@ jQuery(document).ready(function($) {
                     $('.gallery-thumbs-nav-fpt .g-item').removeClass('active');
                     var btn = $('.gallery-thumbs-nav-fpt .g-item[data-slide-index="'+idx+'"]');
                     if(btn.length) btn.addClass('active'); else $('.gallery-thumbs-nav-fpt .g-item').first().addClass('active');
-                    
                     var iframe = $('#prod-video-iframe');
                     if(iframe.length) {
                          if (!$(this.slides).eq(idx).hasClass('video-slide')) {
@@ -358,22 +335,93 @@ jQuery(document).ready(function($) {
     }
 
     /* ==========================================================================
-       8. NÚT MUA HÀNG
+       8. XỬ LÝ MUA HÀNG (MUA KÈM & BIẾN THỂ - FINAL FIX)
        ========================================================================== */
     $(document).on('click', '.action-trigger', function(e) {
         e.preventDefault();
-        var type = $(this).data('type');
-        var $form = $('.variations_form');
-        if ($form.length > 0) {
-            var variationID = $form.find('input[name="variation_id"]').val();
-            if (!variationID || variationID == 0) { alert('Vui lòng chọn đầy đủ Màu sắc và Dung lượng!'); return; }
-        }
-        var $realBtn = $('.single_add_to_cart_button');
-        if (type === 'buy-now') $realBtn.trigger('click'); else $realBtn.trigger('click');
-    });
+        var type = $(this).data('type'); // 'buy-now' hoặc 'add-to-cart'
+        var $form = $('.variations_form'); // Form biến thể
+        var $simpleBtn = $('button[name="add-to-cart"]'); // Nút của SP đơn
+        
+        var mainProductID = 0;
+        var variationID = 0;
+        var quantity = $('input.qty').val() ? parseInt($('input.qty').val()) : 1;
 
+        // 1. Lấy ID Sản phẩm Chính
+        if ($form.length > 0) {
+            // Sản phẩm Biến thể (Có màu/dung lượng)
+            mainProductID = $form.find('input[name="product_id"]').val();
+            variationID = $form.find('input[name="variation_id"]').val();
+            
+            if (!variationID || variationID == 0) {
+                alert('Vui lòng chọn đầy đủ Màu sắc và Dung lượng!');
+                return;
+            }
+        } else if ($simpleBtn.length > 0) {
+            // Sản phẩm Đơn (Simple)
+            mainProductID = $simpleBtn.val();
+        } else {
+            // Fallback (Lấy từ input hidden nếu có)
+            mainProductID = $('input[name="add-to-cart"]').val();
+        }
+
+        if (!mainProductID) {
+            alert('Lỗi: Không tìm thấy ID sản phẩm. Hãy F5 lại trang.');
+            return;
+        }
+
+        // 2. Gom ID Sản phẩm Mua kèm
+        var productIDs = [];
+        // Luôn thêm SP chính vào đầu mảng
+        productIDs.push({
+            id: mainProductID,
+            qty: quantity,
+            vid: variationID // Variation ID (nếu có)
+        });
+
+        // Quét các checkbox mua kèm
+        $('input[name="add_bought_together[]"]:checked').each(function() {
+            productIDs.push({
+                id: $(this).val(),
+                qty: 1, // Mua kèm số lượng mặc định là 1
+                vid: 0  // Mua kèm tạm thời chỉ hỗ trợ SP đơn (hoặc biến thể mặc định)
+            });
+        });
+
+        // 3. Gửi Ajax
+        var $btn = $(this);
+        var originalText = $btn.html();
+        $btn.css('opacity', '0.7').text('Đang xử lý...');
+
+        $.ajax({
+            url: relive_ajax.url,
+            type: 'POST',
+            data: {
+                action: 'relive_add_multiple_to_cart',
+                items: productIDs, // Gửi nguyên mảng object
+                nonce: relive_ajax.nonce
+            },
+            success: function(res) {
+                if (res.success) {
+                    if (type === 'buy-now') {
+                        window.location.href = res.data.redirect; // Chuyển sang giỏ hàng
+                    } else {
+                        alert('Đã thêm ' + productIDs.length + ' sản phẩm vào giỏ!');
+                        location.reload(); // Tải lại để update giỏ
+                    }
+                } else {
+                    alert(res.data.message || 'Lỗi khi thêm vào giỏ.');
+                }
+                $btn.css('opacity', '1').html(originalText);
+            },
+            error: function() {
+                alert('Lỗi kết nối server.');
+                $btn.css('opacity', '1').html(originalText);
+            }
+        });
+    });
     /* ==========================================================================
-       9. MÔ TẢ SẢN PHẨM & MUA KÈM
+       9. MÔ TẢ SẢN PHẨM
        ========================================================================== */
     $('#btn-expand-content').on('click', function(e) {
         e.preventDefault();
@@ -389,16 +437,62 @@ jQuery(document).ready(function($) {
         }
     });
 
-    $('.bt-checkbox-btn input').on('change', function() {
-        var $btn = $(this).next('.btn-select-add');
-        if($(this).is(':checked')) $btn.html('Đã chọn <i class="fas fa-check"></i>');
-        else $btn.html('Chọn thêm <i class="fas fa-plus"></i>');
+    /* ==========================================================================
+       10. NÚT CHỌN MUA KÈM (THÊM NGAY VÀO GIỎ)
+       ========================================================================== */
+    $(document).off('change', '.bt-checkbox-btn input').on('change', '.bt-checkbox-btn input', function() {
+        var $input = $(this);
+        var $btn = $input.next('.btn-select-add');
+        var p_id = $input.val();
+
+        // Nếu người dùng tick chọn -> Thêm ngay vào giỏ
+        if($input.is(':checked')) {
+            // Hiệu ứng loading
+            $btn.html('<i class="fas fa-spinner fa-spin"></i> Đang thêm...');
+            $btn.css('pointer-events', 'none');
+
+            $.ajax({
+                url: relive_ajax.url,
+                type: 'POST',
+                data: {
+                    action: 'relive_add_multiple_to_cart',
+                    items: [{ id: p_id, qty: 1, vid: 0 }], // Gửi 1 sản phẩm này
+                    nonce: relive_ajax.nonce
+                },
+                success: function(res) {
+                    if(res.success) {
+                        $btn.html('Đã thêm <i class="fas fa-check"></i>').addClass('added');
+                        $btn.css({'background': '#28a745', 'color': '#fff', 'border-color': '#28a745'});
+                        
+                        // Hỏi người dùng
+                        if(confirm('Đã thêm sản phẩm vào giỏ hàng! Bạn có muốn đến Giỏ hàng ngay không?')) {
+                            window.location.href = res.data.redirect;
+                        }
+                    } else {
+                        alert(res.data.message);
+                        $input.prop('checked', false); // Bỏ tick nếu lỗi
+                        $btn.html('Chọn thêm <i class="fas fa-plus"></i>');
+                    }
+                    $btn.css('pointer-events', 'auto');
+                },
+                error: function() {
+                    alert('Lỗi kết nối.');
+                    $input.prop('checked', false);
+                    $btn.html('Chọn thêm <i class="fas fa-plus"></i>');
+                    $btn.css('pointer-events', 'auto');
+                }
+            });
+        } 
+        // Nếu bỏ chọn -> Chỉ đổi lại giao diện (không xóa khỏi giỏ vì phức tạp)
+        else {
+            $btn.html('Chọn thêm <i class="fas fa-plus"></i>').removeClass('added');
+            $btn.removeAttr('style'); // Reset màu
+        }
     });
 
     /* ==========================================================================
-       10. HỆ THỐNG ĐÁNH GIÁ (REVIEW SYSTEM)
+       10. HỆ THỐNG ĐÁNH GIÁ
        ========================================================================== */
-    
     function loadReviews(page, star) {
         var $container = $('#relive-reviews-container');
         if($container.length === 0) return;
@@ -518,44 +612,24 @@ jQuery(document).ready(function($) {
         loadReviews(page, $('.filter-star-item.active').data('star'));
     });
 
-    // --- SUBMIT FORM (CÓ VALIDATE SĐT & TÊN) ---
+    // --- SUBMIT FORM ---
     $('#relive-review-form').on('submit', function(e) {
         e.preventDefault();
-        
         var author = $('input[name="author"]').val().trim();
         var phone = $('input[name="phone"]').val().trim();
         
-        // 1. Validate Họ tên (Ít nhất 2 ký tự)
-        if(author.length < 2) {
-            alert('Vui lòng nhập Họ tên hợp lệ (tối thiểu 2 ký tự).');
-            $('input[name="author"]').focus();
-            return;
-        }
+        if(author.length < 2) { alert('Vui lòng nhập Họ tên hợp lệ.'); $('input[name="author"]').focus(); return; }
+        if (!/^(0)(3|5|7|8|9)[0-9]{8}$/.test(phone)) { alert('Số điện thoại không hợp lệ.'); $('input[name="phone"]').focus(); return; }
 
-        // 2. Validate Số điện thoại Việt Nam
-        // Quy tắc: Bắt đầu bằng 0, theo sau là 3,5,7,8,9 và 8 số nữa. Tổng 10 số.
-        var vnf_regex = /^(0)(3|5|7|8|9)[0-9]{8}$/;
-        
-        if (!vnf_regex.test(phone)) {
-            alert('Số điện thoại không hợp lệ. Vui lòng nhập đúng SĐT Việt Nam (10 số, đầu 03, 05, 07, 08, 09).');
-            $('input[name="phone"]').focus();
-            return;
-        }
-
-        // Nếu đúng hết thì mới gửi
         var formData = new FormData(this);
         var $btn = $('.btn-submit-review');
         $btn.text('Đang gửi...').prop('disabled', true);
 
         $.ajax({
-            url: relive_ajax.url,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            url: relive_ajax.url, type: 'POST', data: formData, processData: false, contentType: false,
             success: function(res) {
                 if(res.success) {
-                    alert('Gửi thành công! Đánh giá của bạn đang chờ kiểm duyệt.');
+                    alert('Gửi thành công! Đánh giá sẽ được kiểm duyệt.');
                     resetReviewForm();
                     loadReviews(1, 'all'); 
                 } else {
@@ -563,10 +637,7 @@ jQuery(document).ready(function($) {
                 }
                 $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false);
             },
-            error: function() {
-                alert('Lỗi kết nối.');
-                $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false);
-            }
+            error: function() { alert('Lỗi kết nối.'); $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false); }
         });
     });
 
@@ -580,114 +651,74 @@ jQuery(document).ready(function($) {
             }
         });
     });
-    /* ==========================================================================
-       13. COPY COUPON CODE
-       ========================================================================== */
+
+    // --- COPY COUPON ---
     $(document).on('click', '.btn-copy-code', function(e) {
         e.preventDefault();
         var $btn = $(this);
         var code = $btn.data('code');
-        
-        // Copy to clipboard
         navigator.clipboard.writeText(code).then(function() {
             $btn.text('Đã chép').addClass('copied');
-            
-            // Reset sau 2 giây
-            setTimeout(function() {
-                $btn.text('Sao chép').removeClass('copied');
-            }, 2000);
-        }, function(err) {
-            alert('Không thể copy: ' + err);
+            setTimeout(function() { $btn.text('Sao chép').removeClass('copied'); }, 2000);
         });
     });
+
     /* ==========================================================================
-       14. CART QUANTITY (TĂNG GIẢM SỐ LƯỢNG)
+       14. CART QUANTITY (FIX NÚT TĂNG GIẢM)
        ========================================================================== */
-    $(document).on('click', '.qty-btn', function() {
+    $(document).on('click', '.qty-btn', function(e) {
+        e.preventDefault(); // Ngăn chặn hành vi mặc định
+        
         var $btn = $(this);
         var $input = $btn.siblings('.qty-input');
         var val = parseInt($input.val());
         
+        // Tăng hoặc Giảm
         if ($btn.hasClass('plus')) {
             $input.val(val + 1);
         } else {
-            if (val > 1) $input.val(val - 1);
+            if (val > 1) {
+                $input.val(val - 1);
+            }
         }
         
-        // Tự động cập nhật giỏ hàng sau 0.5s
-        $input.trigger('change');
-        $('.woocommerce-cart-form button[name="update_cart"]').removeAttr('disabled').trigger('click');
+        // Kích hoạt nút Cập nhật giỏ hàng (Update Cart) của Woo
+        // Woo yêu cầu nút update phải được enable trước khi click
+        $('button[name="update_cart"]').prop('disabled', false).trigger('click');
     });
     /* ==========================================================================
-       8. XỬ LÝ MUA HÀNG (MUA KÈM & BIẾN THỂ - FIX)
+       14. CART QUANTITY (FIX DOUBLE CLICK & LOADING)
        ========================================================================== */
-    $(document).on('click', '.action-trigger', function(e) {
-        e.preventDefault();
-        var type = $(this).data('type'); // 'buy-now' hoặc 'add-to-cart'
-        var $form = $('.variations_form');
-        
-        // Lấy ID sản phẩm chính (Hỗ trợ cả Simple và Variable Product)
-        var mainProductID = $('input[name="product_id"]').val() || $('button[name="add-to-cart"]').val() || $('.action-trigger').val();
-        var variationID = 0;
+    // Dùng .off() trước khi .on() để tránh bị double event
+    $(document).off('click', '.qty-btn').on('click', '.qty-btn', function(e) {
+        e.preventDefault(); 
+        e.stopPropagation(); // Ngăn chặn sự kiện lan truyền
 
-        // 1. Kiểm tra biến thể (nếu là trang sản phẩm có biến thể)
-        if ($form.length > 0) {
-            variationID = $form.find('input[name="variation_id"]').val();
-            if (!variationID || variationID == 0) {
-                alert('Vui lòng chọn đầy đủ Màu sắc và Dung lượng!');
-                return;
-            }
-        }
-
-        // 2. Gom ID sản phẩm mua kèm
-        var productIDs = [];
-        
-        // Luôn thêm SP chính đầu tiên
-        if(mainProductID) {
-            productIDs.push(mainProductID);
-        } else {
-            // Trường hợp fallback nếu không tìm thấy input hidden
-            console.error("Không tìm thấy ID sản phẩm chính");
-        }
-
-        // Quét các checkbox mua kèm đã check
-        $('input[name="add_bought_together[]"]:checked').each(function() {
-            productIDs.push($(this).val());
-        });
-
-        console.log("DS Sản phẩm thêm vào giỏ:", productIDs); // Debug xem lấy đúng chưa
-
-        // 3. Gửi Ajax
         var $btn = $(this);
-        var originalText = $btn.text();
-        $btn.css('opacity', '0.7').text('Đang xử lý...');
+        var $wrap = $btn.closest('.ci-qty-wrap');
+        var $input = $btn.siblings('.qty-input');
+        var val = parseInt($input.val());
+        
+        // Thêm class loading để người dùng biết đang xử lý
+        $wrap.addClass('loading');
 
-        $.ajax({
-            url: relive_ajax.url,
-            type: 'POST',
-            data: {
-                action: 'relive_add_multiple_to_cart',
-                product_ids: productIDs,
-                variation_id: variationID,
-                nonce: relive_ajax.nonce
-            },
-            success: function(res) {
-                if (res.success) {
-                    if (type === 'buy-now') {
-                        window.location.href = res.data.redirect;
-                    } else {
-                        alert('Đã thêm thành công!');
-                        location.reload(); 
-                    }
-                } else {
-                    alert(res.data.message || 'Lỗi thêm giỏ hàng.');
-                }
-                $btn.css('opacity', '1').text(originalText);
-            },
-            error: function() {
-                alert('Lỗi kết nối server.');
-                $btn.css('opacity', '1').text(originalText);
+        if ($btn.hasClass('plus')) {
+            $input.val(val + 1);
+        } else {
+            if (val > 1) {
+                $input.val(val - 1);
+            } else {
+                 // Nếu giảm về 1 thì không làm gì nữa, tắt loading
+                 $wrap.removeClass('loading'); 
+                 return; 
             }
-        });
+        }
+        
+        // Trigger change để cập nhật giỏ hàng
+        $input.trigger('change');
+        
+        // Kích hoạt nút Update Cart của Woo
+        var $updateBtn = $('button[name="update_cart"]');
+        $updateBtn.prop('disabled', false).trigger('click');
     });
 });

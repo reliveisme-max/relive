@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Cart Page (FPT Style Updated)
+ * Cart Page (FPT Style - Fix Coupon & Quantity)
  */
 defined('ABSPATH') || exit;
 
-// Lấy sản phẩm Cross-sells (Bán chéo) để làm mục "Combo ưu đãi"
+// Lấy sản phẩm Cross-sells
 $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_sells()));
 ?>
 
@@ -35,10 +35,21 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                     <?php
                         foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
                             $_product   = $cart_item['data'];
+                            $is_addon = isset($cart_item['relive_is_addon']) && $cart_item['relive_is_addon'];
+                            $addon_class = $is_addon ? 'cart-item-addon' : '';
+
                             if ($_product && $_product->exists() && $cart_item['quantity'] > 0) {
                         ?>
-                    <div class="white-box cart-item-block"
+                    <div class="white-box cart-item-block <?php echo $addon_class; ?>"
                         style="margin-bottom: 10px; border: none; border-radius: 8px; padding: 15px;">
+
+                        <?php if ($is_addon): ?>
+                        <div class="addon-label"
+                            style="color:#288ad6; font-size:12px; margin-bottom:5px; font-weight:600; display:flex; align-items:center; gap:5px;">
+                            <i class="fas fa-level-up-alt" style="transform: rotate(90deg);"></i> Mua kèm ưu đãi
+                        </div>
+                        <?php endif; ?>
+
                         <div class="fpt-cart-item-row" style="display: flex; align-items: flex-start;">
                             <div class="ci-check" style="margin-right: 15px; padding-top: 35px;">
                                 <input type="checkbox" checked>
@@ -73,25 +84,27 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                                 <div class="ci-qty-wrap"
                                     style="display: inline-flex; border: 1px solid #ddd; border-radius: 4px; height: 30px;">
                                     <button type="button" class="qty-btn minus"
-                                        style="width: 30px; border: none; background: #fff;">-</button>
+                                        style="width: 30px; border: none; background: #fff; cursor:pointer;">-</button>
+
                                     <input type="number" name="cart[<?php echo $cart_item_key; ?>][qty]"
                                         value="<?php echo $cart_item['quantity']; ?>" class="qty-input"
                                         style="width: 40px; border: none; text-align: center; font-weight: 600;"
                                         min="0">
+
                                     <button type="button" class="qty-btn plus"
-                                        style="width: 30px; border: none; background: #fff;">+</button>
+                                        style="width: 30px; border: none; background: #fff; cursor:pointer;">+</button>
                                 </div>
                             </div>
                         </div>
 
+                        <?php if (!$is_addon && !empty($cross_sells)): ?>
                         <div class="cart-combo-section"
                             style="margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px;">
                             <h4
                                 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center;">
                                 <i class="fas fa-fire" style="color: #cb1c22; margin-right: 5px;"></i> Combo ưu đãi
                             </h4>
-
-                            <?php if (!empty($cross_sells)): foreach ($cross_sells as $cs_product): ?>
+                            <?php foreach ($cross_sells as $cs_product): ?>
                             <div class="combo-item"
                                 style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #eee; border-radius: 6px; padding: 8px; margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center;">
@@ -107,17 +120,18 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                                 <a href="?add-to-cart=<?php echo $cs_product->get_id(); ?>" class="view-detail"
                                     style="font-size: 12px; color: #288ad6; font-weight: 500;">Chi tiết</a>
                             </div>
-                            <?php endforeach;
-                                        else: ?>
-                            <p style="font-size: 12px; color: #777;">Không có ưu đãi đi kèm cho sản phẩm này.</p>
-                            <?php endif; ?>
+                            <?php endforeach; ?>
                         </div>
+                        <?php endif; ?>
+
                     </div>
                     <?php
                             }
                         }
                         ?>
-                    <button type="submit" class="button" name="update_cart" style="display: none;">Update</button>
+
+                    <button type="submit" class="button" name="update_cart" value="Update cart"
+                        style="display: none;"></button>
                     <?php wp_nonce_field('woocommerce-cart', 'woocommerce-cart-nonce'); ?>
                 </div>
             </div>
@@ -126,17 +140,18 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                 <div class="white-box cart-sidebar"
                     style="border: none; border-radius: 8px; padding: 15px; position: sticky; top: 20px;">
 
-                    <div
-                        style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                        <span style="font-weight: 600; font-size: 14px;"><i class="fas fa-gift"></i> Quà tặng</span>
-                        <a href="#" style="font-size: 13px; color: #288ad6;">Xem quà</a>
-                    </div>
-
                     <div class="coupon-block"
-                        style="background: #f4f4f4; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
-                        <span style="font-size: 13px; font-weight: 600; color: #cb1c22;"><i
-                                class="fas fa-ticket-alt"></i> Chọn hoặc nhập ưu đãi</span>
-                        <i class="fas fa-chevron-right" style="font-size: 12px; color: #999;"></i>
+                        style="background: #f4f4f4; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #cb1c22; margin-bottom: 8px;"><i
+                                class="fas fa-ticket-alt"></i> Mã ưu đãi</div>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" name="coupon_code" class="input-text" id="coupon_code" value=""
+                                placeholder="Nhập mã giảm giá"
+                                style="flex:1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                            <button type="submit" class="button" name="apply_coupon" value="Áp dụng"
+                                style="background: #333; color: #fff; border: none; padding: 0 15px; border-radius: 4px; font-size: 13px; cursor: pointer;">Áp
+                                dụng</button>
+                        </div>
                     </div>
 
                     <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Thông tin đơn hàng</h4>
@@ -145,24 +160,24 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                         <span>Tổng tiền</span>
                         <strong><?php wc_cart_totals_subtotal_html(); ?></strong>
                     </div>
+
+                    <?php foreach (WC()->cart->get_coupons() as $code => $coupon) : ?>
                     <div class="row-price"
-                        style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
-                        <span>Tổng khuyến mãi</span>
-                        <span>0đ</span>
+                        style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #28a745;">
+                        <span>Mã: <?php echo esc_html($code); ?></span>
+                        <span>-<?php wc_cart_totals_coupon_html($coupon); ?></span>
                     </div>
+                    <?php endforeach; ?>
 
                     <div class="row-price total"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
                         <span style="font-weight: 600;">Cần thanh toán</span>
                         <strong
                             style="color: #cb1c22; font-size: 18px;"><?php wc_cart_totals_order_total_html(); ?></strong>
                     </div>
-                    <div style="text-align: right; font-size: 11px; color: #f5a623; margin-bottom: 15px;">
-                        Điểm thưởng: +<?php echo intval(WC()->cart->total / 1000); ?>
-                    </div>
 
                     <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-fpt-primary full-width"
-                        style="display: block; text-align: center; background: #cb1c22; color: #fff; padding: 12px; border-radius: 6px; font-weight: 700; text-transform: uppercase; text-decoration: none;">
+                        style="display: block; text-align: center; background: #cb1c22; color: #fff; padding: 12px; border-radius: 6px; font-weight: 700; text-transform: uppercase; text-decoration: none; margin-top: 15px;">
                         Xác nhận đơn
                     </a>
                 </div>
