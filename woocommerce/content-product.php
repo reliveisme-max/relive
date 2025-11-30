@@ -37,6 +37,7 @@ if (empty($product) || ! $product->is_visible()) return;
         </div>
 
         <?php
+        // Nút mua hàng/xem chi tiết mặc định
         echo apply_filters(
             'woocommerce_loop_add_to_cart_link',
             sprintf(

@@ -1,27 +1,35 @@
 <?php
 
 /**
- * Cart Page (FPT Style Fixed)
+ * Cart Page (Final Structure - Empty Cart with Image)
  */
 defined('ABSPATH') || exit;
-$cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_sells()));
 ?>
 
-<div class="container fpt-cart-page" style="margin-top: 30px; margin-bottom: 50px;">
+<div style="margin-top: 15px; margin-bottom: 10px;">
+    <?php if (function_exists('relive_breadcrumbs')) relive_breadcrumbs(); ?>
+</div>
+
+<div class="fpt-cart-page">
     <?php if (WC()->cart->is_empty()) : ?>
-    <div class="white-box text-center" style="padding: 50px;">
-        <img src="https://cdn2.cellphones.com.vn/x,webp/media/wysiwyg/cart-empty.png"
-            style="width: 150px; margin: 0 auto 20px;">
-        <p style="color:#777;">Giỏ hàng đang trống.</p>
-        <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="button"
-            style="background:#cb1c22; color:#fff;">Quay lại mua sắm</a>
+
+    <div class="cart-item-block empty-cart-box">
+        <div class="ec-content">
+            <h3 class="ec-title">Chưa có sản phẩm nào trong giỏ hàng</h3>
+            <p class="ec-desc">Cùng mua sắm hàng ngàn sản phẩm tại cửa hàng nhé!</p>
+            <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="ec-btn">Mua hàng</a>
+        </div>
+        <div class="ec-image">
+            <img src="/wp-content/uploads/2025/11/empty_cart.png" alt="Giỏ hàng trống">
+        </div>
     </div>
+
     <?php else : ?>
 
     <form class="woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
         <div class="row">
             <div class="col col-8 col-md-12">
-                <div class="white-box" style="padding: 10px 15px; margin-bottom: 15px;">
+                <div class="cart-item-block">
                     <span style="font-weight: 600;">Giỏ hàng (<?php echo WC()->cart->get_cart_contents_count(); ?> sản
                         phẩm)</span>
                 </div>
@@ -30,46 +38,61 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
                     <?php
                         foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
                             $_product = $cart_item['data'];
-
-                            // Kiểm tra biến đã được lưu từ Session chưa
                             $is_addon = isset($cart_item['relive_is_addon']) && $cart_item['relive_is_addon'];
-
-                            // QUAN TRỌNG: Nếu là addon thì dùng class riêng, nếu không thì dùng white-box
-                            $addon_class = $is_addon ? 'cart-item-addon' : 'white-box';
+                            $class_name = $is_addon ? 'cart-item-addon' : 'cart-item-block';
 
                             if ($_product && $_product->exists() && $cart_item['quantity'] > 0) {
                         ?>
-                    <div class="cart-item-block <?php echo esc_attr($addon_class); ?>"
-                        style="margin-bottom: 10px; padding: 15px;">
+                    <div class="<?php echo esc_attr($class_name); ?>">
                         <?php if ($is_addon): ?>
                         <div class="addon-label"><i class="fas fa-gift"></i> Mua kèm ưu đãi</div>
                         <?php endif; ?>
 
                         <div class="fpt-cart-item-row">
-                            <div class="ci-check"><input type="checkbox" checked></div>
-                            <div class="ci-img"><?php echo $_product->get_image('thumbnail'); ?></div>
+                            <div class="ci-check <?php echo $is_addon ? 'hidden-check' : ''; ?>">
+                                <input type="checkbox" checked>
+                            </div>
+
+                            <div class="ci-img">
+                                <?php echo $_product->get_image('thumbnail'); ?>
+                            </div>
+
                             <div class="ci-info">
                                 <div style="display: flex; justify-content: space-between;">
-                                    <h3 class="ci-name" style="margin:0;"><a
+                                    <h3 class="ci-name" style="margin:0;">
+                                        <a
                                             href="<?php echo esc_url($_product->get_permalink()); ?>"><?php echo $_product->get_name(); ?></a>
                                     </h3>
                                     <a href="<?php echo esc_url(wc_get_cart_remove_url($cart_item_key)); ?>"
-                                        class="remove-item"><i class="fas fa-trash-alt"></i></a>
+                                        class="remove-item">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
                                 </div>
+
                                 <div class="ci-price-row">
-                                    <strong
-                                        style="color: #cb1c22; font-size: 16px;"><?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key); ?></strong>
+                                    <strong style="color: #cb1c22; font-size: 16px;">
+                                        <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key); ?>
+                                    </strong>
                                     <?php if ($_product->is_on_sale() || $is_addon): ?>
-                                    <del
-                                        style="color: #999; font-size: 13px;"><?php echo wc_price($_product->get_regular_price()); ?></del>
+                                    <del style="color: #999; font-size: 13px;">
+                                        <?php echo wc_price($_product->get_regular_price()); ?>
+                                    </del>
                                     <?php endif; ?>
                                 </div>
+
+                                <?php if (! $is_addon) : ?>
                                 <div class="ci-qty-wrap">
                                     <button type="button" class="qty-btn minus">-</button>
                                     <input type="number" name="cart[<?php echo $cart_item_key; ?>][qty]"
                                         value="<?php echo $cart_item['quantity']; ?>" class="qty-input" min="0">
                                     <button type="button" class="qty-btn plus">+</button>
                                 </div>
+                                <?php else: ?>
+                                <div style="font-size: 13px; color: #777; margin-top: 5px;">Số lượng:
+                                    <?php echo $cart_item['quantity']; ?></div>
+                                <input type="hidden" name="cart[<?php echo $cart_item_key; ?>][qty]"
+                                    value="<?php echo $cart_item['quantity']; ?>">
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -84,7 +107,7 @@ $cross_sells = array_filter(array_map('wc_get_product', WC()->cart->get_cross_se
             </div>
 
             <div class="col col-4 col-md-12">
-                <div class="white-box cart-sidebar">
+                <div class="cart-sidebar">
                     <div class="coupon-block" style="margin-bottom: 20px;">
                         <div
                             style="font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between;">

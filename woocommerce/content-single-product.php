@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Template: Nội dung chi tiết sản phẩm (Full Features + Coupon Box Auto)
+ * Template: Nội dung chi tiết sản phẩm (Full Features + Reviews + Full Width Description)
  */
 defined('ABSPATH') || exit;
 global $product;
@@ -18,7 +18,7 @@ $main_image_id       = $product->get_image_id();
 $spec_groups         = carbon_get_the_post_meta('fpt_specs_groups');
 $spec_feature_img    = carbon_get_the_post_meta('spec_feature_image');
 
-// Dữ liệu Mới (Cập nhật cách lấy Coupon và Mua kèm)
+// Dữ liệu Mới
 $bought_items        = carbon_get_the_post_meta('fpt_bought_together');
 $coupons_data        = carbon_get_the_post_meta('product_coupons');
 
@@ -152,8 +152,33 @@ if (! empty($spec_groups)) {
         </div>
 
         <div class="col col-5 col-md-12">
-            <h1 class="product_title entry-title" style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">
-                <?php the_title(); ?></h1>
+            <h1 class="product_title entry-title" style="font-size: 22px; font-weight: 700; margin-bottom: 5px;">
+                <?php the_title(); ?>
+            </h1>
+
+            <div class="product-meta-header"
+                style="display: flex; align-items: center; font-size: 13px; color: #555; margin-bottom: 15px;">
+                <span class="sku-wrapper">
+                    Mã SP: <span class="sku"
+                        style="color: #333; font-weight: 600;"><?php echo ($sku = $product->get_sku()) ? $sku : 'N/A'; ?></span>
+                </span>
+                <span style="margin: 0 8px; color: #ddd;">|</span>
+                <span class="review-wrapper" style="display: flex; align-items: center;">
+                    <?php
+                    $rating_count = $product->get_rating_count();
+                    $average      = $product->get_average_rating();
+                    if ($rating_count > 0) : ?>
+                    <span style="margin-right: 3px;">Đánh giá:</span>
+                    <span
+                        style="font-weight: 700; color: #f5a623; margin-right: 3px;"><?php echo number_format($average, 1); ?></span>
+                    <i class="fas fa-star" style="color: #f5a623; font-size: 12px; margin-right: 5px;"></i>
+                    <a href="#prod-reviews" style="color: #288ad6; text-decoration: none;">(<?php echo $rating_count; ?>
+                        đánh giá)</a>
+                    <?php else : ?>
+                    <span>Chưa có đánh giá</span>
+                    <?php endif; ?>
+                </span>
+            </div>
 
             <div class="prod-variations-box fpt-style-variations" style="margin-bottom: 20px; border-top: none;">
                 <?php do_action('woocommerce_single_product_summary'); ?>
@@ -190,30 +215,36 @@ if (! empty($spec_groups)) {
                     </div>
                 </div>
                 <?php if (! empty($fpt_promos)) : ?>
-                <div class="fpt-promo-inner-red">
-                    <?php foreach ($fpt_promos as $group) : ?>
-                    <div class="promo-group-item">
-                        <h4 class="promo-group-title"><?php echo esc_html($group['promo_title']); ?></h4>
-                        <ul class="promo-list-ul">
-                            <?php if (!empty($group['promo_items'])): foreach ($group['promo_items'] as $item): ?>
-                            <li><i class="fas fa-circle"
-                                    style="font-size: 6px; margin-right: 8px; margin-top: 8px;"></i>
-                                <div><?php echo esc_html($item['content']); ?></div>
-                            </li>
-                            <?php endforeach;
-                                    endif; ?>
-                        </ul>
+                <div class="fpt-promo-box">
+                    <div class="promo-header">
+                        <i class="fas fa-gift"></i> Khuyến mãi được hưởng
                     </div>
-                    <?php endforeach; ?>
+                    <div class="fpt-promo-inner-red">
+                        <?php foreach ($fpt_promos as $group) : ?>
+                        <div class="promo-group-item">
+                            <ul class="promo-list-ul">
+                                <?php if (!empty($group['promo_items'])): foreach ($group['promo_items'] as $item): ?>
+                                <li>
+                                    <i class="fas fa-check-circle"></i>
+                                    <div class="promo-text">
+                                        <?php echo esc_html($item['content']); ?>
+                                        <?php if (!empty($item['link'])): ?>
+                                        <a href="<?php echo esc_url($item['link']); ?>" target="_blank"
+                                            class="promo-link">Xem chi tiết</a>
+                                        <?php endif; ?>
+                                    </div>
+                                </li>
+                                <?php endforeach;
+                                        endif; ?>
+                            </ul>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
                 <?php endif; ?>
             </div>
 
-            <?php
-            /* =============================================================
-               HIỂN THỊ COUPON (TỰ ĐỘNG LẤY TỪ WOOCOMMERCE)
-               ============================================================= */
-            if (! empty($coupons_data)) : ?>
+            <?php if (! empty($coupons_data)) : ?>
             <div class="fpt-coupon-section">
                 <div class="c-title"><i class="fas fa-ticket-alt"></i> MÃ GIẢM GIÁ THÊM</div>
                 <div class="coupon-list">
@@ -266,7 +297,6 @@ if (! empty($spec_groups)) {
                             $p = wc_get_product($p_id);
                             if (! $p || ! $p->is_visible()) continue;
 
-                            // Lấy % giảm giá
                             $percent = isset($item_data['percent_sale']) ? intval($item_data['percent_sale']) : 0;
                             $regular_price = $p->get_price();
                             $sale_price = $regular_price;
@@ -297,8 +327,9 @@ if (! empty($spec_groups)) {
             <?php endif; ?>
         </div>
     </div>
+
     <div class="row" style="margin-top: 30px;">
-        <div class="col col-7 col-md-12">
+        <div class="col col-12">
             <div class="white-box prod-content-box" id="prod-description">
                 <h2 class="section-title">Đặc điểm nổi bật</h2>
                 <div class="content-body-wrap">
@@ -310,6 +341,47 @@ if (! empty($spec_groups)) {
             </div>
         </div>
     </div>
+
+    <div class="row" style="margin-top: 20px;">
+        <div class="col col-12">
+            <div class="white-box prod-review-box" id="prod-reviews">
+                <h3 class="section-title">Đánh giá & Nhận xét <?php the_title(); ?></h3>
+                <?php $rating_count = $product->get_rating_count();
+                $average = $product->get_average_rating(); ?>
+                <div class="fpt-rating-overview">
+                    <div class="ro-left">
+                        <div class="score"><?php echo number_format($average, 1); ?>/5</div>
+                        <div class="stars">
+                            <?php for ($i = 1; $i <= 5; $i++) echo '<i class="fas fa-star ' . ($i <= round($average) ? 'filled' : '') . '"></i>'; ?>
+                        </div>
+                        <div class="count-text"><strong><?php echo $rating_count; ?></strong> đánh giá</div>
+                    </div>
+                    <div class="ro-middle">
+                        <div class="filter-stars-wrap">
+                            <span class="filter-star-item active" data-star="all">Tất cả</span>
+                            <span class="filter-star-item" data-star="5">5 Sao</span>
+                            <span class="filter-star-item" data-star="4">4 Sao</span>
+                            <span class="filter-star-item" data-star="3">3 Sao</span>
+                            <span class="filter-star-item" data-star="2">2 Sao</span>
+                            <span class="filter-star-item" data-star="1">1 Sao</span>
+                        </div>
+                    </div>
+                    <div class="ro-right">
+                        <button type="button" class="btn-write-review" id="btn-open-review">
+                            <i class="fas fa-pencil-alt"></i> Gửi đánh giá
+                        </button>
+                    </div>
+                </div>
+                <div id="relive-reviews-container" data-product-id="<?php echo $product->get_id(); ?>">
+                    <div class="loading-reviews" style="text-align:center; padding:20px; display:none;"><i
+                            class="fas fa-spinner fa-spin"></i> Đang tải đánh giá...</div>
+                    <div class="reviews-list-inner"></div>
+                    <div class="reviews-pagination" style="text-align:center; margin-top:20px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <?php if (!empty($spec_groups)): ?>

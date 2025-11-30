@@ -308,3 +308,84 @@ function relive_ajax_load_products()
     wp_send_json_success(array('products' => $products));
     die();
 }
+// 8. TỰ ĐỘNG XÓA SẢN PHẨM MUA KÈM KHI XÓA CHA
+add_action('woocommerce_remove_cart_item', 'relive_auto_remove_addons', 10, 2);
+function relive_auto_remove_addons($cart_item_key, $cart)
+{
+    // Lấy dữ liệu của sản phẩm đang bị xóa
+    if (isset($cart->cart_contents[$cart_item_key])) {
+        $removed_item = $cart->cart_contents[$cart_item_key];
+        $removed_product_id = $removed_item['product_id'];
+
+        // Kiểm tra: Nếu sản phẩm bị xóa LÀ CON (addon) thì dừng, không làm gì cả
+        // (Để tránh lỗi xóa con lại đi xóa tiếp cái gì đó lung tung)
+        if (isset($removed_item['relive_is_addon']) && $removed_item['relive_is_addon']) {
+            return;
+        }
+
+        // Nếu sản phẩm bị xóa LÀ CHA (Sản phẩm chính)
+        // Duyệt qua toàn bộ giỏ hàng để tìm các con của nó
+        foreach ($cart->cart_contents as $key => $values) {
+            // Kiểm tra xem món hàng này có phải là con của sản phẩm vừa xóa không
+            if (isset($values['relive_parent_id']) && $values['relive_parent_id'] == $removed_product_id) {
+                // Nếu đúng là con, xóa nó khỏi giỏ hàng luôn
+                unset($cart->cart_contents[$key]);
+            }
+        }
+    }
+}
+// 8. AJAX GET FILTER COUNT (Đếm số lượng sản phẩm khi lọc)
+add_action('wp_ajax_relive_get_filter_count', 'relive_ajax_get_filter_count');
+add_action('wp_ajax_nopriv_relive_get_filter_count', 'relive_ajax_get_filter_count');
+
+function relive_ajax_get_filter_count()
+{
+    // 1. Phân tích dữ liệu gửi lên từ form
+    $form_data = isset($_POST['form_data']) ? $_POST['form_data'] : '';
+    parse_str($form_data, $params);
+
+    $tax_query = array('relation' => 'AND');
+
+    // 2. Xây dựng Query lọc theo thuộc tính (Màu, Dung lượng...)
+    foreach ($params as $key => $value) {
+        // Key có dạng: filter_mau-sac, filter_dung-luong...
+        if (strpos($key, 'filter_') === 0 && !empty($value)) {
+            $attr_slug = str_replace('filter_', '', $key);
+
+            // Lưu ý: Attribute trong Woo luôn có prefix 'pa_'
+            $taxonomy = 'pa_' . $attr_slug;
+
+            $tax_query[] = array(
+                'taxonomy' => $taxonomy,
+                'field'    => 'slug',
+                'terms'    => $value, // $value là mảng các slug đã check
+                'operator' => 'IN'
+            );
+        }
+    }
+
+    $args = array(
+        'post_type'      => 'product',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,    // Lấy tất cả để đếm chính xác
+        'fields'         => 'ids', // Chỉ lấy ID cho nhẹ server
+        'tax_query'      => $tax_query
+    );
+
+    // 3. Nếu đang đứng ở trang Danh mục cụ thể, phải lọc theo danh mục đó nữa
+    if (isset($params['current_cat_id']) && !empty($params['current_cat_id'])) {
+        $args['tax_query'][] = array(
+            'taxonomy' => 'product_cat',
+            'field'    => 'term_id',
+            'terms'    => intval($params['current_cat_id']),
+        );
+    }
+
+    // 4. Thực thi Query
+    $query = new WP_Query($args);
+    $count = $query->found_posts;
+
+    // 5. Trả kết quả về cho JS
+    wp_send_json_success(array('count' => $count));
+    die();
+}

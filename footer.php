@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Footer Template (Full Code)
+ * Footer Template (Updated with Cart Popup)
  */
 ?>
 </div><?php get_template_part('template-parts/global/footer-content'); ?>
@@ -26,9 +26,7 @@
             <form id="relive-review-form" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="relive_submit_review">
                 <input type="hidden" name="product_id" value="<?php echo get_the_ID(); ?>">
-
                 <input type="hidden" name="comment_parent" id="comment_parent" value="0">
-
                 <input type="hidden" name="rating" id="rating-input" value="5">
                 <?php wp_nonce_field('relive_review_nonce', 'security'); ?>
 
@@ -64,7 +62,6 @@
 
                 <div class="rm-row-inputs" style="display:flex; gap:10px;">
                     <input type="text" name="author" placeholder="Họ tên (bắt buộc)" required style="flex:1;">
-
                     <input type="tel" name="phone" placeholder="Số điện thoại (bắt buộc)" required pattern="[0-9]*"
                         inputmode="numeric" maxlength="10" style="flex:1;">
                 </div>
@@ -73,6 +70,20 @@
                     <button type="submit" class="btn-submit-review">GỬI ĐÁNH GIÁ</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div id="fpt-cart-popup" class="fpt-cart-overlay">
+    <div class="fpt-cart-box">
+        <div class="fc-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="fc-message">Sản phẩm đã được thêm vào giỏ hàng</div>
+        <div class="fc-actions">
+            <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="btn-view-cart">Xem giỏ hàng</a>
+            <span class="btn-close-popup"
+                onclick="document.getElementById('fpt-cart-popup').classList.remove('open')">Tiếp tục mua sắm</span>
         </div>
     </div>
 </div>

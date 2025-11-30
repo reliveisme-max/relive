@@ -66,11 +66,16 @@ function relive_product_fields()
                 ))
                 ->set_header_template('<%- percent_sale %> %'),
 
-            // TAB 5: MÃ GIẢM GIÁ (CẬP NHẬT MỚI: CHỌN TỪ COUPON WOOCOMMERCE)
+            // TAB 5: MÃ GIẢM GIÁ (CẬP NHẬT: Chọn từ WooCommerce Coupon)
             Field::make('separator', 'sep_coupons', '5. Mã giảm giá thêm'),
+
+            // Dùng Association để tìm kiếm và chọn Coupon có sẵn
             Field::make('association', 'product_coupons', 'Chọn Mã giảm giá (Đã tạo trong Marketing > Coupons)')
                 ->set_types(array(
-                    array('type' => 'post', 'post_type' => 'shop_coupon')
+                    array(
+                        'type'      => 'post',
+                        'post_type' => 'shop_coupon', // Post type của Coupon WooCommerce
+                    )
                 ))
         ));
 }
