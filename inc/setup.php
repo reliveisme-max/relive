@@ -45,15 +45,11 @@ function relive_scripts()
     // Main JS
     wp_enqueue_script('relive-js', get_template_directory_uri() . '/assets/js/main.js', array('jquery'), time(), true); // Thêm time() để clear cache JS
 
-    // Ajax
+    // Ajax Localize (Gộp tất cả vào 1 chỗ duy nhất)
     wp_localize_script('relive-js', 'relive_ajax', array(
-        'url' => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('relive_filter_nonce')
-    ));
-    // Ajax Localize (Cập nhật đoạn này)
-    wp_localize_script('relive-js', 'relive_ajax', array(
-        'url'   => admin_url('admin-ajax.php'),
-        'nonce' => wp_create_nonce('relive_review_nonce') // Đặt tên thống nhất là relive_review_nonce
+        'url'        => admin_url('admin-ajax.php'),
+        'nonce'      => wp_create_nonce('relive_review_nonce'), // Nonce dùng chung cho review/filter
+        'cart_nonce' => wp_create_nonce('relive_cart_nonce')    // MỚI: Nonce dành riêng cho giỏ hàng
     ));
 }
 

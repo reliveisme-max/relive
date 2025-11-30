@@ -582,4 +582,128 @@ jQuery(document).ready(function($) {
         if ($btn.hasClass('plus')) { $input.val(val + 1); } else { if (val > 1) { $input.val(val - 1); } else { $wrap.removeClass('loading'); return; } }
         $input.trigger('change'); $('button[name="update_cart"]').prop('disabled', false).trigger('click');
     });
+
+    /* =============================================================
+       AJAX XÓA SẢN PHẨM GIỎ HÀNG (QUAN TRỌNG: Hàm này đã được thêm)
+       ============================================================= */
+    function removeCartItem(key, $row) {
+        // Hiệu ứng mờ để báo đang xử lý
+        $row.css('opacity', '0.5').css('pointer-events', 'none');
+        $('.cart-sidebar').css('opacity', '0.5');
+
+        $.ajax({
+            url: relive_ajax.url,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'relive_remove_cart_item',
+                cart_item_key: key,
+                nonce: relive_ajax.cart_nonce // Đã fix ở setup.php
+            },
+            success: function(res) {
+                if (res.success) {
+                    if (res.data.is_empty) {
+                        // Nếu hết hàng thì reload để hiện trang empty
+                        window.location.reload();
+                    } else {
+                        // Xóa dòng sản phẩm
+                        $row.fadeOut(300, function() { $(this).remove(); });
+                        // Cập nhật Sidebar (Giá tiền)
+                        $('.cart-sidebar').html(res.data.sidebar_html).css('opacity', '1');
+                        // Cập nhật số lượng Header
+                        $('.cart-count').text(res.data.cart_count);
+                        $('.cart-item-block span').first().text('Giỏ hàng (' + res.data.cart_count + ' sản phẩm)');
+                    }
+                } else {
+                    alert(res.data.message || 'Lỗi không xác định');
+                    window.location.reload();
+                }
+            },
+            error: function() {
+                alert('Lỗi kết nối server.');
+                window.location.reload();
+            }
+        });
+    }
+
+    /* =============================================================
+       LOGIC XÓA SẢN PHẨM VỚI POPUP CONFIRM (FPT STYLE)
+       ============================================================= */
+    
+    // Biến tạm để lưu sản phẩm đang chờ xóa
+    var pendingDelete = {
+        key: null,
+        row: null,
+        checkbox: null // Để check lại nếu người dùng hủy
+    };
+
+    // 1. Hàm mở Popup
+    function openDeleteModal(key, $row, $checkbox = null) {
+        pendingDelete.key = key;
+        pendingDelete.row = $row;
+        pendingDelete.checkbox = $checkbox;
+        $('#fpt-delete-modal').addClass('open');
+    }
+
+    // 2. Hàm đóng Popup & Reset
+    function closeDeleteModal() {
+        $('#fpt-delete-modal').removeClass('open');
+        
+        // Nếu có checkbox (trường hợp bỏ check) mà lại Hủy xóa -> Check lại
+        if (pendingDelete.checkbox) {
+            $(pendingDelete.checkbox).prop('checked', true);
+        }
+        
+        // Reset biến
+        pendingDelete = { key: null, row: null, checkbox: null };
+    }
+
+    // --- SỰ KIỆN GỌI POPUP ---
+
+    // A. Bấm thùng rác
+    $(document).on('click', '.ajax-remove-item', function(e) {
+        e.preventDefault();
+        var key = $(this).data('key');
+        var $row = $(this).closest('.cart-item-block');
+        if ($row.length === 0) $row = $(this).closest('.cart-item-addon');
+        
+        openDeleteModal(key, $row, null);
+    });
+
+    // B. Bỏ check Checkbox
+    $(document).on('change', '.cart-checkbox-remove', function(e) {
+        if (!$(this).is(':checked')) {
+            var key = $(this).data('key');
+            var $row = $(this).closest('.cart-item-block');
+            
+            // Truyền this vào để nếu Hủy thì check lại được
+            openDeleteModal(key, $row, this);
+        }
+    });
+
+    // --- SỰ KIỆN TRÊN POPUP ---
+
+    // 1. Bấm nút "Hủy bỏ" hoặc "X"
+    $('#btn-cancel-delete, #btn-close-delete-modal, #fpt-delete-modal').on('click', function(e) {
+        if (e.target !== this && !$(this).is('button') && !$(this).is('span')) return; // Chặn click nhầm vào box
+        closeDeleteModal();
+    });
+    // Ngăn click vào box bị đóng modal
+    $('.fpt-confirm-box').on('click', function(e){
+        e.stopPropagation();
+    });
+
+    // 2. Bấm nút "Xóa" (Xác nhận thật)
+    $('#btn-confirm-delete').on('click', function() {
+        if (pendingDelete.key && pendingDelete.row) {
+            // Gọi hàm Ajax xóa
+            removeCartItem(pendingDelete.key, pendingDelete.row);
+            
+            // Ẩn popup
+            $('#fpt-delete-modal').removeClass('open');
+            
+            // Reset biến
+            pendingDelete = { key: null, row: null, checkbox: null };
+        }
+    });
 });
