@@ -202,17 +202,69 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // --- [QUAN TRỌNG] NÚT MUA KÈM: CHỈ TICK (KHÔNG AJAX) ---
+    /* =============================================================
+       XỬ LÝ MUA KÈM (LOGIC MỚI: TỰ ĐỘNG CHỌN KHI CÓ BIẾN THỂ)
+       ============================================================= */
+    
+    var $variationForm = $('.variations_form');
+    var $btInputs = $('.bt-checkbox-btn input');
+    var $btLabels = $('.bt-checkbox-btn');
+    var $btBtns = $('.btn-select-add');
+
+    // Hàm Reset: Bỏ chọn & Khóa lại
+    function resetBoughtTogether() {
+        $btInputs.prop('disabled', true).prop('checked', false).trigger('change');
+        $btLabels.css({'opacity': '0.5', 'pointer-events': 'none', 'cursor': 'not-allowed'});
+        
+        // Reset giao diện nút về "Thêm +"
+        $btBtns.html('Thêm <i class="fas fa-plus"></i>')
+               .removeClass('added')
+               .removeAttr('style');
+    }
+
+    // Hàm Kích hoạt: Mở khóa & Tự động chọn
+    function activateBoughtTogether() {
+        $btInputs.prop('disabled', false);
+        $btLabels.css({'opacity': '1', 'pointer-events': 'auto', 'cursor': 'pointer'});
+        
+        // --- LOGIC MỚI: TỰ ĐỘNG TÍCH CHỌN ---
+        $btInputs.prop('checked', true).trigger('change'); 
+    }
+
+    // 1. KHỞI TẠO
+    if ($variationForm.length > 0) {
+        resetBoughtTogether(); // Mặc định khóa khi mới vào trang
+
+        // Khi WooCommerce tìm thấy biến thể hợp lệ
+        $variationForm.on('found_variation', function(event, variation) {
+            if (variation.is_purchasable) { 
+                activateBoughtTogether(); // Mở khóa & Tự chọn
+            } else {
+                resetBoughtTogether();
+            }
+        });
+
+        // Khi bấm nút "Xóa" (Reset dữ liệu)
+        $variationForm.on('reset_data', function() {
+            resetBoughtTogether();
+        });
+    }
+
+    // 2. XỬ LÝ GIAO DIỆN KHI CHECKBOX THAY ĐỔI
     $(document).off('change', '.bt-checkbox-btn input').on('change', '.bt-checkbox-btn input', function() {
         var $input = $(this);
         var $btn = $input.next('.btn-select-add');
+        
         if($input.is(':checked')) {
-            $btn.html('Đã chọn <i class="fas fa-check"></i>').addClass('added').css({'background': '#28a745', 'color': '#fff', 'border-color': '#28a745'});
+            $btn.html('Đã chọn <i class="fas fa-check"></i>')
+                .addClass('added')
+                .css({'background': '#28a745', 'color': '#fff', 'border-color': '#28a745'});
         } else {
-            $btn.html('Thêm <i class="fas fa-plus"></i>').removeClass('added').removeAttr('style');
+            $btn.html('Thêm <i class="fas fa-plus"></i>')
+                .removeClass('added')
+                .removeAttr('style');
         }
     });
-
     /* =============================================================
        XỬ LÝ MUA NGAY / THÊM GIỎ HÀNG (CÓ POPUP FPT)
        ============================================================= */
@@ -330,6 +382,51 @@ jQuery(document).ready(function($) {
     }
     if($('#relive-reviews-container').length) loadReviews(1, 'all');
 
+    /* =============================================================
+       XỬ LÝ BỘ LỌC SAO & PHÂN TRANG ĐÁNH GIÁ
+       ============================================================= */
+
+    // 1. Sự kiện Click vào nút Lọc Sao (Tất cả, 5 Sao, 4 Sao...)
+    $(document).on('click', '.filter-star-item', function(e) {
+        e.preventDefault();
+        
+        // UI: Đổi màu active cho nút được chọn
+        $('.filter-star-item').removeClass('active');
+        $(this).addClass('active');
+        
+        // Logic: Lấy giá trị sao và gọi hàm load
+        var star = $(this).data('star');
+        
+        // Load lại đánh giá trang 1 với điều kiện lọc sao mới
+        loadReviews(1, star); 
+    });
+
+    // 2. Sự kiện Click vào Phân trang (Giữ nguyên bộ lọc sao đang chọn)
+    $(document).on('click', '.reviews-pagination a', function(e) {
+        e.preventDefault();
+        
+        var url = $(this).attr('href');
+        var page = 1;
+
+        // Tách lấy số trang từ URL
+        var match = url.match(/[?&]paged=(\d+)/); // Dạng ?paged=2
+        if (!match) match = url.match(/\/page\/(\d+)/); // Dạng /page/2
+        if (!match) match = url.match(/\/comment-page-(\d+)/); // Dạng comment-page-2
+        
+        if (match) page = match[1];
+        
+        // Kiểm tra xem đang lọc theo mấy sao
+        var currentStar = $('.filter-star-item.active').data('star') || 'all';
+        
+        // Gọi hàm load với trang mới và bộ lọc hiện tại
+        loadReviews(page, currentStar);
+        
+        // Cuộn nhẹ lên đầu danh sách đánh giá
+        $('html, body').animate({
+            scrollTop: $('#prod-reviews').offset().top - 100
+        }, 500);
+    });
+
     var dt = new DataTransfer(); 
     $('#review_image').on('change', function(e) {
         var files = e.target.files;
@@ -360,18 +457,117 @@ jQuery(document).ready(function($) {
         $('.btn-upload-img span').text('Gửi ảnh thực tế (tối đa 5 ảnh)'); $('#review-modal').removeClass('open'); $('body').removeClass('no-scroll'); $('.star-widget i').addClass('active'); $('#rating-input').val(5);
     }
     $('#btn-open-review').on('click', function(e) { e.preventDefault(); $('#review-modal').addClass('open'); $('body').addClass('no-scroll'); $('#comment_parent').val(0); $('#rm-title-text').text('Đánh giá & Nhận xét'); $('.rm-rating-select').show(); });
-    $(document).on('click', '.btn-reply-trigger', function(e) { e.preventDefault(); var parentId = $(this).data('id'); var authorName = $(this).data('name'); $('#review-modal').addClass('open'); $('body').addClass('no-scroll'); $('#comment_parent').val(parentId); $('#rm-title-text').text('Trả lời: ' + authorName); $('.rm-rating-select').hide(); $('#review_comment_content').val('@' + authorName + ' ').focus(); });
-    $('#btn-close-review, .relive-modal-overlay').on('click', function(e) { if(e.target === this || $(this).attr('id') === 'btn-close-review') resetReviewForm(); });
+    /* =============================================================
+       XỬ LÝ CHỌN SAO TRONG POPUP (RATING SELECT)
+       ============================================================= */
+    $(document).on('click', '.star-widget i', function() {
+        var rating = $(this).data('val'); // Lấy giá trị sao (1-5)
+        
+        // 1. Cập nhật giá trị vào input ẩn để gửi đi
+        $('#rating-input').val(rating);
 
+        // 2. Xử lý giao diện: Tô vàng các sao được chọn
+        $('.star-widget i').removeClass('active'); // Reset trước
+        $('.star-widget i').each(function() {
+            if ($(this).data('val') <= rating) {
+                $(this).addClass('active');
+            }
+        });
+
+        // 3. Cập nhật chữ trạng thái (Tuyệt vời, Tốt...)
+        var ratingTexts = {
+            1: 'Rất tệ',
+            2: 'Không hài lòng',
+            3: 'Bình thường',
+            4: 'Hài lòng',
+            5: 'Tuyệt vời'
+        };
+        $('.rating-text').text(ratingTexts[rating]);
+    });
+    // --- XỬ LÝ TRẢ LỜI BÌNH LUẬN (REPLY) ---
+    $(document).on('click', '.btn-reply-trigger', function(e) {
+        e.preventDefault();
+        
+        // 1. Lấy ID và Tên người cần trả lời từ data attribute
+        var parentId = $(this).data('id');
+        var authorName = $(this).data('name'); // Đảm bảo data-name chứa đúng tên tác giả comment cha
+        
+        // 2. Mở Popup
+        $('#review-modal').addClass('open');
+        $('body').addClass('no-scroll');
+        
+        // 3. Điền ID cha vào input hidden
+        $('#comment_parent').val(parentId);
+        
+        // 4. Cập nhật tiêu đề Popup
+        $('#rm-title-text').text('Trả lời: ' + authorName);
+        
+        // 5. Ẩn phần chọn sao (Trả lời không cần đánh giá sao)
+        $('.rm-rating-select').hide();
+        
+        // 6. Điền sẵn @Tên người nhận vào textarea và focus
+        // Xóa nội dung cũ trước khi điền mới
+        $('#review_comment_content').val('@' + authorName + ' ').focus();
+    });
+    
+    // --- KHI ĐÓNG POPUP THÌ RESET LẠI (QUAN TRỌNG) ---
+    $('#btn-close-review, .relive-modal-overlay').on('click', function(e) {
+        if(e.target === this || $(this).attr('id') === 'btn-close-review') {
+            resetReviewForm();
+            // Reset lại tiêu đề gốc
+            $('#rm-title-text').text('Đánh giá & Nhận xét');
+            // Hiện lại chọn sao
+            $('.rm-rating-select').show();
+            // Reset input cha về 0 (để viết comment mới)
+            $('#comment_parent').val(0);
+        }
+    });
+
+    // --- XỬ LÝ GỬI ĐÁNH GIÁ (CÓ POPUP) ---
     $('#relive-review-form').on('submit', function(e) {
-        e.preventDefault(); var author = $('input[name="author"]').val().trim(); var phone = $('input[name="phone"]').val().trim();
+        e.preventDefault(); 
+        var author = $('input[name="author"]').val().trim(); 
+        var phone = $('input[name="phone"]').val().trim();
+        
         if(author.length < 2) { alert('Vui lòng nhập Họ tên hợp lệ.'); $('input[name="author"]').focus(); return; }
         if (!/^(0)(3|5|7|8|9)[0-9]{8}$/.test(phone)) { alert('Số điện thoại không hợp lệ.'); $('input[name="phone"]').focus(); return; }
-        var formData = new FormData(this); var $btn = $('.btn-submit-review'); $btn.text('Đang gửi...').prop('disabled', true);
+        
+        var formData = new FormData(this); 
+        var $btn = $('.btn-submit-review'); 
+        $btn.text('Đang gửi...').prop('disabled', true);
+        
         $.ajax({
-            url: relive_ajax.url, type: 'POST', data: formData, processData: false, contentType: false,
-            success: function(res) { if(res.success) { alert('Gửi thành công! Đánh giá sẽ được kiểm duyệt.'); resetReviewForm(); loadReviews(1, 'all'); } else { alert(res.data.message || 'Lỗi xảy ra.'); } $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false); },
-            error: function() { alert('Lỗi kết nối.'); $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false); }
+            url: relive_ajax.url, 
+            type: 'POST', 
+            data: formData, 
+            processData: false, 
+            contentType: false,
+            success: function(res) { 
+                if(res.success) { 
+                    // 1. Đóng Form nhập liệu ngay lập tức
+                    $('#review-modal').removeClass('open'); 
+                    $('body').removeClass('no-scroll');
+
+                    // 2. Hiện Popup Thông báo Thành công
+                    $('#fpt-review-popup').addClass('open');
+                    
+                    // 3. Tự tắt sau 3 giây
+                    setTimeout(function(){
+                        $('#fpt-review-popup').removeClass('open');
+                    }, 3000);
+
+                    // 4. Reset form và tải lại danh sách
+                    resetReviewForm(); 
+                    loadReviews(1, 'all'); 
+                } else { 
+                    alert(res.data.message || 'Lỗi xảy ra.'); 
+                } 
+                $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false); 
+            },
+            error: function() { 
+                alert('Lỗi kết nối.'); 
+                $btn.text('GỬI ĐÁNH GIÁ').prop('disabled', false); 
+            }
         });
     });
 

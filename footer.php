@@ -88,6 +88,20 @@
     </div>
 </div>
 
+<div id="fpt-review-popup" class="fpt-cart-overlay">
+    <div class="fpt-cart-box">
+        <div class="fc-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="fc-message">Gửi đánh giá thành công!</div>
+        <p style="margin: -5px 0 20px; font-size: 13px; opacity: 0.8;">Cảm ơn bạn đã chia sẻ cảm nhận.</p>
+        <div class="fc-actions">
+            <span class="btn-view-cart" onclick="document.getElementById('fpt-review-popup').classList.remove('open')"
+                style="cursor:pointer; display:inline-block; width:auto; padding: 8px 30px;">Đóng</span>
+        </div>
+    </div>
+</div>
+
 </div><?php wp_footer(); ?>
 
 </body>

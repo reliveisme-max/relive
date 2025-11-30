@@ -3056,35 +3056,19 @@ a.zoom-trigger {
     border-color: #cb1c22 !important;
 }
 /* =========================================
-   REVIEW PAGINATION FIX (XÓA KHUNG BAO NGOÀI)
+   REVIEW PAGINATION FIX (FINAL SELECTOR)
    ========================================= */
 
-/* 1. Xóa viền của khung chứa lớn nhất */
-#relive-reviews-container .reviews-pagination {
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 20px 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
+/* 1. Khung bao ngoài */
+.reviews-pagination {
+    margin-top: 20px;
     display: flex !important;
-    justify-content: center !important; /* Căn giữa màn hình */
+    justify-content: center !important; /* Căn giữa */
+    gap: 10px; /* Khoảng cách giữa các nút */
+    flex-wrap: wrap;
 }
 
-/* 2. Xóa viền của thẻ UL (nếu có) và dàn ngang */
-.reviews-pagination ul,
-.reviews-pagination ul.pagination {
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    display: flex !important;
-    gap: 10px !important; /* Khoảng cách giữa các nút */
-    padding: 0 !important;
-    margin: 0 !important;
-    align-items: center !important;
-}
-
-/* 3. Style nút bấm (Vuông, đẹp, tách rời) */
+/* 2. Nút bấm (Thẻ A và SPAN trực tiếp) */
 .reviews-pagination .page-numbers {
     display: flex !important;
     align-items: center;
@@ -3092,36 +3076,32 @@ a.zoom-trigger {
     
     width: 36px !important;
     height: 36px !important;
-    padding: 0 !important;
-    margin: 0 !important;
     
     background-color: #fff !important;
-    border: 1px solid #e0e0e0 !important; /* Viền từng nút */
+    border: 1px solid #e0e0e0 !important;
     border-radius: 4px !important;
     
     color: #333 !important;
-    font-size: 14px !important;
     font-weight: 600 !important;
+    font-size: 14px !important;
     text-decoration: none !important;
-    
     transition: all 0.2s ease !important;
+    cursor: pointer;
 }
 
-/* 4. Trạng thái Hover & Active (Đỏ FPT) */
-.reviews-pagination .page-numbers:hover,
-.reviews-pagination .page-numbers.current {
+/* 3. Trạng thái Active & Hover (Màu đỏ FPT) */
+.reviews-pagination .page-numbers.current,
+.reviews-pagination a.page-numbers:hover {
     background-color: #cb1c22 !important;
     border-color: #cb1c22 !important;
     color: #fff !important;
     box-shadow: 0 2px 5px rgba(203, 28, 34, 0.3) !important;
 }
 
-/* 5. Ẩn các thành phần thừa */
+/* 4. Ẩn border/background thừa nếu có thẻ ul/li bao quanh (Phòng hờ) */
+.reviews-pagination ul, 
 .reviews-pagination li {
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: none !important;
+    margin: 0; padding: 0; border: none; background: none; list-style: none; display: contents;
 }
 /* =========================================
    13. COUPON BOX (MÃ GIẢM GIÁ)
@@ -3197,135 +3177,181 @@ a.zoom-trigger {
     border-color: #28a745 !important;
 }
 /* =========================================
-   14. CART PAGE (FPT STYLE - FINAL ALIGNMENT)
+   14. CART PAGE (FPT STYLE - FINAL COMPLETE)
    ========================================= */
 
-/* 1. NỀN TOÀN TRANG */
 .fpt-cart-page {
     background-color: #f4f4f4 !important;
     padding-bottom: 50px;
 }
 
-/* 2. CÁC KHỐI NỘI DUNG */
-.fpt-cart-page .cart-sidebar,
+/* --- 1. KHỐI SẢN PHẨM CHÍNH --- */
 .cart-item-block {
     background-color: #ffffff !important;
     border-radius: 10px !important;
     padding: 20px !important;
     margin-bottom: 15px !important;
     border: none !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
     position: relative;
     z-index: 2;
 }
 
-/* 3. XỬ LÝ LIÊN KẾT KHỐI (MERGE) */
-/* Nếu khối chính có con đi kèm -> Bỏ bo góc dưới để nối liền */
+/* Khi có sản phẩm con đi kèm: Tạo khoảng hở nhỏ để nối dây */
 .cart-item-block:has(+ .cart-item-addon) {
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    margin-bottom: 0 !important;
-    border-bottom: 1px dashed #eee !important;
-    padding-bottom: 15px !important;
+    margin-bottom: 10px !important; 
+    border-bottom: none !important;
 }
 
-/* KHỐI ADDON: Căn chỉnh vị trí */
+/* --- 2. KHỐI SẢN PHẨM MUA KÈM (ADDON) --- */
 .cart-item-addon {
     background-color: #ffffff !important;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 10px !important;
-    border-bottom-right-radius: 10px !important;
+    border-radius: 10px !important;
+    padding: 15px 15px 15px 20px !important;
     
-    /* [QUAN TRỌNG] Padding trái 50px để Ảnh Addon thẳng hàng với Ảnh Cha */
-    /* Giải thích: Padding cha (20px) + Checkbox (~15px) + Gap (~15px) = ~50px */
-    padding: 15px 20px 20px 50px !important; 
+    /* Thụt lề trái tạo cấp bậc */
+    margin-left: 50px !important;
+    width: calc(100% - 50px) !important;
     
-    margin-top: 0 !important;
     margin-bottom: 15px !important;
-    border: none !important;
+    margin-top: 0 !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
     position: relative;
     z-index: 1;
-}
-
-/* Ảnh Addon: Kích thước nhỏ gọn */
-.cart-item-addon .ci-img {
-    width: 60px !important; 
-    height: 60px !important;
-    margin-right: 15px !important;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    padding: 2px;
 }
 
 /* Dây nối (Connector Line) */
 .cart-item-addon::before {
     content: '';
     position: absolute;
-    /* Canh dây nằm ngay dưới checkbox của cha */
-    left: 27px; 
-    top: -25px; /* Nối từ trên xuống */
-    width: 18px; /* Độ dài ngang của dây nối vào ảnh */
-    height: 60px;
-    border-left: 2px solid #e0e0e0;
-    border-bottom: 2px solid #e0e0e0;
-    border-bottom-left-radius: 8px;
-    z-index: 3;
+    left: -25px; /* Điểm bắt đầu (bên trái khối con) */
+    top: -40px; /* Vươn lên trên để chạm vào khối cha */
+    
+    width: 25px;
+    height: 75px; /* Độ dài dây dọc */
+    
+    border-left: 2px solid #d6d6d6; /* Màu dây */
+    border-bottom: 2px solid #d6d6d6;
+    border-bottom-left-radius: 12px; /* Bo góc dây */
+    z-index: 0;
+    pointer-events: none;
 }
-
-/* Ẩn checkbox & Reset style */
-.hidden-check, 
-.cart-item-addon .ci-check { display: none !important; }
 
 /* Nhãn Mua kèm */
 .addon-label {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: #fff3cd; color: #856404;
-    font-size: 11px; font-weight: 600;
-    padding: 2px 8px; border-radius: 4px; margin-bottom: 10px;
+    display: inline-flex; 
+    align-items: center; 
+    gap: 5px;
+    background: #fff8e1; 
+    color: #b78a28; 
+    font-size: 11px; 
+    font-weight: 700;
+    padding: 2px 8px; 
+    border-radius: 4px; 
+    margin-bottom: 8px;
 }
 
-/* 4. QUANTITY STYLES (SỐ LƯỢNG) */
-.fpt-cart-page input[type=number]::-webkit-inner-spin-button, 
-.fpt-cart-page input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; margin: 0; 
-}
-.fpt-cart-page input[type=number] { -moz-appearance: textfield; }
-
-/* Khung số lượng (Chỉ hiện cho SP chính) */
-.ci-qty-wrap { 
-    display: inline-flex; border: 1px solid #ddd; border-radius: 4px; 
-    height: 30px; margin-top: 10px; background: #fff; overflow: hidden; 
-}
-.qty-btn { 
-    width: 30px; border: none; background: #fff; cursor: pointer; color: #333; 
-    font-size: 16px; display: flex; align-items: center; justify-content: center; 
-}
-.qty-btn:hover { background: #f9f9f9; }
-.qty-input { 
-    width: 40px; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; 
-    text-align: center; font-size: 14px; font-weight: 600; color: #333; padding: 0; 
+/* Ẩn checkbox & số lượng của sản phẩm con */
+.cart-item-addon .ci-check,
+.cart-item-addon .ci-qty-wrap { 
+    display: none !important; 
 }
 
-/* Layout Chung */
-.woocommerce-cart-form { background: transparent !important; }
+/* Ảnh sản phẩm con nhỏ hơn */
+.cart-item-addon .ci-img {
+    width: 60px !important; 
+    height: 60px !important;
+}
+
+/* --- 3. CẤU TRÚC HÀNG SẢN PHẨM --- */
 .fpt-cart-item-row { display: flex; align-items: flex-start; }
 .ci-check { padding-top: 30px; margin-right: 15px; }
-.ci-img { 
-    width: 80px; height: 80px; flex-shrink: 0; margin-right: 15px; 
-    border: 1px solid #eee; border-radius: 4px; padding: 2px; background: #fff; 
+
+.ci-img {
+    width: 80px; height: 80px; flex-shrink: 0; margin-right: 15px;
+    border: 1px solid #eee; border-radius: 4px; padding: 2px; background: #fff;
 }
 .ci-img img { width: 100%; height: 100%; object-fit: contain; }
+
 .ci-info { flex: 1; }
 .ci-name a { font-size: 14px; font-weight: 600; color: #333; text-decoration: none; line-height: 1.4; display: block; }
 .ci-name a:hover { color: #cb1c22; }
-.ci-price-row { margin-top: 5px; display: flex; align-items: center; gap: 10px; }
-.remove-item { color: #999; font-size: 14px; } .remove-item:hover { color: #cb1c22; }
 
-/* Responsive Mobile */
+.ci-price-row { margin-top: 5px; display: flex; align-items: center; gap: 10px; }
+
+/* Nút xóa */
+.remove-item { color: #999; font-size: 14px; cursor: pointer; } 
+.remove-item:hover { color: #cb1c22; }
+
+/* Input số lượng */
+.fpt-cart-page input[type=number]::-webkit-inner-spin-button, 
+.fpt-cart-page input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.fpt-cart-page input[type=number] { -moz-appearance: textfield; }
+
+.ci-qty-wrap { display: inline-flex; border: 1px solid #ddd; border-radius: 4px; height: 30px; margin-top: 10px; background: #fff; overflow: hidden; }
+.qty-btn { width: 30px; border: none; background: #fff; cursor: pointer; color: #333; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+.qty-btn:hover { background: #f9f9f9; }
+.qty-input { width: 40px; border: none; border-left: 1px solid #ddd; border-right: 1px solid #ddd; text-align: center; font-size: 14px; font-weight: 600; color: #333; padding: 0; }
+
+/* --- 4. SIDEBAR GIỎ HÀNG (CỘT PHẢI) --- */
+.fpt-cart-page .cart-sidebar {
+    background-color: #ffffff !important;
+    border-radius: 10px !important;
+    padding: 20px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+/* Khối Mã giảm giá */
+.cart-sidebar .coupon-block {
+    border-bottom: 8px solid #f4f4f4; /* Khoảng hở lớn giống FPT */
+    margin-left: -20px; margin-right: -20px; /* Tràn viền */
+    padding: 0 20px 15px 20px;
+    margin-bottom: 15px;
+}
+
+.cb-header {
+    font-weight: 700; color: #cb1c22; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 5px;
+    background: #fff0f0; padding: 8px; border-radius: 4px;
+}
+.cb-input-group { display: flex; gap: 10px; }
+.cb-input-group input { flex: 1; border: 1px solid #ddd; border-radius: 4px; padding: 0 10px; height: 36px; }
+.cb-input-group button { background: #333; color: #fff; border: none; border-radius: 4px; padding: 0 15px; font-weight: 600; text-transform: uppercase; font-size: 12px; cursor: pointer; }
+
+/* Bảng tính tiền */
+.cart-total-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #333; }
+.cart-totals-inner .row-price { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; color: #333; }
+
+.discount-details .sub-row { font-size: 13px; color: #666; margin-bottom: 8px; }
+
+.cart-totals-inner .row-price.total {
+    border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px; align-items: center;
+}
+.cart-totals-inner .row-price.total strong {
+    color: #d70018 !important; font-size: 20px; font-weight: 700;
+}
+
+/* Nút Xác nhận */
+.btn-fpt-primary.full-width {
+    display: block; width: 100%;
+    background: #cb1c22; color: #fff;
+    text-align: center; padding: 15px;
+    border-radius: 4px; font-weight: 700; text-transform: uppercase;
+    margin-top: 15px; transition: 0.2s;
+}
+.btn-fpt-primary.full-width:hover { background: #a61217; box-shadow: 0 4px 12px rgba(203, 28, 34, 0.3); }
+
+/* Form trong suốt */
+.woocommerce-cart-form { background: transparent !important; }
+
+/* Mobile Responsive */
 @media (max-width: 768px) {
-    .cart-item-addon { padding-left: 20px !important; margin-left: 0 !important; width: 100% !important; }
-    .cart-item-addon::before { display: none; } /* Mobile ẩn dây nối cho gọn */
+    .cart-item-addon { 
+        margin-left: 20px !important; 
+        width: calc(100% - 20px) !important; 
+    }
+    .cart-item-addon::before { left: -10px; width: 10px; } /* Dây nối nhỏ lại */
     .fpt-cart-item-row { position: relative; }
     .remove-item { position: absolute; top: 0; right: 0; }
 }
@@ -3596,4 +3622,206 @@ a.zoom-trigger {
     .ec-image img {
         width: 180px;
     }
+}
+
+/* --- STYLE BÌNH LUẬN TRẢ LỜI (NESTED COMMENTS) --- */
+
+.review-replies-wrap {
+    margin-left: 48px; /* Thụt vào bằng chiều rộng avatar cha */
+    margin-top: 15px;
+}
+
+.review-item.is-reply {
+    background: #f9f9f9; /* Nền xám nhẹ */
+    padding: 15px;
+    border-radius: 8px;
+    border-bottom: none; /* Bỏ gạch chân của item con */
+    margin-bottom: 10px;
+}
+
+/* --- BADGE STYLES (CẬP NHẬT MÀU GRADIENT FPT) --- */
+
+/* 1. Badge QTV */
+.badge-qtv {
+    display: inline-block;
+    /* Gradient màu nâu vàng sang trọng */
+    background: linear-gradient(31.31deg, rgb(139, 125, 117) 62.94%, rgb(218, 195, 146) 124.63%) !important;
+    
+    color: #fff !important; /* Chữ trắng */
+    font-size: 11px;
+    font-weight: 600; /* Mảnh hơn một chút cho tinh tế */
+    padding: 3px 10px; /* Padding rộng ra hình viên thuốc */
+    border-radius: 20px; /* Bo tròn hoàn toàn */
+    margin-left: 8px;
+    vertical-align: middle;
+    line-height: 1.2;
+}
+
+/* 2. Avatar Admin (Đổi viền cho tệp màu với Badge) */
+.admin-avatar {
+    padding: 0 !important;
+    overflow: hidden;
+    /* Đổi viền vàng tươi cũ thành viền nâu xám (#8b7d75) cho đồng bộ */
+    border: 2px solid #8b7d75 !important; 
+}
+
+/* =========================================
+   CART SIDEBAR (FPT DETAILED STYLE)
+   ========================================= */
+
+.cart-sidebar .coupon-block {
+    border-bottom: 8px solid #f4f4f4; /* Tạo khoảng hở dày giống FPT */
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.cb-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    cursor: pointer;
+    background: #ffecec; /* Nền hồng nhạt */
+    padding: 8px 10px;
+    border-radius: 4px;
+    color: #cb1c22;
+}
+
+.cb-input-group {
+    display: flex;
+    gap: 10px;
+}
+.cb-input-group input {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0 10px;
+    height: 36px;
+}
+.cb-input-group button {
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0 15px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Bảng tính tiền */
+.cart-total-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.cart-totals-inner .row-price {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.cart-totals-inner .row-price.sub-row {
+    margin-bottom: 8px;
+}
+
+/* Dòng Tổng tiền cuối cùng */
+.cart-totals-inner .row-price.total {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 5px;
+    align-items: center;
+}
+
+.btn-fpt-primary.full-width {
+    display: block;
+    width: 100%;
+    background: #cb1c22;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+.btn-fpt-primary.full-width:hover {
+    background: #a61217;
+    box-shadow: 0 5px 15px rgba(203, 28, 34, 0.3);
+}
+/* =========================================
+   STYLE THẺ VOUCHER XANH (FPT STYLE)
+   ========================================= */
+.fpt-applied-coupons {
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.fpt-coupon-card {
+    display: flex;
+    align-items: center;
+    background: #f6ffed; /* Nền xanh lá nhạt */
+    border: 1px solid #b7eb8f; /* Viền xanh lá */
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+}
+
+.cp-icon {
+    width: 32px;
+    height: 32px;
+    background: #52c41a; /* Tròn xanh lá đậm */
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.cp-content {
+    flex: 1;
+}
+
+.cp-title {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.3;
+}
+.cp-title strong {
+    color: #52c41a; /* Mã màu xanh */
+}
+
+.cp-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: #cb1c22; /* Số tiền giảm màu đỏ */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cp-remove {
+    color: #cb1c22;
+    font-weight: 400;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+}
+.cp-remove:hover {
+    text-decoration: underline;
 }

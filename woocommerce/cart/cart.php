@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Cart Page (Final Structure - Empty Cart with Image)
+ * Cart Page (FPT Style - Final Merged: Empty Cart + Addons + Coupon Card)
  */
 defined('ABSPATH') || exit;
 ?>
@@ -52,11 +52,9 @@ defined('ABSPATH') || exit;
                             <div class="ci-check <?php echo $is_addon ? 'hidden-check' : ''; ?>">
                                 <input type="checkbox" checked>
                             </div>
-
                             <div class="ci-img">
                                 <?php echo $_product->get_image('thumbnail'); ?>
                             </div>
-
                             <div class="ci-info">
                                 <div style="display: flex; justify-content: space-between;">
                                     <h3 class="ci-name" style="margin:0;">
@@ -68,7 +66,6 @@ defined('ABSPATH') || exit;
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </div>
-
                                 <div class="ci-price-row">
                                     <strong style="color: #cb1c22; font-size: 16px;">
                                         <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key); ?>
@@ -79,7 +76,6 @@ defined('ABSPATH') || exit;
                                     </del>
                                     <?php endif; ?>
                                 </div>
-
                                 <?php if (! $is_addon) : ?>
                                 <div class="ci-qty-wrap">
                                     <button type="button" class="qty-btn minus">-</button>
@@ -108,44 +104,101 @@ defined('ABSPATH') || exit;
 
             <div class="col col-4 col-md-12">
                 <div class="cart-sidebar">
-                    <div class="coupon-block" style="margin-bottom: 20px;">
-                        <div
-                            style="font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-ticket-alt" style="color: #cb1c22;"></i> Mã ưu đãi</span>
+
+                    <div class="coupon-block">
+                        <div class="cb-header">
+                            <i class="fas fa-ticket-alt"></i> Chọn hoặc nhập ưu đãi
                         </div>
-                        <div style="display: flex; gap: 5px;">
+                        <div class="cb-input-group">
                             <input type="text" name="coupon_code" class="input-text" id="coupon_code" value=""
-                                placeholder="Nhập mã giảm giá"
-                                style="flex:1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <button type="submit" class="button" name="apply_coupon" value="Áp dụng"
-                                style="background: #333; color: #fff; border: none; border-radius: 4px; font-size: 12px; padding: 0 15px;">Áp
+                                placeholder="Nhập mã giảm giá">
+                            <button type="submit" class="button btn-apply" name="apply_coupon" value="Áp dụng">Áp
                                 dụng</button>
                         </div>
                     </div>
 
+                    <?php
+                        $total_regular = 0;
+                        $total_active = 0;
+                        foreach (WC()->cart->get_cart() as $cart_item) {
+                            $prod = $cart_item['data'];
+                            $qty = $cart_item['quantity'];
+                            $reg = $prod->get_regular_price() ? $prod->get_regular_price() : $prod->get_price();
+                            $total_regular += (float)$reg * $qty;
+                            $total_active += $cart_item['line_subtotal'];
+                        }
+                        $product_discount = $total_regular - $total_active;
+                        $coupon_discount = WC()->cart->get_discount_total();
+                        $total_discount = $product_discount + $coupon_discount;
+                        ?>
+
                     <div class="cart-totals-inner">
-                        <div class="row-price"
-                            style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Tạm tính:</span>
-                            <strong><?php wc_cart_totals_subtotal_html(); ?></strong>
+                        <h3 class="cart-total-title">Thông tin đơn hàng</h3>
+
+                        <div class="row-price">
+                            <span>Tổng tiền (giá niêm yết)</span>
+                            <strong><?php echo wc_price($total_regular); ?></strong>
                         </div>
-                        <?php foreach (WC()->cart->get_coupons() as $code => $coupon) : ?>
-                        <div class="row-price"
-                            style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #28a745;">
-                            <span>Giảm giá (<?php echo esc_html($code); ?>):</span>
-                            <span>-<?php wc_cart_totals_coupon_html($coupon); ?></span>
+
+                        <div class="row-price">
+                            <span>Tổng khuyến mãi</span>
+                            <strong style="color: #28a745;">-<?php echo wc_price($total_discount); ?></strong>
                         </div>
-                        <?php endforeach; ?>
+
+                        <?php if (! empty(WC()->cart->get_coupons())) : ?>
+                        <div class="fpt-applied-coupons">
+                            <?php foreach (WC()->cart->get_coupons() as $code => $coupon) : ?>
+                            <div class="fpt-coupon-card">
+                                <div class="cp-icon">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <div class="cp-content">
+                                    <div class="cp-title">Đã áp dụng mã
+                                        <strong><?php echo esc_html(strtoupper($code)); ?></strong></div>
+                                    <div class="cp-amount">
+                                        <span>-<?php echo wc_cart_totals_coupon_html($coupon); ?></span>
+                                    </div>
+                                    <a href="<?php echo esc_url(wc_get_cart_remove_coupon_url($code)); ?>"
+                                        class="cp-remove" title="Xóa mã">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="discount-details"
+                            style="padding-left: 15px; font-size: 13px; color: #666; margin-top: 10px;">
+                            <?php if ($product_discount > 0) : ?>
+                            <div class="row-price sub-row">
+                                <span>• Giảm giá sản phẩm</span>
+                                <span><?php echo wc_price($product_discount); ?></span>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if ($coupon_discount > 0) : ?>
+                            <div class="row-price sub-row">
+                                <span>• Voucher</span>
+                                <span><?php echo wc_price($coupon_discount); ?></span>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
                         <div class="row-price total"
-                            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px; margin-top: 10px;">
-                            <span style="font-weight: 700;">Tổng tiền:</span>
-                            <strong
-                                style="color: #cb1c22; font-size: 20px;"><?php wc_cart_totals_order_total_html(); ?></strong>
+                            style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                            <span>Cần thanh toán</span>
+                            <div style="text-align:right;">
+                                <strong
+                                    style="display:block; color: #cb1c22; font-size: 18px;"><?php wc_cart_totals_order_total_html(); ?></strong>
+                                <span style="font-size: 11px; color: #999; font-weight: 400;">(Đã bao gồm VAT)</span>
+                            </div>
                         </div>
                     </div>
-                    <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-fpt-primary full-width"
-                        style="display: block; text-align: center; color: #fff; padding: 12px; border-radius: 4px; font-weight: 700; margin-top: 20px;">Xác
-                        nhận đặt hàng</a>
+
+                    <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-fpt-primary full-width">
+                        Xác nhận đơn
+                    </a>
                 </div>
             </div>
         </div>
