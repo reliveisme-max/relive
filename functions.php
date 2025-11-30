@@ -485,3 +485,179 @@ function relive_ajax_like_review()
     wp_send_json_success(array('count' => $likes));
     die();
 }
+/* =============================================================
+   10. AJAX XÓA SẢN PHẨM GIỎ HÀNG & CẬP NHẬT SIDEBAR
+   ============================================================= */
+add_action('wp_ajax_relive_remove_cart_item', 'relive_ajax_remove_cart_item');
+add_action('wp_ajax_nopriv_relive_remove_cart_item', 'relive_ajax_remove_cart_item');
+
+function relive_ajax_remove_cart_item()
+{
+    // 1. Kiểm tra bảo mật
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'relive_cart_nonce')) {
+        wp_send_json_error(['message' => 'Lỗi bảo mật']);
+    }
+
+    $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
+
+    // 2. Xóa sản phẩm
+    if ($cart_item_key && WC()->cart->get_cart_item($cart_item_key)) {
+        WC()->cart->remove_cart_item($cart_item_key);
+    }
+
+    // 3. Tính toán lại
+    WC()->cart->calculate_totals();
+    WC()->cart->calculate_shipping();
+
+    if (WC()->cart->is_empty()) {
+        wp_send_json_success(['is_empty' => true, 'redirect' => wc_get_cart_url()]);
+    }
+
+    // 4. Render lại HTML Sidebar để JS cập nhật giá tiền
+    ob_start();
+
+    // --- COPY LOGIC TÍNH TOÁN ---
+    $total_regular = 0;
+    $total_active = 0;
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        $prod = $cart_item['data'];
+        $qty = $cart_item['quantity'];
+        $reg = $prod->get_regular_price() ? $prod->get_regular_price() : $prod->get_price();
+        $total_regular += (float)$reg * $qty;
+        $total_active += $cart_item['line_subtotal'];
+    }
+    $product_discount = $total_regular - $total_active;
+    $coupon_discount  = WC()->cart->get_discount_total();
+    $total_discount   = $product_discount + $coupon_discount;
+    // --- END LOGIC ---
+?>
+
+<div class="coupon-block">
+    <div class="cb-header"><i class="fas fa-ticket-alt"></i> Chọn hoặc nhập ưu đãi</div>
+    <div class="cb-input-group">
+        <input type="text" name="coupon_code" class="input-text" id="coupon_code" placeholder="Nhập mã giảm giá">
+        <button type="submit" class="button btn-apply" name="apply_coupon" value="Áp dụng">Áp dụng</button>
+    </div>
+</div>
+
+<div class="cart-totals-inner">
+    <h3 class="cart-total-title">Thông tin đơn hàng</h3>
+    <div class="row-price">
+        <span>Tổng tiền (giá niêm yết)</span>
+        <strong><?php echo wc_price($total_regular); ?></strong>
+    </div>
+    <div class="row-price">
+        <span>Tổng khuyến mãi</span>
+        <strong style="color: #28a745;">-<?php echo wc_price($total_discount); ?></strong>
+    </div>
+
+    <?php
+        $coupons = WC()->cart->get_coupons();
+        if (!empty($coupons)) :
+        ?>
+    <div class="fpt-applied-coupons">
+        <?php foreach ($coupons as $code => $coupon) :
+                    $code_str = (string)$code;
+                    $amount = WC()->cart->get_coupon_discount_amount($code_str);
+                    $amount_html = wc_price(abs($amount));
+                    $remove_url = add_query_arg('remove_coupon', urlencode($code_str), wc_get_cart_url());
+                ?>
+        <div class="fpt-coupon-card">
+            <div class="cp-icon"><i class="fas fa-ticket-alt"></i></div>
+            <div class="cp-content">
+                <div class="cp-title">Đã áp dụng mã <strong><?php echo esc_html(strtoupper($code_str)); ?></strong>
+                </div>
+                <div class="cp-bottom-row" style="display: flex; align-items: center; gap: 10px;">
+                    <div class="cp-amount"><span
+                            style="color: #cb1c22; font-weight: 700;">-<?php echo $amount_html; ?></span></div>
+                    <a href="<?php echo esc_url($remove_url); ?>" class="cp-remove"
+                        style="font-size: 13px; color: #288ad6;">[Xóa]</a>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <div class="discount-details" style="padding-left: 15px; font-size: 13px; color: #666; margin-top: 10px;">
+        <?php if ($product_discount > 0) : ?>
+        <div class="row-price sub-row"><span>• Giảm giá sản
+                phẩm</span><span>-<?php echo wc_price($product_discount); ?></span></div>
+        <?php endif; ?>
+        <?php if ($coupon_discount > 0) : ?>
+        <div class="row-price sub-row"><span>• Voucher giảm
+                giá</span><span>-<?php echo wc_price($coupon_discount); ?></span></div>
+        <?php endif; ?>
+    </div>
+
+    <div class="row-price total" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+        <span>Cần thanh toán</span>
+        <div style="text-align:right;">
+            <strong
+                style="display:block; color: #cb1c22; font-size: 18px;"><?php wc_cart_totals_order_total_html(); ?></strong>
+            <span style="font-size: 11px; color: #999; font-weight: 400;">(Đã bao gồm VAT)</span>
+        </div>
+    </div>
+</div>
+
+<a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="btn-fpt-primary full-width">Xác nhận đơn</a>
+
+<?php
+    $sidebar_html = ob_get_clean();
+
+    // 5. Trả về kết quả
+    wp_send_json_success([
+        'sidebar_html' => $sidebar_html,
+        'cart_count'   => WC()->cart->get_cart_contents_count()
+    ]);
+    die();
+}
+/* =============================================================
+   11. XỬ LÝ BỘ LỌC TRÊN URL (FIX LỖI FILTER KHÔNG CHẠY)
+   ============================================================= */
+add_action('woocommerce_product_query', 'relive_handle_custom_filter_query');
+
+function relive_handle_custom_filter_query($q)
+{
+    // Chỉ chạy trên frontend và query chính của WooCommerce
+    if (is_admin() || !$q->is_main_query()) return;
+
+    // Lấy tax_query hiện tại (nếu có) để giữ lại các điều kiện cũ (ví dụ: đang ở danh mục nào)
+    $tax_query = $q->get('tax_query');
+    if (!$tax_query) $tax_query = array();
+
+    // Quan hệ AND: Phải thỏa mãn tất cả điều kiện (vừa màu Đen VỪA 256GB)
+    $tax_query['relation'] = 'AND';
+
+    $has_filter = false;
+
+    // Duyệt qua tất cả tham số trên URL
+    foreach ($_GET as $key => $value) {
+        // Kiểm tra các tham số bắt đầu bằng filter_ (VD: filter_mau-sac)
+        if (strpos($key, 'filter_') === 0 && !empty($value)) {
+
+            // Tách lấy tên thuộc tính (bỏ chữ filter_) -> VD: mau-sac
+            $slug = str_replace('filter_', '', $key);
+
+            // Tên taxonomy trong Database luôn có tiền tố pa_ (VD: pa_mau-sac)
+            $taxonomy = 'pa_' . $slug;
+
+            // Nếu value là mảng thì giữ nguyên, nếu chuỗi thì tách ra
+            $terms = is_array($value) ? $value : explode(',', $value);
+
+            // Thêm điều kiện lọc vào query
+            $tax_query[] = array(
+                'taxonomy' => $taxonomy,
+                'field'    => 'slug',
+                'terms'    => $terms,
+                'operator' => 'IN' // Lấy sản phẩm nằm trong danh sách terms đã chọn
+            );
+            $has_filter = true;
+        }
+    }
+
+    // Nếu có lọc thì set lại tax_query cho WooCommerce hiểu
+    if ($has_filter) {
+        $q->set('tax_query', $tax_query);
+    }
+}
