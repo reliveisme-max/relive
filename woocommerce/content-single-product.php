@@ -38,7 +38,7 @@ if (! empty($spec_groups)) {
     foreach ($spec_groups as $group) {
         if (!empty($group['group_items'])) {
             foreach ($group['group_items'] as $item) {
-                if (!empty($item['is_highlight']) && count($highlight_specs) < 6) {
+                if (!empty($item['is_highlight']) && count($highlight_specs) < 3) {
                     $val = isset($item['spec_val']) ? $item['spec_val'] : '';
                     $icon = !empty($item['icon']) ? $item['icon'] : get_fpt_icon($item['label']);
                     $highlight_specs[] = array('label' => $item['label'], 'val' => $val, 'icon' => $icon);
@@ -99,15 +99,32 @@ if (! empty($spec_groups)) {
                     <?php if ($has_video = !empty($video_url)): ?><div class="g-item g-item-video" data-slide-index="1">
                         <div class="g-icon"><i class="fas fa-play-circle"></i></div><span>Video</span>
                     </div><?php endif; ?>
-                    <?php $video_offset = $has_video ? 1 : 0;
+                    <?php
+                    $video_offset = $has_video ? 1 : 0;
                     if ($attachment_ids) {
+                        $total_imgs = count($attachment_ids); // Tổng số ảnh trong thư viện
+                        $max_show   = 6; // Chỉ hiển thị tối đa 6 ô
                         $c = 0;
+
                         foreach ($attachment_ids as $idx => $att_id) {
-                            if ($c >= 6) break;
-                            echo '<div class="g-item g-thumb-img" data-slide-index="' . ($idx + 1 + $video_offset) . '">' . wp_get_attachment_image($att_id, 'thumbnail') . '</div>';
+                            // Nếu đã in đủ 6 hình thì dừng lại
+                            if ($c >= $max_show) break;
+
+                            echo '<div class="g-item g-thumb-img" data-slide-index="' . ($idx + 1 + $video_offset) . '">';
+                            echo wp_get_attachment_image($att_id, 'thumbnail');
+
+                            // LOGIC MỚI: Nếu đây là ô thứ 6 VÀ tổng ảnh nhiều hơn 6 -> Hiện số đếm
+                            if ($c === ($max_show - 1) && $total_imgs > $max_show) {
+                                // Số lượng còn lại = Tổng - (số ô đã hiện - 1 ô đang chứa số)
+                                $remaining = $total_imgs - ($max_show - 1);
+                                echo '<div class="more-count">+' . $remaining . '</div>';
+                            }
+
+                            echo '</div>';
                             $c++;
                         }
-                    } ?>
+                    }
+                    ?>
                     <?php if (!empty($box_images_ids)): ?><div class="g-item"
                         data-slide-index="<?php echo 1 + $video_offset + (is_array($attachment_ids) ? count($attachment_ids) : 0); ?>">
                         <div class="g-icon"><i class="fas fa-box-open"></i></div><span>Mở hộp</span>
@@ -147,6 +164,8 @@ if (! empty($spec_groups)) {
                     </div>
                     <div class="p-item"><i class="fas fa-shipping-fast"></i> <span>Giao hàng nhanh toàn quốc</span>
                     </div>
+                    <div class="p-item"><i class="fas fa-check-circle"></i> <span>Bảo hành chính hãng <b>2
+                                năm</b></span></div>
                 </div>
             </div>
         </div>

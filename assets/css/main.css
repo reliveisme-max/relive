@@ -3825,3 +3825,10 @@ a.zoom-trigger {
 .cp-remove:hover {
     text-decoration: underline;
 }
+/* --- ẨN MŨI TÊN KHI HẾT ẢNH (PRODUCT SLIDER) --- */
+.product-main-slider .p-next.swiper-button-disabled,
+.product-main-slider .p-prev.swiper-button-disabled {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
