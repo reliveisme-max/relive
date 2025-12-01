@@ -267,4 +267,54 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.btn-like-review', function(e) { e.preventDefault(); var $btn = $(this); if ($btn.hasClass('liked')) return; $.post(relive_ajax.url, { action: 'relive_like_review', comment_id: $btn.data('id'), nonce: relive_ajax.nonce }, function(res) { if (res.success) { $btn.addClass('liked').css('color', '#cb1c22').find('span').text('Thích (' + res.data.count + ')'); } }); });
 
     $('#btn-expand-content').on('click', function(e) { e.preventDefault(); var $content = $('#main-content-body'); if ($content.hasClass('expanded')) { $content.removeClass('expanded'); $(this).html('Xem thêm <i class="fas fa-caret-down"></i>'); $('html, body').animate({ scrollTop: $('#prod-description').offset().top - 80 }, 500); } else { $content.addClass('expanded'); $(this).html('Thu gọn <i class="fas fa-caret-up"></i>'); } });
+    // Hàm Cart: Xóa sản phẩm (Ajax) - FINAL UPDATE
+    function removeCartItem(key, $row) {
+        $row.css('opacity', '0.5').css('pointer-events', 'none');
+        
+        // Kiểm tra xem đang ở trang nào
+        var isCheckout = $('form.checkout').length > 0;
+
+        $.ajax({
+            url: relive_ajax.url,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'relive_remove_cart_item',
+                cart_item_key: key,
+                nonce: relive_ajax.cart_nonce,
+                is_checkout: isCheckout // Gửi cờ báo hiệu
+            },
+            success: function(res) {
+                if (res.success) {
+                    if (res.data.is_empty) {
+                        window.location.reload();
+                    } else {
+                        // Update Sidebar dùng chung
+                        $('.cart-sidebar').replaceWith(res.data.sidebar_html);
+
+                        if (isCheckout) {
+                            // Update List sản phẩm bên trái
+                            $('#fpt-checkout-left-list').html(res.data.checkout_left_html);
+                            // Trigger Woo update lại shipping/payment
+                            $('body').trigger('update_checkout');
+                        } else {
+                            // Trang Cart: Xóa dòng
+                            $row.fadeOut(300, function() { $(this).remove(); });
+                            $('.cart-item-block span').first().text('Giỏ hàng (' + res.data.cart_count + ' sản phẩm)');
+                        }
+                        
+                        $('.cart-count').text(res.data.cart_count);
+                        $('#fpt-delete-modal').removeClass('open');
+                    }
+                } else {
+                    alert(res.data.message || 'Lỗi không xác định');
+                    window.location.reload();
+                }
+            },
+            error: function() {
+                alert('Lỗi kết nối server.');
+                window.location.reload();
+            }
+        });
+    }
 });
