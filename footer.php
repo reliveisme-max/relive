@@ -102,6 +102,24 @@
     </div>
 </div>
 
+<div id="fpt-error-popup" class="fpt-cart-overlay">
+    <div class="fpt-cart-box">
+        <div class="fc-icon" style="color: #dc3545;"> <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="fc-message">Vui lòng kiểm tra lại</div>
+
+        <div id="fpt-error-content"
+            style="text-align: left; font-size: 13px; margin: 10px 0 20px; color: #fff; width: 100%;"></div>
+
+        <div class="fc-actions" style="width: 100%;">
+            <span class="btn-view-cart" onclick="document.getElementById('fpt-error-popup').classList.remove('open')"
+                style="cursor:pointer; display:block; width:auto; text-align:center;">
+                Đã hiểu
+            </span>
+        </div>
+    </div>
+</div>
+
 </div><?php wp_footer(); ?>
 
 </body>

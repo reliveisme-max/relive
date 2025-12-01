@@ -317,4 +317,143 @@ jQuery(document).ready(function($) {
             }
         });
     }
+    /* ==========================================================================
+       5. API ĐỊA CHÍNH VIỆT NAM (V1 FULL - V2 NO WARD)
+       ========================================================================== */
+    if ($('form.checkout').length > 0) {
+        var citySelect = $('#billing_city');
+        var districtSelect = $('#billing_district');
+        var wardSelect = $('#billing_ward');
+        var wardFieldWrapper = $('#billing_ward_field'); // Khung bao ngoài ô Xã
+
+        var globalProvincesData = [];
+
+        function refreshSelect(element) {
+            element.prop('disabled', false);
+            if (element.hasClass('select2-hidden-accessible') || element.data('select2')) {
+                element.select2('destroy').select2();
+            }
+        }
+
+        function loadProvincesData(version) {
+            var apiUrl = 'https://provinces.open-api.vn/api/?depth=3'; // V1 (Full)
+
+            if (version === 'v2') {
+                apiUrl = 'https://provinces.open-api.vn/api/v2/?depth=2'; // V2 (Chỉ Tỉnh/Huyện)
+                
+                // --- ẨN Ô PHƯỜNG/XÃ ---
+                wardFieldWrapper.hide(); 
+                
+                // Điền giá trị ảo để qua mặt validate bắt buộc của WooCommerce
+                wardSelect.html('<option value="Không có" selected>Không có</option>');
+            } else {
+                // --- HIỆN LẠI Ô PHƯỜNG/XÃ (V1) ---
+                wardFieldWrapper.show();
+                wardSelect.html('<option value="">Chọn Phường / Xã</option>');
+            }
+
+            // Reset Tỉnh/Huyện
+            citySelect.html('<option value="">Đang tải...</option>').prop('disabled', true);
+            districtSelect.html('<option value="">Chọn Quận / Huyện</option>').prop('disabled', true);
+
+            $.getJSON(apiUrl, function (data) {
+                globalProvincesData = data;
+                citySelect.html('<option value="">Chọn Tỉnh / Thành phố</option>');
+                $.each(data, function (key, val) {
+                    citySelect.append('<option value="' + val.name + '" data-code="' + val.code + '">' + val.name + '</option>');
+                });
+                refreshSelect(citySelect);
+            })
+            .fail(function() {
+                citySelect.html('<option value="">Lỗi tải dữ liệu</option>');
+                refreshSelect(citySelect);
+            });
+        }
+
+        // Mặc định chạy V1
+        loadProvincesData('v1');
+
+        // Đổi chế độ
+        $(document).on('change', 'input[name="billing_address_mode"]', function() {
+            loadProvincesData($(this).val());
+        });
+
+        // Chọn Tỉnh -> Load Huyện
+        citySelect.change(function () {
+            var selectedCityName = $(this).val();
+            var selectedCity = globalProvincesData.find(item => item.name === selectedCityName);
+            
+            districtSelect.html('<option value="">Chọn Quận / Huyện</option>').prop('disabled', true);
+
+            // Nếu đang ở V1 thì reset luôn ô Xã
+            if (wardFieldWrapper.is(':visible')) {
+                wardSelect.html('<option value="">Chọn Phường / Xã</option>').prop('disabled', true);
+                refreshSelect(wardSelect);
+            }
+
+            if (selectedCity) {
+                // API V1 dùng districts, V2 depth=2 cũng trả về districts
+                var children = selectedCity.districts || []; 
+                $.each(children, function (key, val) {
+                    districtSelect.append('<option value="' + val.name + '" data-code="' + val.code + '">' + val.name + '</option>');
+                });
+                refreshSelect(districtSelect);
+            }
+            $('body').trigger('update_checkout');
+        });
+
+        // Chọn Huyện -> Load Xã (Chỉ chạy nếu là V1)
+        districtSelect.change(function () {
+            // Nếu ô Xã đang bị ẩn (V2) thì không làm gì cả
+            if (!wardFieldWrapper.is(':visible')) {
+                $('body').trigger('update_checkout');
+                return;
+            }
+
+            var selectedCityName = citySelect.val();
+            var selectedDistrictName = $(this).val();
+            var selectedCity = globalProvincesData.find(item => item.name === selectedCityName);
+
+            if (selectedCity) {
+                 var selectedDistrict = selectedCity.districts.find(item => item.name === selectedDistrictName);
+                 wardSelect.html('<option value="">Chọn Phường / Xã</option>');
+                 
+                 if (selectedDistrict && selectedDistrict.wards) {
+                    $.each(selectedDistrict.wards, function (key, val) {
+                        wardSelect.append('<option value="' + val.name + '">' + val.name + '</option>');
+                    });
+                    refreshSelect(wardSelect);
+                }
+            }
+            $('body').trigger('update_checkout');
+        });
+        
+        wardSelect.change(function(){ $('body').trigger('update_checkout'); });
+    }
+    /* ==========================================================================
+       6. HIỆN POPUP LỖI THANH TOÁN (CUSTOM POPUP)
+       ========================================================================== */
+    $(document.body).on('checkout_error', function () {
+        var $errorBox = $('.woocommerce-NoticeGroup-checkout');
+        var $errorList = $errorBox.find('.woocommerce-error li'); // Tìm các dòng lỗi li
+        
+        // Nếu tìm thấy lỗi
+        if($errorList.length > 0) {
+            var errorHtml = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            
+            $errorList.each(function() {
+                // Lấy nội dung chữ, bỏ các thẻ html thừa nếu có
+                var text = $(this).text();
+                errorHtml += '<li style="margin-bottom: 5px; display:flex; gap:8px;"><i class="fas fa-times-circle" style="color:#ff6b6b; margin-top:3px;"></i> ' + text + '</li>';
+            });
+            errorHtml += '</ul>';
+
+            // Đổ nội dung vào Popup tự làm
+            $('#fpt-error-content').html(errorHtml);
+            $('#fpt-error-popup').addClass('open');
+            
+            // Xóa box lỗi mặc định của Woo đi cho đỡ vướng
+            $errorBox.hide(); 
+        }
+    });
 });

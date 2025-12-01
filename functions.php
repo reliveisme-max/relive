@@ -464,8 +464,6 @@ function relive_ajax_remove_cart_item()
                 class="mini-prod-price"><?php echo WC()->cart->get_product_subtotal($_prod, $item['quantity']); ?></span>
         </div>
     </div>
-    <a href="javascript:void(0)" class="ajax-remove-item" data-key="<?php echo esc_attr($key); ?>"
-        style="position: absolute; top: 0; right: 0; color: #999; padding: 5px;"><i class="fas fa-trash-alt"></i></a>
 </div>
 <?php
             }
@@ -503,33 +501,96 @@ function relive_handle_custom_filter_query($q)
 }
 
 // 12. CHECKOUT CLEANUP
+// --- TÙY BIẾN FORM THANH TOÁN (SẮP XẾP & THÊM TRƯỜNG ĐỊA CHỈ) ---
 add_filter('woocommerce_checkout_fields', 'relive_custom_checkout_fields');
 function relive_custom_checkout_fields($fields)
 {
+    // 1. Xóa các trường không cần thiết
     unset($fields['billing']['billing_company']);
     unset($fields['billing']['billing_country']);
     unset($fields['billing']['billing_postcode']);
     unset($fields['billing']['billing_state']);
-    unset($fields['billing']['billing_address_2']);
-    unset($fields['shipping']);
-    $fields['billing']['billing_first_name']['priority'] = 10;
-    $fields['billing']['billing_first_name']['label'] = 'Họ và tên';
-    $fields['billing']['billing_first_name']['placeholder'] = 'Nhập họ và tên (bắt buộc)';
-    $fields['billing']['billing_first_name']['class'] = array('form-row-wide');
     unset($fields['billing']['billing_last_name']);
-    $fields['billing']['billing_phone']['priority'] = 20;
+    unset($fields['shipping']);
+
+    // 2. Chỉnh sửa & Sắp xếp
+
+    // --- HỌ VÀ TÊN ---
+    $fields['billing']['billing_first_name']['label'] = 'Họ và tên';
+    $fields['billing']['billing_first_name']['placeholder'] = 'Nhập họ tên (bắt buộc)';
+    $fields['billing']['billing_first_name']['class'] = array('form-row-first');
+    $fields['billing']['billing_first_name']['priority'] = 10;
+
+    // --- SỐ ĐIỆN THOẠI ---
     $fields['billing']['billing_phone']['label'] = 'Số điện thoại';
     $fields['billing']['billing_phone']['placeholder'] = 'Nhập số điện thoại (bắt buộc)';
-    $fields['billing']['billing_phone']['class'] = array('form-row-wide');
-    $fields['billing']['billing_email']['priority'] = 30;
+    $fields['billing']['billing_phone']['class'] = array('form-row-last');
+    $fields['billing']['billing_phone']['priority'] = 20;
+
+    // --- EMAIL ---
     $fields['billing']['billing_email']['label'] = 'Email';
-    $fields['billing']['billing_email']['required'] = false;
-    $fields['billing']['billing_email']['placeholder'] = 'Nhập email (không bắt buộc)';
+    $fields['billing']['billing_email']['placeholder'] = 'Nhập email (để nhận hóa đơn)';
     $fields['billing']['billing_email']['class'] = array('form-row-wide');
-    $fields['billing']['billing_address_1']['priority'] = 40;
-    $fields['billing']['billing_address_1']['label'] = 'Địa chỉ nhận hàng';
-    $fields['billing']['billing_address_1']['placeholder'] = 'Số nhà, tên đường...';
+    $fields['billing']['billing_email']['priority'] = 30;
+
+    // === MỚI: TÙY CHỌN PHIÊN BẢN ĐỊA CHỈ ===
+    $fields['billing']['billing_address_mode'] = array(
+        'type'    => 'radio',
+        'label'   => 'Chọn bộ dữ liệu hành chính:',
+        'required' => true,
+        'class'   => array('form-row-wide', 'address-mode-selector'),
+        'options' => array(
+            'v1' => 'Địa chỉ Cũ (Trước sáp nhập)',
+            'v2' => 'Địa chỉ Mới (Sau sáp nhập)',
+        ),
+        'default' => 'v1', // Mặc định dùng bản cũ cho ổn định
+        'priority' => 35,
+    );
+
+    // --- TỈNH / THÀNH PHỐ ---
+    $fields['billing']['billing_city']['type'] = 'select';
+    $fields['billing']['billing_city']['label'] = 'Tỉnh / Thành phố';
+    $fields['billing']['billing_city']['options'] = array('' => 'Đang tải dữ liệu...');
+    $fields['billing']['billing_city']['class'] = array('form-row-wide', 'address-select-field');
+    $fields['billing']['billing_city']['priority'] = 40;
+
+    // --- QUẬN / HUYỆN ---
+    $fields['billing']['billing_district'] = array(
+        'type'        => 'select',
+        'label'       => 'Quận / Huyện',
+        'required'    => true,
+        'class'       => array('form-row-first', 'address-select-field'),
+        'priority'    => 50,
+        'options'     => array('' => 'Chọn Quận / Huyện'),
+    );
+
+    // --- PHƯỜNG / XÃ ---
+    $fields['billing']['billing_ward'] = array(
+        'type'        => 'select',
+        'label'       => 'Phường / Xã',
+        'required'    => true,
+        'class'       => array('form-row-last', 'address-select-field'),
+        'priority'    => 60,
+        'options'     => array('' => 'Chọn Phường / Xã'),
+    );
+
+    // --- ĐỊA CHỈ CỤ THỂ ---
+    $fields['billing']['billing_address_1']['label'] = 'Số nhà, tên đường';
+    $fields['billing']['billing_address_1']['placeholder'] = 'Ví dụ: Số 10, Ngõ 50...';
+    $fields['billing']['billing_address_1']['class'] = array('form-row-wide');
+    $fields['billing']['billing_address_1']['priority'] = 70;
+
+    unset($fields['billing']['billing_address_2']);
+
     return $fields;
+}
+
+// Lưu Quận/Huyện & Phường/Xã vào đơn hàng
+add_action('woocommerce_checkout_update_order_meta', 'relive_save_new_checkout_fields');
+function relive_save_new_checkout_fields($order_id)
+{
+    if (!empty($_POST['billing_district'])) update_post_meta($order_id, '_billing_district', sanitize_text_field($_POST['billing_district']));
+    if (!empty($_POST['billing_ward'])) update_post_meta($order_id, '_billing_ward', sanitize_text_field($_POST['billing_ward']));
 }
 
 add_filter('woocommerce_default_address_fields', 'relive_override_default_address_fields');
@@ -544,4 +605,164 @@ add_filter('woocommerce_order_button_text', 'relive_custom_order_button_text');
 function relive_custom_order_button_text($order_button_text)
 {
     return 'HOÀN TẤT ĐẶT HÀNG';
+}
+/* =========================================
+   TÍCH HỢP VNPAY (THEME VERSION - FIX HOOK)
+   ========================================= */
+
+// Sử dụng hook 'init' thay vì 'plugins_loaded' vì theme load sau plugin
+add_action('init', 'relive_init_vnpay_gateway_theme');
+
+function relive_init_vnpay_gateway_theme()
+{
+    // Nếu WooCommerce chưa chạy hoặc chưa có class Gateway thì dừng
+    if (!class_exists('WC_Payment_Gateway')) return;
+
+    // Định nghĩa Class VNPAY
+    class WC_Gateway_Relive_VNPAY extends WC_Payment_Gateway
+    {
+        public function __construct()
+        {
+            $this->id                 = 'relive_vnpay';
+            $this->icon               = '';
+            $this->has_fields         = false;
+            $this->method_title       = 'VNPAY-QR (Relive Real)';
+            $this->method_description = 'Thanh toán thực qua VNPAY (Hỗ trợ Sandbox/Production).';
+
+            $this->init_form_fields();
+            $this->init_settings();
+
+            $this->title       = $this->get_option('title');
+            $this->description = $this->get_option('description');
+            $this->enabled     = $this->get_option('enabled');
+
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+        }
+
+        public function init_form_fields()
+        {
+            $this->form_fields = array(
+                'enabled' => array(
+                    'title'   => 'Kích hoạt',
+                    'type'    => 'checkbox',
+                    'label'   => 'Bật thanh toán VNPAY',
+                    'default' => 'yes'
+                ),
+                'title' => array(
+                    'title'       => 'Tiêu đề',
+                    'type'        => 'text',
+                    'default'     => 'Thanh toán qua VNPAY-QR',
+                ),
+                'description' => array(
+                    'title'       => 'Mô tả',
+                    'type'        => 'textarea',
+                    'default'     => 'Quét mã QR từ ứng dụng ngân hàng hoặc ví VNPAY.',
+                ),
+                'tmn_code' => array(
+                    'title'       => 'Terminal ID (TmnCode)',
+                    'type'        => 'text',
+                    'description' => 'Mã website do VNPAY cấp.',
+                ),
+                'hash_secret' => array(
+                    'title'       => 'Secret Key (HashSecret)',
+                    'type'        => 'password',
+                    'description' => 'Chuỗi bí mật tạo checksum.',
+                ),
+                'vnp_url' => array(
+                    'title'       => 'VNPAY URL',
+                    'type'        => 'text',
+                    'default'     => 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
+                    'description' => 'Link Sandbox: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
+                ),
+            );
+        }
+
+        /**
+         * XỬ LÝ THANH TOÁN (TẠO URL & REDIRECT)
+         */
+        public function process_payment($order_id)
+        {
+            $order = wc_get_order($order_id);
+
+            $vnp_TmnCode    = $this->get_option('tmn_code');
+            $vnp_HashSecret = $this->get_option('hash_secret');
+            $vnp_Url        = $this->get_option('vnp_url');
+
+            if (empty($vnp_TmnCode) || empty($vnp_HashSecret)) {
+                wc_add_notice('Lỗi: Chưa cấu hình VNPAY (Thiếu Terminal ID hoặc Secret Key).', 'error');
+                return;
+            }
+
+            $vnp_TxnRef    = $order_id;
+            $vnp_OrderInfo = 'Thanh toan don hang ' . $order_id;
+            $vnp_OrderType = 'other';
+            $vnp_Amount    = $order->get_total() * 100;
+            $vnp_Locale    = 'vn';
+            $vnp_IpAddr    = $_SERVER['REMOTE_ADDR'];
+            $vnp_ReturnUrl = $this->get_return_url($order);
+
+            $inputData = array(
+                "vnp_Version"    => "2.1.0",
+                "vnp_TmnCode"    => $vnp_TmnCode,
+                "vnp_Amount"     => $vnp_Amount,
+                "vnp_Command"    => "pay",
+                "vnp_CreateDate" => date('YmdHis'),
+                "vnp_CurrCode"   => "VND",
+                "vnp_IpAddr"     => $vnp_IpAddr,
+                "vnp_Locale"     => $vnp_Locale,
+                "vnp_OrderInfo"  => $vnp_OrderInfo,
+                "vnp_OrderType"  => $vnp_OrderType,
+                "vnp_ReturnUrl"  => $vnp_ReturnUrl,
+                "vnp_TxnRef"     => $vnp_TxnRef,
+            );
+
+            ksort($inputData);
+            $query = "";
+            $i = 0;
+            $hashdata = "";
+            foreach ($inputData as $key => $value) {
+                if ($i == 1) {
+                    $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+                } else {
+                    $hashdata .= urlencode($key) . "=" . urlencode($value);
+                    $i = 1;
+                }
+                $query .= urlencode($key) . "=" . urlencode($value) . '&';
+            }
+
+            $vnp_Url = $vnp_Url . "?" . $query;
+            if (isset($vnp_HashSecret)) {
+                $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+                $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+            }
+
+            return array(
+                'result'   => 'success',
+                'redirect' => $vnp_Url
+            );
+        }
+    }
+
+    // Đăng ký Gateway vào list của Woo
+    add_filter('woocommerce_payment_gateways', 'relive_add_vnpay_gateway_to_woo');
+}
+
+function relive_add_vnpay_gateway_to_woo($methods)
+{
+    $methods[] = 'WC_Gateway_Relive_VNPAY';
+    return $methods;
+}
+/* =========================================
+   LƯU META DATA TỪ GIỎ HÀNG SANG ĐƠN HÀNG
+   (Để trang Thank You biết đâu là sản phẩm mua kèm)
+   ========================================= */
+add_action('woocommerce_checkout_create_order_line_item', 'relive_save_cart_meta_to_order_item', 10, 4);
+function relive_save_cart_meta_to_order_item($item, $cart_item_key, $values, $order)
+{
+    if (isset($values['relive_is_addon'])) {
+        $item->add_meta_data('relive_is_addon', $values['relive_is_addon']);
+    }
+    if (isset($values['relive_parent_id'])) {
+        $item->add_meta_data('relive_parent_id', $values['relive_parent_id']);
+    }
 }
