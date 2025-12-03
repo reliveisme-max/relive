@@ -10,7 +10,7 @@ defined('ABSPATH') || exit;
     <?php if (function_exists('relive_breadcrumbs')) relive_breadcrumbs(); ?>
 </div>
 
-<div class="container fpt-cart-page">
+<div class="fpt-cart-page">
 
     <div class="cart-item-block empty-cart-box">
         <div class="ec-content">

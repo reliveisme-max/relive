@@ -318,98 +318,70 @@ jQuery(document).ready(function($) {
         });
     }
     /* ==========================================================================
-       5. API ĐỊA CHÍNH VIỆT NAM (V1 FULL - V2 NO WARD)
+       5. API ĐỊA CHÍNH VIỆT NAM (AUTO FILL SAVED DATA)
        ========================================================================== */
-    if ($('form.checkout').length > 0) {
+    if ($('form.checkout, .woocommerce-address-fields').length > 0) {
         var citySelect = $('#billing_city');
         var districtSelect = $('#billing_district');
         var wardSelect = $('#billing_ward');
-        var wardFieldWrapper = $('#billing_ward_field'); // Khung bao ngoài ô Xã
-
         var globalProvincesData = [];
 
+        // Lấy dữ liệu đã lưu (từ PHP truyền sang)
+        var savedCity = (typeof relive_saved_address !== 'undefined') ? relive_saved_address.city : '';
+        var savedDistrict = (typeof relive_saved_address !== 'undefined') ? relive_saved_address.district : '';
+        var savedWard = (typeof relive_saved_address !== 'undefined') ? relive_saved_address.ward : '';
+
         function refreshSelect(element) {
-            element.prop('disabled', false);
             if (element.hasClass('select2-hidden-accessible') || element.data('select2')) {
-                element.select2('destroy').select2();
+                element.trigger('change.select2'); // Refresh giao diện Select2
             }
         }
 
-        function loadProvincesData(version) {
-            var apiUrl = 'https://provinces.open-api.vn/api/?depth=3'; // V1 (Full)
-
-            if (version === 'v2') {
-                apiUrl = 'https://provinces.open-api.vn/api/v2/?depth=2'; // V2 (Chỉ Tỉnh/Huyện)
-                
-                // --- ẨN Ô PHƯỜNG/XÃ ---
-                wardFieldWrapper.hide(); 
-                
-                // Điền giá trị ảo để qua mặt validate bắt buộc của WooCommerce
-                wardSelect.html('<option value="Không có" selected>Không có</option>');
-            } else {
-                // --- HIỆN LẠI Ô PHƯỜNG/XÃ (V1) ---
-                wardFieldWrapper.show();
-                wardSelect.html('<option value="">Chọn Phường / Xã</option>');
-            }
-
-            // Reset Tỉnh/Huyện
-            citySelect.html('<option value="">Đang tải...</option>').prop('disabled', true);
-            districtSelect.html('<option value="">Chọn Quận / Huyện</option>').prop('disabled', true);
-
-            $.getJSON(apiUrl, function (data) {
-                globalProvincesData = data;
-                citySelect.html('<option value="">Chọn Tỉnh / Thành phố</option>');
-                $.each(data, function (key, val) {
-                    citySelect.append('<option value="' + val.name + '" data-code="' + val.code + '">' + val.name + '</option>');
-                });
-                refreshSelect(citySelect);
-            })
-            .fail(function() {
-                citySelect.html('<option value="">Lỗi tải dữ liệu</option>');
-                refreshSelect(citySelect);
+        // Tải dữ liệu Tỉnh
+        $.getJSON('https://provinces.open-api.vn/api/?depth=3', function (data) {
+            globalProvincesData = data;
+            
+            // 1. Đổ dữ liệu Tỉnh
+            citySelect.html('<option value="">Chọn Tỉnh / Thành phố</option>');
+            $.each(data, function (key, val) {
+                var selected = (val.name === savedCity) ? 'selected' : '';
+                citySelect.append('<option value="' + val.name + '" data-code="' + val.code + '" '+selected+'>' + val.name + '</option>');
             });
-        }
+            citySelect.prop('disabled', false);
+            refreshSelect(citySelect);
 
-        // Mặc định chạy V1
-        loadProvincesData('v1');
-
-        // Đổi chế độ
-        $(document).on('change', 'input[name="billing_address_mode"]', function() {
-            loadProvincesData($(this).val());
+            // 2. Nếu có Tỉnh đã lưu -> Kích hoạt load Huyện ngay lập tức
+            if (savedCity) {
+                citySelect.trigger('change');
+            }
         });
 
-        // Chọn Tỉnh -> Load Huyện
+        // Sự kiện thay đổi Tỉnh
         citySelect.change(function () {
             var selectedCityName = $(this).val();
             var selectedCity = globalProvincesData.find(item => item.name === selectedCityName);
             
-            districtSelect.html('<option value="">Chọn Quận / Huyện</option>').prop('disabled', true);
+            districtSelect.html('<option value="">Chọn Quận / Huyện</option>');
+            wardSelect.html('<option value="">Chọn Phường / Xã</option>');
 
-            // Nếu đang ở V1 thì reset luôn ô Xã
-            if (wardFieldWrapper.is(':visible')) {
-                wardSelect.html('<option value="">Chọn Phường / Xã</option>').prop('disabled', true);
-                refreshSelect(wardSelect);
-            }
-
-            if (selectedCity) {
-                // API V1 dùng districts, V2 depth=2 cũng trả về districts
-                var children = selectedCity.districts || []; 
-                $.each(children, function (key, val) {
-                    districtSelect.append('<option value="' + val.name + '" data-code="' + val.code + '">' + val.name + '</option>');
+            if (selectedCity && selectedCity.districts) {
+                $.each(selectedCity.districts, function (key, val) {
+                    var selected = (val.name === savedDistrict) ? 'selected' : '';
+                    districtSelect.append('<option value="' + val.name + '" data-code="' + val.code + '" '+selected+'>' + val.name + '</option>');
                 });
+                districtSelect.prop('disabled', false);
                 refreshSelect(districtSelect);
+
+                // 3. Nếu có Huyện đã lưu -> Kích hoạt load Xã
+                if (savedDistrict) {
+                    districtSelect.trigger('change');
+                    savedDistrict = ''; // Reset để lần sau chọn tay không bị auto nữa
+                }
             }
-            $('body').trigger('update_checkout');
         });
 
-        // Chọn Huyện -> Load Xã (Chỉ chạy nếu là V1)
+        // Sự kiện thay đổi Huyện
         districtSelect.change(function () {
-            // Nếu ô Xã đang bị ẩn (V2) thì không làm gì cả
-            if (!wardFieldWrapper.is(':visible')) {
-                $('body').trigger('update_checkout');
-                return;
-            }
-
             var selectedCityName = citySelect.val();
             var selectedDistrictName = $(this).val();
             var selectedCity = globalProvincesData.find(item => item.name === selectedCityName);
@@ -420,40 +392,127 @@ jQuery(document).ready(function($) {
                  
                  if (selectedDistrict && selectedDistrict.wards) {
                     $.each(selectedDistrict.wards, function (key, val) {
-                        wardSelect.append('<option value="' + val.name + '">' + val.name + '</option>');
+                        var selected = (val.name === savedWard) ? 'selected' : '';
+                        wardSelect.append('<option value="' + val.name + '" '+selected+'>' + val.name + '</option>');
                     });
+                    wardSelect.prop('disabled', false);
                     refreshSelect(wardSelect);
                 }
             }
-            $('body').trigger('update_checkout');
         });
-        
-        wardSelect.change(function(){ $('body').trigger('update_checkout'); });
     }
     /* ==========================================================================
-       6. HIỆN POPUP LỖI THANH TOÁN (CUSTOM POPUP)
+       6. HỆ THỐNG POPUP THÔNG BÁO (ERROR + SUCCESS)
        ========================================================================== */
-    $(document.body).on('checkout_error', function () {
-        var $errorBox = $('.woocommerce-NoticeGroup-checkout');
-        var $errorList = $errorBox.find('.woocommerce-error li'); // Tìm các dòng lỗi li
+    
+    // Hàm hiển thị Popup chung (Linh hoạt icon/màu sắc)
+    function showFptNoticePopup(type, htmlContent) {
+        var $popup = $('#fpt-error-popup');
+        var $iconBox = $popup.find('.fc-icon');
+        var $titleBox = $popup.find('.fc-message');
+        var $contentBox = $('#fpt-error-content');
         
-        // Nếu tìm thấy lỗi
-        if($errorList.length > 0) {
-            var errorHtml = '<ul style="list-style: none; padding: 0; margin: 0;">';
-            
-            $errorList.each(function() {
-                // Lấy nội dung chữ, bỏ các thẻ html thừa nếu có
-                var text = $(this).text();
-                errorHtml += '<li style="margin-bottom: 5px; display:flex; gap:8px;"><i class="fas fa-times-circle" style="color:#ff6b6b; margin-top:3px;"></i> ' + text + '</li>';
-            });
-            errorHtml += '</ul>';
+        if (type === 'success') {
+            $iconBox.css('color', '#28a745').html('<i class="fas fa-check-circle"></i>');
+            $titleBox.text('Thành công!');
+        } else {
+            $iconBox.css('color', '#cb1c22').html('<i class="fas fa-exclamation-triangle"></i>');
+            $titleBox.text('Rất tiếc, đã có lỗi!');
+        }
+        
+        $contentBox.html(htmlContent);
+        $popup.addClass('open').css('display', 'flex');
+        
+        // Tự đóng sau 3s nếu là thành công
+        if (type === 'success') {
+            setTimeout(function() { $popup.removeClass('open'); }, 3000);
+        }
+    }
+    
+    // Hàm format nội dung
+    function formatNoticeHtml($listItems, isSuccess = false) {
+        var html = '<ul style="list-style: none; padding: 0; margin: 0; text-align: left;">';
+        $listItems.each(function() {
+            var text = $(this).text();
+            var icon = isSuccess ? 'fa-check' : 'fa-times-circle';
+            var color = isSuccess ? '#28a745' : '#ff4d4f';
+            html += '<li style="margin-bottom: 8px; display:flex; align-items:flex-start; gap:10px; font-size:14px;">' + 
+                    '<i class="fas '+icon+'" style="color:'+color+'; margin-top:3px; flex-shrink:0;"></i>' + 
+                    '<span>' + text + '</span></li>';
+        });
+        html += '</ul>';
+        return html;
+    }
 
-            // Đổ nội dung vào Popup tự làm
-            $('#fpt-error-content').html(errorHtml);
-            $('#fpt-error-popup').addClass('open');
+    // 1. BẮT LỖI AJAX (Checkout)
+    $(document.body).on('checkout_error', function () {
+        var $errorBox = $('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message');
+        var $items = $errorBox.find('li');
+        if ($items.length > 0) {
+            showFptNoticePopup('error', formatNoticeHtml($items));
+            $errorBox.hide();
+        }
+    });
+
+    // 2. BẮT THÔNG BÁO TĨNH (Khi reload trang Account)
+    var $staticError = $('.woocommerce-error'); 
+    var $staticSuccess = $('.woocommerce-message');
+
+    // Xử lý Lỗi
+    if ($staticError.length > 0 && $('form.checkout').length === 0) {
+        var $items = $staticError.find('li');
+        if ($items.length > 0) {
+            showFptNoticePopup('error', formatNoticeHtml($items));
+            $staticError.hide();
+        }
+    }
+    
+    // Xử lý Thành công (Ví dụ: Đổi mật khẩu xong)
+    if ($staticSuccess.length > 0) {
+        var content = '';
+        // Đôi khi Woo để text trực tiếp, đôi khi trong li
+        if ($staticSuccess.find('li').length > 0) {
+             content = formatNoticeHtml($staticSuccess.find('li'), true);
+        } else {
+             content = '<div style="display:flex; gap:10px; align-items:center; justify-content:center;"><i class="fas fa-check" style="color:#28a745;"></i> <span>' + $staticSuccess.text().trim() + '</span></div>';
+        }
+        
+        showFptNoticePopup('success', content);
+        $staticSuccess.hide();
+    }
+    
+    // Đóng Popup
+    $(document).on('click', '#fpt-error-popup, .btn-view-cart', function(e) {
+        if (e.target === this || $(this).hasClass('btn-view-cart')) {
+            $('#fpt-error-popup').removeClass('open').css('display', 'none');
+        }
+    });
+    /* ==========================================================================
+       7. PREVIEW AVATAR (MY ACCOUNT) - FINAL FIX (XÓA SRCSET)
+       ========================================================================== */
+    $(document).on('change', '#account_avatar', function(e) {
+        var file = e.target.files[0];
+        
+        if (file) {
+            // Kiểm tra định dạng
+            if (!file.type.match('image.*')) {
+                alert('Vui lòng chọn file ảnh (jpg, png...)');
+                return;
+            }
+
+            var reader = new FileReader();
             
-            // Xóa box lỗi mặc định của Woo đi cho đỡ vướng
-            $errorBox.hide(); 
+            reader.onload = function(e) {
+                var $img = $('.avatar-preview img');
+                
+                // QUAN TRỌNG: Xóa srcset để trình duyệt nhận ảnh mới ngay lập tức
+                $img.removeAttr('srcset'); 
+                
+                // Gán ảnh mới vào
+                $img.attr('src', e.target.result);
+            }
+            
+            reader.readAsDataURL(file);
         }
     });
 });

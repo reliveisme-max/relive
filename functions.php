@@ -766,3 +766,269 @@ function relive_save_cart_meta_to_order_item($item, $cart_item_key, $values, $or
         $item->add_meta_data('relive_parent_id', $values['relive_parent_id']);
     }
 }
+/* =================================================================
+   XỬ LÝ TÀI KHOẢN: BỎ MẬT KHẨU CŨ + LƯU AVATAR/SĐT (MẠNH MẼ NHẤT)
+   ================================================================= */
+
+// 1. Thêm thuộc tính enctype cho form (để upload được ảnh)
+add_action('woocommerce_edit_account_form_tag', 'relive_add_enctype_edit_account');
+function relive_add_enctype_edit_account()
+{
+    echo ' enctype="multipart/form-data"';
+}
+
+// 2. CHẶN LỖI MẬT KHẨU (ĐỘ ƯU TIÊN 9999 - CHẠY SAU CÙNG)
+add_action('woocommerce_save_account_details_errors', 'relive_force_remove_password_errors', 9999, 2);
+function relive_force_remove_password_errors($errors, $user)
+{
+    // Chỉ chạy khi khách có nhập mật khẩu mới
+    if (! empty($_POST['password_1'])) {
+
+        // Xóa triệt để các lỗi liên quan đến mật khẩu cũ
+        $errors->remove('password_current_error');
+
+        // Duyệt qua tất cả lỗi, nếu thấy cái nào nhắc đến "password_current" thì xóa luôn
+        $error_codes = $errors->get_error_codes();
+        foreach ($error_codes as $code) {
+            if (strpos($code, 'password_current') !== false) {
+                $errors->remove($code);
+            }
+        }
+
+        // Kiểm tra lại mật khẩu mới có khớp không (WooCommerce có thể đã bỏ qua bước này do lỗi trên)
+        if (empty($_POST['password_2']) || $_POST['password_1'] !== $_POST['password_2']) {
+            $errors->add('password_mismatch', __('Mật khẩu xác nhận không khớp.', 'woocommerce'));
+        }
+    }
+}
+
+// 3. LƯU DỮ LIỆU: AVATAR, SĐT VÀ MẬT KHẨU MỚI
+add_action('woocommerce_save_account_details', 'relive_save_account_all_data_final', 10, 1);
+function relive_save_account_all_data_final($user_id)
+{
+
+    // A. Lưu Số điện thoại
+    if (isset($_POST['account_phone'])) {
+        update_user_meta($user_id, 'billing_phone', sanitize_text_field($_POST['account_phone']));
+    }
+
+    // B. Lưu Avatar (Upload ảnh)
+    if (! empty($_FILES['account_avatar']['name'])) {
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+        $attachment_id = media_handle_upload('account_avatar', 0);
+
+        if (! is_wp_error($attachment_id)) {
+            // Xóa ảnh cũ để dọn dẹp
+            $old_avatar_id = get_user_meta($user_id, 'relive_custom_avatar', true);
+            if ($old_avatar_id) wp_delete_attachment($old_avatar_id, true);
+
+            // Lưu ảnh mới
+            update_user_meta($user_id, 'relive_custom_avatar', $attachment_id);
+        }
+    }
+
+    // C. CẬP NHẬT MẬT KHẨU MỚI (GHI ĐÈ LOGIC CỦA WOO)
+    if (! empty($_POST['password_1']) && ! empty($_POST['password_2'])) {
+        if ($_POST['password_1'] === $_POST['password_2']) {
+
+            // Cập nhật mật khẩu trực tiếp vào Database WordPress
+            wp_set_password($_POST['password_1'], $user_id);
+
+            // Tự động Đăng nhập lại (Vì đổi pass xong WP sẽ đá user ra)
+            $user = get_user_by('id', $user_id);
+            wp_set_current_user($user_id, $user->user_login);
+            wp_set_auth_cookie($user_id);
+            do_action('wp_login', $user->user_login, $user);
+
+            // Xóa sạch các thông báo lỗi cũ (nếu còn sót lại) và báo thành công
+            wc_clear_notices();
+            wc_add_notice(__('Thông tin tài khoản và mật khẩu đã được cập nhật thành công.', 'woocommerce'), 'success');
+        }
+    }
+}
+
+// 4. HIỂN THỊ AVATAR (Giữ nguyên như cũ)
+add_filter('get_avatar', 'relive_custom_user_avatar_display', 10, 5);
+function relive_custom_user_avatar_display($avatar, $id_or_email, $size, $default, $alt)
+{
+    $user = false;
+    if (is_numeric($id_or_email)) $user = get_user_by('id', $id_or_email);
+    elseif (is_object($id_or_email) && !empty($id_or_email->user_id)) $user = get_user_by('id', $id_or_email->user_id);
+    else $user = get_user_by('email', $id_or_email);
+
+    if ($user && is_object($user)) {
+        $custom_avatar_id = get_user_meta($user->ID, 'relive_custom_avatar', true);
+        if ($custom_avatar_id) {
+            $avatar_url = wp_get_attachment_image_url($custom_avatar_id, 'thumbnail');
+            if ($avatar_url) {
+                $avatar = '<img alt="' . esc_attr($alt) . '" src="' . esc_url($avatar_url) . '" class="avatar avatar-' . esc_attr($size) . ' photo" height="' . esc_attr($size) . '" width="' . esc_attr($size) . '" style="border-radius:50%; object-fit:cover;" />';
+            }
+        }
+    }
+    return $avatar;
+}
+/* =========================================
+   TẮT KIỂM TRA MẬT KHẨU MẠNH (DISABLE PASSWORD STRENGTH)
+   ========================================= */
+
+// 1. Giảm yêu cầu độ mạnh xuống mức 0 (Chấp nhận mọi mật khẩu)
+add_filter('woocommerce_min_password_strength', 'relive_allow_weak_password');
+function relive_allow_weak_password()
+{
+    return 0;
+}
+
+// 2. Xóa luôn bộ đếm độ mạnh mật khẩu (JS) để không hiện chữ "Yếu/Mạnh"
+add_action('wp_print_scripts', 'relive_remove_password_strength_meter', 100);
+function relive_remove_password_strength_meter()
+{
+    if (wp_script_is('wc-password-strength-meter', 'enqueued')) {
+        wp_dequeue_script('wc-password-strength-meter');
+    }
+}
+/* =========================================
+   BỎ QUA MẬT KHẨU CŨ (PHƯƠNG PHÁP "ẨN THÂN")
+   ========================================= */
+
+// Biến toàn cục để lưu tạm mật khẩu mới
+global $relive_temp_new_pass;
+
+// 1. Chạy trước khi WooCommerce xử lý form (Priority 19 < 20)
+add_action('wp_loaded', 'relive_intercept_save_account', 19);
+
+function relive_intercept_save_account()
+{
+    global $relive_temp_new_pass;
+
+    // Kiểm tra xem có đang submit form đổi pass không
+    if (isset($_POST['action']) && 'save_account_details' === $_POST['action'] && ! empty($_POST['password_1'])) {
+
+        // Xác thực bảo mật
+        $nonce_value = isset($_POST['save-account-details-nonce']) ? $_POST['save-account-details-nonce'] : '';
+        if (! wp_verify_nonce($nonce_value, 'save_account_details')) return;
+
+        // Kiểm tra khớp mật khẩu
+        $pass1 = $_POST['password_1'];
+        $pass2 = isset($_POST['password_2']) ? $_POST['password_2'] : '';
+
+        if ($pass1 !== $pass2) {
+            wc_add_notice('Mật khẩu xác nhận không khớp.', 'error');
+            return; // Dừng lại để hiện lỗi
+        }
+
+        // LƯU MẬT KHẨU VÀO BIẾN TẠM
+        $relive_temp_new_pass = $pass1;
+
+        // QUAN TRỌNG: Xóa sạch dữ liệu pass trong $_POST
+        // Điều này khiến WooCommerce nghĩ rằng khách hàng KHÔNG đổi mật khẩu
+        // => WooCommerce sẽ KHÔNG yêu cầu mật khẩu cũ nữa.
+        unset($_POST['password_1']);
+        unset($_POST['password_2']);
+        unset($_POST['password_current']);
+    }
+}
+
+// 2. Sau khi WooCommerce lưu xong các thông tin khác (Tên, Email...), ta mới lưu mật khẩu
+add_action('woocommerce_save_account_details', 'relive_do_save_password_manual', 20, 1);
+
+function relive_do_save_password_manual($user_id)
+{
+    global $relive_temp_new_pass;
+
+    // Nếu có mật khẩu mới trong biến tạm -> Tiến hành lưu
+    if (! empty($relive_temp_new_pass)) {
+
+        // Cập nhật mật khẩu vào Database
+        wp_set_password($relive_temp_new_pass, $user_id);
+
+        // Đăng nhập lại ngay lập tức (Vì đổi pass xong WP sẽ đá user ra)
+        $user = get_user_by('id', $user_id);
+        wp_set_current_user($user_id, $user->user_login);
+        wp_set_auth_cookie($user_id);
+        do_action('wp_login', $user->user_login, $user);
+
+        // Thông báo thành công
+        wc_add_notice('Mật khẩu đã được thay đổi thành công.', 'success');
+
+        // Xóa biến tạm
+        $relive_temp_new_pass = null;
+    }
+}
+
+/* =========================================
+   TÙY BIẾN TRANG SỬA ĐỊA CHỈ (EDIT ADDRESS - FINAL)
+   ========================================= */
+add_filter('woocommerce_address_to_edit', 'relive_custom_address_edit_fields', 999, 2);
+
+function relive_custom_address_edit_fields($fields, $load_address)
+{
+    // 1. Xóa trường thừa
+    unset($fields['billing_company']);
+    unset($fields['billing_country']);
+    unset($fields['billing_postcode']);
+    unset($fields['billing_state']);
+    unset($fields['billing_address_2']);
+
+    // 2. Sắp xếp & Class Layout
+    $fields['billing_first_name']['class'] = array('form-row-first');
+    $fields['billing_first_name']['priority'] = 10;
+
+    $fields['billing_last_name']['class'] = array('form-row-last');
+    $fields['billing_last_name']['priority'] = 20;
+
+    $fields['billing_phone']['class'] = array('form-row-first');
+    $fields['billing_phone']['priority'] = 30;
+
+    $fields['billing_email']['class'] = array('form-row-last');
+    $fields['billing_email']['priority'] = 40;
+
+    // 3. Cấu hình 3 ô địa chỉ (Để trống options để JS nạp)
+    $fields['billing_city'] = array(
+        'type'        => 'select',
+        'label'       => 'Tỉnh / Thành phố',
+        'required'    => true,
+        'class'       => array('form-row-wide', 'address-select-field'),
+        'priority'    => 50,
+        'options'     => array('' => 'Đang tải dữ liệu...'),
+    );
+
+    $fields['billing_district'] = array(
+        'type'        => 'select',
+        'label'       => 'Quận / Huyện',
+        'required'    => true,
+        'class'       => array('form-row-first', 'address-select-field'),
+        'priority'    => 60,
+        'options'     => array('' => 'Chọn Quận / Huyện'),
+    );
+
+    $fields['billing_ward'] = array(
+        'type'        => 'select',
+        'label'       => 'Phường / Xã',
+        'required'    => true,
+        'class'       => array('form-row-last', 'address-select-field'),
+        'priority'    => 70,
+        'options'     => array('' => 'Chọn Phường / Xã'),
+    );
+
+    $fields['billing_address_1']['class'] = array('form-row-wide');
+    $fields['billing_address_1']['label'] = 'Địa chỉ cụ thể';
+    $fields['billing_address_1']['priority'] = 80;
+
+    // 4. TRUYỀN DỮ LIỆU ĐÃ LƯU SANG JS (Quan trọng)
+    $user_id = get_current_user_id();
+    $saved_data = array(
+        'city'     => get_user_meta($user_id, 'billing_city', true),
+        'district' => get_user_meta($user_id, '_billing_district', true), // Meta riêng ta đã lưu
+        'ward'     => get_user_meta($user_id, '_billing_ward', true),     // Meta riêng ta đã lưu
+    );
+
+    // In thẳng script vào footer để JS đọc
+    add_action('wp_footer', function () use ($saved_data) {
+        echo '<script>var relive_saved_address = ' . json_encode($saved_data) . ';</script>';
+    }, 99);
+
+    return $fields;
+}

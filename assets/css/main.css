@@ -4463,3 +4463,518 @@ a.zoom-trigger {
     .ty-price-qty { width: 100%; text-align: left; margin-top: 5px; padding-left: 75px; display: flex; gap: 10px; align-items: baseline; }
     .col-8, .col-4 { width: 100% !important; } /* Full width cột */
 }
+/* =========================================
+   TRANG TÀI KHOẢN (NEW SIDEBAR STYLE)
+   ========================================= */
+
+/* Avatar tròn */
+.user-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* Reset list style cho menu */
+.fpt-acc-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Item Menu */
+.fpt-acc-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+/* Hover & Active */
+.fpt-acc-menu li:hover a,
+.fpt-acc-menu li.is-active a {
+    background: linear-gradient(90deg, #fcebeb 0%, #ffffff 100%); /* Gradient đỏ nhạt */
+    color: #cb1c22;
+    font-weight: 600;
+    border-left-color: #cb1c22;
+}
+
+.fpt-acc-menu li:hover i,
+.fpt-acc-menu li.is-active i {
+    color: #cb1c22 !important;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .acc-sidebar-area {
+        margin-bottom: 20px;
+    }
+    /* Trên mobile có thể ẩn bớt banner thành viên nếu muốn gọn */
+    .member-banner {
+        display: none;
+    }
+}
+/* 2. Nội dung bên phải */
+.acc-content-wrap h2, 
+.acc-content-wrap h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .col-3, .col-9 { width: 100% !important; }
+    .acc-sidebar-wrap { margin-bottom: 20px; }
+}
+
+/* =========================================
+   STYLE DANH SÁCH ĐƠN HÀNG (ORDERS LIST)
+   ========================================= */
+
+/* 1. Cấu trúc bảng */
+.fpt-orders-table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden; /* Để bo góc table */
+}
+
+.fpt-orders-table-wrap thead th {
+    background: #f8f9fa;
+    padding: 15px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.fpt-orders-table-wrap tbody td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+}
+
+/* Mã đơn hàng */
+.fpt-order-number {
+    color: #288ad6;
+    font-weight: 700;
+    text-decoration: none;
+}
+.fpt-order-number:hover {
+    text-decoration: underline;
+}
+
+/* 2. Badge Trạng thái (Màu sắc) */
+.fpt-order-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Màu cho từng trạng thái */
+.fpt-order-status.status-completed {
+    background: #d4edda; color: #155724; /* Xanh lá - Hoàn thành */
+}
+.fpt-order-status.status-processing {
+    background: #cce5ff; color: #004085; /* Xanh dương - Đang xử lý */
+}
+.fpt-order-status.status-on-hold {
+    background: #fff3cd; color: #856404; /* Vàng - Tạm giữ/Chờ thanh toán */
+}
+.fpt-order-status.status-pending {
+    background: #e2e3e5; color: #383d41; /* Xám - Chờ thanh toán */
+}
+.fpt-order-status.status-cancelled, 
+.fpt-order-status.status-failed {
+    background: #f8d7da; color: #721c24; /* Đỏ - Hủy/Thất bại */
+}
+
+/* 3. Nút Hành động (Xem/Hủy) */
+.btn-order-action {
+    display: inline-block;
+    padding: 6px 15px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+    margin-right: 5px;
+}
+.btn-order-action:hover {
+    border-color: #cb1c22;
+    color: #cb1c22;
+    background: #fff5f5;
+}
+.btn-order-action.view {
+    border-color: #288ad6;
+    color: #288ad6;
+}
+.btn-order-action.view:hover {
+    background: #eaf6ff;
+}
+
+/* Responsive Mobile: Chuyển Table thành dạng Card */
+@media (max-width: 768px) {
+    .fpt-orders-table-wrap thead { display: none; }
+    
+    .fpt-orders-table-wrap tr {
+        display: block;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background: #fff;
+        padding: 10px;
+    }
+    
+    .fpt-orders-table-wrap td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed #eee;
+        padding: 8px 0;
+        text-align: right;
+    }
+    .fpt-orders-table-wrap td:last-child { border-bottom: none; }
+    
+    /* Thêm nhãn tiêu đề ảo */
+    .fpt-orders-table-wrap td::before {
+        content: attr(data-title);
+        font-weight: 600;
+        color: #777;
+        font-size: 12px;
+        text-align: left;
+        margin-right: 10px;
+    }
+}
+/* =========================================
+   STYLE TRANG SỬA TÀI KHOẢN
+   ========================================= */
+
+/* 1. Khu vực Avatar */
+.account-avatar-wrap .avatar-preview img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    
+    /* FIX CĂN GIỮA */
+    display: block;      /* Đảm bảo là khối */
+    margin-left: auto;   /* Căn trái tự động */
+    margin-right: auto;  /* Căn phải tự động -> Ra giữa */
+}
+
+.btn-change-avatar {
+    display: inline-block;
+    font-size: 13px;
+    color: #1250dc; /* Đã đổi màu theo yêu cầu */
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.btn-change-avatar:hover {
+    text-decoration: underline;
+    color: #0f3cb3; /* Màu đậm hơn khi hover */
+}
+/* --- ẨN BOX LỖI MẶC ĐỊNH (CHO CẢ CART, CHECKOUT, ACCOUNT) --- */
+.woocommerce-error, 
+.woocommerce-message, 
+.woocommerce-info {
+    /* Ẩn đi để dùng Popup, nhưng không dùng display:none để JS vẫn đọc được nội dung */
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Riêng trang Checkout thì ẩn triệt để */
+.woocommerce-checkout .woocommerce-NoticeGroup {
+    display: none !important;
+}
+/* =========================================
+   STYLE TRANG SỬA TÀI KHOẢN (FINAL COMPLETE)
+   ========================================= */
+
+/* 1. Style Ô nhập liệu (Input) */
+.woocommerce-EditAccountForm input.input-text {
+    height: 44px !important;        /* Cao 44px cho dễ bấm */
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;  /* Bo góc 8px */
+    padding: 0 15px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 14px !important;
+    color: #333 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Hiệu ứng khi bấm vào */
+.woocommerce-EditAccountForm input.input-text:focus {
+    border-color: #cb1c22 !important;
+    box-shadow: 0 0 0 1px #cb1c22 !important;
+}
+
+/* 2. Nhãn (Label) */
+.woocommerce-EditAccountForm label {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+    margin-top: 15px;
+}
+
+/* 3. CHIA CỘT HỌ - TÊN (50% - 50%) */
+.woocommerce-EditAccountForm .form-row-first,
+.woocommerce-EditAccountForm .form-row-last {
+    width: 48% !important;
+    float: left !important;
+    margin-right: 4% !important;
+    clear: none !important;
+}
+.woocommerce-EditAccountForm .form-row-last {
+    margin-right: 0 !important;
+}
+
+/* Clear float để các ô dưới không bị dính */
+.woocommerce-EditAccountForm .clear {
+    clear: both;
+    display: block;
+    width: 100%;
+    height: 0;
+}
+
+/* 4. PHẦN MẬT KHẨU (Đã bỏ viền nét đứt) */
+.woocommerce-EditAccountForm fieldset {
+    margin-top: 30px !important;
+    border: none !important;      /* XÓA VIỀN */
+    padding: 0 !important;        /* XÓA ĐỆM */
+    background: transparent !important;
+}
+
+.woocommerce-EditAccountForm legend {
+    width: 100%;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    color: #cb1c22 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #eee !important; /* Kẻ gạch chân mờ */
+    display: block;
+}
+
+/* 5. Responsive Mobile */
+@media (max-width: 480px) {
+    .woocommerce-EditAccountForm .form-row-first,
+    .woocommerce-EditAccountForm .form-row-last {
+        width: 100% !important; /* Mobile về 1 cột */
+        margin-right: 0 !important;
+    }
+}
+/* =========================================
+   STYLE CHIA CỘT MẬT KHẨU & NÚT LƯU (FINAL)
+   ========================================= */
+
+/* 1. Chia cột Mật khẩu (50% - 50%) */
+.woocommerce-EditAccountForm fieldset .form-row {
+    width: 48% !important;
+    float: left !important;
+    margin-right: 4% !important;
+    clear: none !important;
+}
+
+/* Ô cuối cùng (Xác nhận mật khẩu) bỏ margin phải */
+.woocommerce-EditAccountForm fieldset .form-row:last-of-type {
+    margin-right: 0 !important;
+}
+
+/* 2. Nút LƯU THAY ĐỔI (Style FPT) */
+.woocommerce-EditAccountForm button[name="save_account_details"] {
+    background-color: #cb1c22 !important; /* Màu đỏ FPT */
+    color: #fff !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 12px 40px !important; /* Nút dài hơn chút cho đẹp */
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 15px;
+}
+
+/* Hiệu ứng khi di chuột vào nút */
+.woocommerce-EditAccountForm button[name="save_account_details"]:hover {
+    background-color: #a61217 !important;
+    box-shadow: 0 4px 10px rgba(203, 28, 34, 0.3); /* Bóng đổ đỏ */
+    transform: translateY(-2px);
+}
+
+/* Mobile: Về 1 cột dọc cho dễ bấm */
+@media (max-width: 480px) {
+    .woocommerce-EditAccountForm fieldset .form-row {
+        width: 100% !important;
+        float: none !important;
+        margin-right: 0 !important;
+    }
+    /* Nút full chiều rộng trên mobile */
+    .woocommerce-EditAccountForm button[name="save_account_details"] {
+        width: 100% !important;
+    }
+}
+/* =========================================
+   VIEW ORDER STYLE (TRONG TRANG TÀI KHOẢN)
+   ========================================= */
+
+/* Tinh chỉnh lại font size cho gọn */
+.fpt-view-order-page .ty-box-header,
+.fpt-view-order-page .ty-sb-header {
+    font-size: 14px;
+    background: #fcfcfc;
+}
+
+.fpt-view-order-page .ty-prod-item {
+    padding: 10px 15px;
+}
+
+/* Responsive Mobile cho trang chi tiết */
+@media (max-width: 768px) {
+    .fpt-view-order-page .col-8, 
+    .fpt-view-order-page .col-4 { 
+        width: 100%; 
+    }
+    .vo-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+/* =========================================
+   STYLE SỔ ĐỊA CHỈ (MY ADDRESSES)
+   ========================================= */
+
+/* 1. Lưới 2 cột */
+.fpt-address-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Chia đôi màn hình */
+    gap: 20px;
+}
+
+/* 2. Hộp địa chỉ */
+.fpt-address-box {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    transition: 0.2s;
+    height: 100%; /* Để 2 hộp cao bằng nhau */
+}
+.fpt-address-box:hover {
+    border-color: #cb1c22;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* 3. Header của hộp (Nền xám) */
+.fpt-addr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.addr-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+}
+.addr-title i {
+    color: #cb1c22;
+    font-size: 16px;
+}
+.addr-title h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Nút sửa */
+.edit-addr-btn {
+    font-size: 13px;
+    color: #288ad6;
+    font-weight: 600;
+    text-decoration: none;
+}
+.edit-addr-btn:hover {
+    text-decoration: underline;
+}
+
+/* 4. Nội dung địa chỉ */
+.fpt-addr-body {
+    padding: 20px;
+    min-height: 100px;
+}
+
+.fpt-addr-body address {
+    font-style: normal;
+    line-height: 1.6;
+    color: #555;
+    font-size: 14px;
+    margin: 0;
+}
+
+.no-addr {
+    color: #999;
+    font-style: italic;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* Nút thêm nhanh */
+.btn-add-addr {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid #cb1c22;
+    color: #cb1c22;
+    border-radius: 4px;
+    text-decoration: none;
+}
+.btn-add-addr:hover {
+    background: #cb1c22;
+    color: #fff;
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .fpt-address-grid {
+        grid-template-columns: 1fr; /* Mobile về 1 cột dọc */
+    }
+}

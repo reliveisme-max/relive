@@ -120,6 +120,25 @@
     </div>
 </div>
 
+<div id="fpt-error-popup" class="fpt-cart-overlay">
+    <div class="fpt-cart-box">
+        <div class="fc-icon" style="color: #cb1c22;"> <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="fc-message" style="font-size: 18px; margin-bottom: 5px;">Rất tiếc, đã có lỗi!</div>
+
+        <div id="fpt-error-content"
+            style="font-size: 14px; color: #eee; margin-bottom: 15px; line-height: 1.5; text-align: left; width: 100%;">
+        </div>
+
+        <div class="fc-actions">
+            <span class="btn-view-cart" onclick="document.getElementById('fpt-error-popup').classList.remove('open')"
+                style="cursor:pointer; display:block; width:auto; padding: 10px 40px; background: #fff; color: #333;">
+                Đã hiểu
+            </span>
+        </div>
+    </div>
+</div>
+
 </div><?php wp_footer(); ?>
 
 </body>
