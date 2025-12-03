@@ -4978,3 +4978,59 @@ a.zoom-trigger {
         grid-template-columns: 1fr; /* Mobile về 1 cột dọc */
     }
 }
+/* =========================================
+   FIX GIAO DIỆN FORM ĐỊA CHỈ (FLEXBOX - FINAL)
+   ========================================= */
+
+/* 1. Khung chứa form: Dùng Flexbox */
+.woocommerce-address-fields__field-wrapper {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    gap: 15px 0 !important; /* Khoảng cách dọc 15px */
+}
+
+/* 2. Xóa bỏ float cũ gây lỗi */
+.woocommerce-address-fields .form-row {
+    float: none !important;
+    margin: 0 !important;
+    width: 100% !important; /* Mặc định full dòng */
+    display: block !important;
+}
+
+/* 3. Chia cột 48% cho các cặp ô (Họ-Tên, SĐT-Email, Quận-Phường) */
+.woocommerce-address-fields .form-row-first,
+.woocommerce-address-fields .form-row-last {
+    width: 48% !important;
+    clear: none !important;
+}
+
+/* 4. Các ô Full chiều rộng (Tỉnh, Địa chỉ cụ thể) */
+.woocommerce-address-fields .form-row-wide {
+    width: 100% !important;
+    clear: both !important;
+}
+
+/* 5. Làm đẹp Input */
+.woocommerce-address-fields input.input-text,
+.woocommerce-address-fields select {
+    width: 100% !important;
+    height: 44px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    padding: 0 15px !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+}
+.woocommerce-address-fields input.input-text:focus,
+.woocommerce-address-fields select:focus {
+    border-color: #cb1c22 !important;
+}
+
+/* 6. Mobile: Về 1 cột dọc */
+@media (max-width: 768px) {
+    .woocommerce-address-fields .form-row-first,
+    .woocommerce-address-fields .form-row-last {
+        width: 100% !important;
+    }
+}
