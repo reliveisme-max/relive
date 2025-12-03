@@ -957,108 +957,115 @@ function relive_do_save_password_manual($user_id)
         $relive_temp_new_pass = null;
     }
 }
+
+
+
+
+
+
+
+
+
+
 /* =================================================================
-   XỬ LÝ TOÀN BỘ VỀ ĐỊA CHỈ (LAYOUT + FIX LỖI KHÔNG LƯU) - FINAL
+   XỬ LÝ ĐỊA CHỈ TOÀN DIỆN (FIX LỖI LƯU 100% + GIAO DIỆN)
    ================================================================= */
 
-// 1. XÂY DỰNG FORM THỦ CÔNG & BYPASS VALIDATION
-add_filter('woocommerce_address_to_edit', 'relive_address_fix_final', 99999, 2);
+// 1. KHAI BÁO FIELD CHO BACKEND (Dạng TEXT để bỏ qua kiểm tra options)
+add_filter('woocommerce_billing_fields', 'relive_define_billing_fields_backend', 20, 1);
 
-function relive_address_fix_final($fields, $load_address)
+function relive_define_billing_fields_backend($fields)
 {
-    // Chỉ chạy ở trang Sửa địa chỉ thanh toán
+    // Đặt Tỉnh thành Text để Woo không chặn lưu khi list options rỗng
+    $fields['billing_city']['type'] = 'text';
+    $fields['billing_city']['required'] = true;
+
+    // Khai báo thêm Quận/Phường (dạng Text để bypass validation)
+    $fields['billing_district'] = array(
+        'type' => 'text',
+        'label' => 'Quận / Huyện',
+        'required' => true,
+        'priority' => 60
+    );
+    $fields['billing_ward'] = array(
+        'type' => 'text',
+        'label' => 'Phường / Xã',
+        'required' => true,
+        'priority' => 70
+    );
+
+    return $fields;
+}
+
+// 2. BIẾN ĐỔI GIAO DIỆN THÀNH SELECT (Chỉ ở Frontend)
+add_filter('woocommerce_address_to_edit', 'relive_render_address_form_frontend', 9999, 2);
+
+function relive_render_address_form_frontend($fields, $load_address)
+{
     if ($load_address !== 'billing') return $fields;
 
-    // Lấy ID người dùng
+    // Xóa trường rác
+    $excludes = ['billing_company', 'billing_country', 'billing_postcode', 'billing_state', 'billing_address_2'];
+    foreach ($excludes as $ex) unset($fields[$ex]);
+
+    // Lấy dữ liệu hiện tại
     $user_id = get_current_user_id();
-
-    // --- BƯỚC QUAN TRỌNG NHẤT: LẤY DỮ LIỆU ĐANG POST LÊN ---
-    // Nếu người dùng vừa bấm "Lưu", ta phải lấy giá trị họ vừa chọn trong $_POST
-    // Nếu không, Woo sẽ lấy giá trị cũ trong Database -> Gây lỗi "Không lưu được"
-
-    // 1. Tỉnh / Thành phố
     $val_city = isset($_POST['billing_city']) ? wc_clean($_POST['billing_city']) : get_user_meta($user_id, 'billing_city', true);
-
-    // 2. Quận / Huyện (Custom Field)
     $val_dist = isset($_POST['billing_district']) ? wc_clean($_POST['billing_district']) : get_user_meta($user_id, '_billing_district', true);
-
-    // 3. Phường / Xã (Custom Field)
     $val_ward = isset($_POST['billing_ward']) ? wc_clean($_POST['billing_ward']) : get_user_meta($user_id, '_billing_ward', true);
 
-    // --- TẠO DANH SÁCH OPTIONS GIẢ LẬP (MỒI) ---
-    // Nhét giá trị vừa lấy được vào danh sách Options để Woo chấp nhận là "Hợp lệ"
-
-    $city_opts = array('' => 'Chọn Tỉnh / Thành phố');
+    // "Mồi" options (Để select box hiển thị đúng giá trị đã lưu)
+    $city_opts = ['' => 'Chọn Tỉnh / Thành phố'];
     if ($val_city) $city_opts[$val_city] = $val_city;
 
-    $dist_opts = array('' => 'Chọn Quận / Huyện');
+    $dist_opts = ['' => 'Chọn Quận / Huyện'];
     if ($val_dist) $dist_opts[$val_dist] = $val_dist;
 
-    $ward_opts = array('' => 'Chọn Phường / Xã');
+    $ward_opts = ['' => 'Chọn Phường / Xã'];
     if ($val_ward) $ward_opts[$val_ward] = $val_ward;
 
-    // --- XÂY DỰNG MẢNG FIELDS MỚI (Thủ công 100% để đúng thứ tự) ---
+    // --- XÂY DỰNG LẠI MẢNG MỚI (Sắp xếp thủ công) ---
     $new_fields = array();
 
     // Hàng 1: Họ - Tên
     $new_fields['billing_last_name'] = $fields['billing_last_name'];
     $new_fields['billing_last_name']['class'] = array('form-row-first');
-    $new_fields['billing_last_name']['label'] = 'Họ';
-
     $new_fields['billing_first_name'] = $fields['billing_first_name'];
     $new_fields['billing_first_name']['class'] = array('form-row-last');
-    $new_fields['billing_first_name']['label'] = 'Tên';
 
     // Hàng 2: SĐT - Email
     $new_fields['billing_phone'] = $fields['billing_phone'];
     $new_fields['billing_phone']['class'] = array('form-row-first');
-
     $new_fields['billing_email'] = $fields['billing_email'];
     $new_fields['billing_email']['class'] = array('form-row-last');
 
-    // Hàng 3: Tỉnh (Full dòng)
-    $new_fields['billing_city'] = array(
-        'type'     => 'select',
-        'label'    => 'Tỉnh / Thành phố',
-        'required' => true,
-        'class'    => array('form-row-wide', 'address-select-field'),
-        'options'  => $city_opts, // <--- Đã mồi dữ liệu
-        'value'    => $val_city   // <--- Giá trị POST hoặc DB
-    );
+    // Hàng 3: Tỉnh (Biến thành Select)
+    $new_fields['billing_city'] = $fields['billing_city'];
+    $new_fields['billing_city']['type'] = 'select';
+    $new_fields['billing_city']['class'] = array('form-row-wide', 'address-select-field');
+    $new_fields['billing_city']['options'] = $city_opts;
+    $new_fields['billing_city']['value'] = $val_city;
 
-    // Hàng 4: Quận - Phường (Chia đôi)
-    $new_fields['billing_district'] = array(
-        'type'     => 'select',
-        'label'    => 'Quận / Huyện',
-        'required' => true,
-        'class'    => array('form-row-first', 'address-select-field'),
-        'options'  => $dist_opts, // <--- Đã mồi dữ liệu
-        'value'    => $val_dist
-    );
+    // Hàng 4: Quận - Phường (Biến thành Select)
+    $new_fields['billing_district'] = $fields['billing_district'];
+    $new_fields['billing_district']['type'] = 'select';
+    $new_fields['billing_district']['class'] = array('form-row-first', 'address-select-field');
+    $new_fields['billing_district']['options'] = $dist_opts;
+    $new_fields['billing_district']['value'] = $val_dist;
 
-    $new_fields['billing_ward'] = array(
-        'type'     => 'select',
-        'label'    => 'Phường / Xã',
-        'required' => true,
-        'class'    => array('form-row-last', 'address-select-field'),
-        'options'  => $ward_opts, // <--- Đã mồi dữ liệu
-        'value'    => $val_ward
-    );
+    $new_fields['billing_ward'] = $fields['billing_ward'];
+    $new_fields['billing_ward']['type'] = 'select';
+    $new_fields['billing_ward']['class'] = array('form-row-last', 'address-select-field');
+    $new_fields['billing_ward']['options'] = $ward_opts;
+    $new_fields['billing_ward']['value'] = $val_ward;
 
-    // Hàng 5: Địa chỉ cụ thể
-    if (isset($fields['billing_address_1'])) {
-        $new_fields['billing_address_1'] = $fields['billing_address_1'];
-        $new_fields['billing_address_1']['class'] = array('form-row-wide');
-        $new_fields['billing_address_1']['label'] = 'Địa chỉ cụ thể';
-        $new_fields['billing_address_1']['priority'] = 999;
-    }
+    // Hàng 5: Địa chỉ
+    $new_fields['billing_address_1'] = $fields['billing_address_1'];
+    $new_fields['billing_address_1']['class'] = array('form-row-wide');
+    $new_fields['billing_address_1']['label'] = 'Địa chỉ cụ thể';
 
-    // Truyền dữ liệu sang JS (để auto-select lại sau khi load trang)
-    $js_data = array(
-        'city'     => $val_city,
-        'district' => $val_dist,
-        'ward'     => $val_ward
-    );
+    // JS Data
+    $js_data = array('city' => $val_city, 'district' => $val_dist, 'ward' => $val_ward);
     add_action('wp_footer', function () use ($js_data) {
         echo '<script>var relive_saved_address = ' . json_encode($js_data) . ';</script>';
     }, 99);
@@ -1066,26 +1073,26 @@ function relive_address_fix_final($fields, $load_address)
     return $new_fields;
 }
 
-// 2. BẮT SỰ KIỆN LƯU FORM (QUAN TRỌNG: Lưu Custom Field)
-add_action('woocommerce_customer_save_address', 'relive_force_save_custom_address', 10, 2);
+// 3. LƯU DỮ LIỆU VÀO DATABASE (Meta Data)
+add_action('woocommerce_customer_save_address', 'relive_save_custom_address_data', 10, 2);
 
-function relive_force_save_custom_address($user_id, $load_address)
+function relive_save_custom_address_data($user_id, $load_address)
 {
     if ($load_address === 'billing') {
-        // Lưu Quận
-        if (isset($_POST['billing_district'])) {
-            update_user_meta($user_id, '_billing_district', sanitize_text_field($_POST['billing_district']));
-        }
-        // Lưu Phường
-        if (isset($_POST['billing_ward'])) {
-            update_user_meta($user_id, '_billing_ward', sanitize_text_field($_POST['billing_ward']));
+        if (!empty($_POST['billing_district'])) update_user_meta($user_id, '_billing_district', sanitize_text_field($_POST['billing_district']));
+        if (!empty($_POST['billing_ward'])) update_user_meta($user_id, '_billing_ward', sanitize_text_field($_POST['billing_ward']));
+
+        // Đồng bộ sang Shipping để ẩn Shipping đi vẫn chạy tốt
+        $sync_keys = ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'postcode', 'country', 'state', 'phone', 'email'];
+        foreach ($sync_keys as $key) {
+            if (isset($_POST['billing_' . $key])) update_user_meta($user_id, 'shipping_' . $key, wc_clean($_POST['billing_' . $key]));
         }
     }
 }
 
-// 3. HIỂN THỊ RA SỔ ĐỊA CHỈ (FORMATTED ADDRESS)
-add_filter('woocommerce_formatted_address_replacements', 'relive_show_district_ward_in_book', 10, 2);
-function relive_show_district_ward_in_book($replacements, $args)
+// 4. HIỂN THỊ RA SỔ ĐỊA CHỈ
+add_filter('woocommerce_formatted_address_replacements', 'relive_add_custom_fields_to_address_book', 10, 2);
+function relive_add_custom_fields_to_address_book($replacements, $args)
 {
     $user_id = get_current_user_id();
     $replacements['{district}'] = get_user_meta($user_id, '_billing_district', true);
@@ -1093,10 +1100,12 @@ function relive_show_district_ward_in_book($replacements, $args)
     return $replacements;
 }
 
-add_filter('woocommerce_localisation_address_formats', 'relive_custom_vn_format');
-function relive_custom_vn_format($formats)
+add_filter('woocommerce_localisation_address_formats', 'relive_custom_vn_address_format');
+function relive_custom_vn_address_format($formats)
 {
-    // Cấu trúc hiển thị: Tên -> Địa chỉ -> Phường, Quận -> Tỉnh
-    $formats['VN'] = "{name}\n{address_1}\n{ward}, {district}\n{city}";
+    $formats['VN'] = "{name}\n{address_1}\n{ward}, {district}\n{city}\n{phone}";
     return $formats;
 }
+
+// 5. ÉP SỬ DỤNG 1 ĐỊA CHỈ DUY NHẤT
+add_filter('woocommerce_ship_to_different_address_checked', '__return_false');
